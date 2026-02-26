@@ -4,16 +4,19 @@ from locations import Path, Junctions
 
 path = Path.line
 
+
+
 #need to map pins
-S1_pin = 
-S2_pin = 
+#S1_pin = 
+""" S2_pin = 
 SL_pin = 
 SR_pin =
 
 S1_sensor = Pin(S1_pin, Pin.IN)
 S2_sensor = Pin(S2_pin, Pin.IN)
 SL_sensor = Pin(SL_pin, Pin.IN)
-SR_sensor = Pin(SR_pin, Pin.IN)
+SR_sensor = Pin(SR_pin, Pin.IN) """
+
 
 motor_l = Motor(dirPin=4, PWMPin=5)
 motor_r = Motor(dirPin=6, PWMPin=7) 
@@ -22,7 +25,7 @@ base = 70
 corr = 40
 
 #centering code
-def line_follow_step(path):
+def line_follow_step(path, S1_sensor, S2_sensor):
   S1 = S1_sensor.value()
   S2 = S2_sensor.value()
   if path == Path.line:
@@ -42,12 +45,12 @@ def line_follow_step(path):
   return Path.line
 
 #might want to modify so that SL and SR are taken as inputs instead. so we can easily call without having to redefine variables.
-def detect_junction():
+def detect_junction(SL_sensor, SR_sensor):
     SL = SL_sensor.value()
     SR = SR_sensor.value()
     return (SR == 1 or SL == 1)
 
-def detect_junction_type(path):
+def detect_junction_type(path, SL_sensor, SR_sensor):
     SL = SL_sensor.value()
     SR = SR_sensor.value()
     if path == Path.junction:
