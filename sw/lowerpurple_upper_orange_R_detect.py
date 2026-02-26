@@ -34,32 +34,32 @@ def rec_dist_laser():
     return laser_distance
     
 
+def lowP_upperO_R_detect():
+    while slot_status.count(1) < 6: #number of cleared slots is less than 6
+        if SL == 1:  # Branch detected
 
-while slot_status.count(1) < 6: #number of cleared slots is less than 6
-    if SL == 1:  # Branch detected
-
-        sleep(0.1) # Short delay to debounce the sensor
-        distance = rec_dist_laser()
+            sleep(0.1) # Short delay to debounce the sensor
+            distance = rec_dist_laser()
         
-        if distance < 100: # resistor detected
-            # 1. Add code here to turn the car and pick up resistor
-            # 2. Once picked up resistor, mark as cleared
-            slot_status[slot_counter] = 1
-            #add code to measure resistor color and store resistor color as a variable
-            # add code to return the resistor and clear out the list
-            print(f"Slot {slot_counter} picked up and cleared.")
-        else: # Slot is empty
-            slot_status[slot_counter] = 1
-            print(f"Slot {slot_counter} was already empty. Marked cleared.")
+            if distance < 100: # resistor detected
+                # 1. Add code here to turn the car and pick up resistor
+              # 2. Once picked up resistor, mark as cleared
+                slot_status[slot_counter] = 1
+                #add code to measure resistor color and store resistor color as a variable
+                # add code to return the resistor and clear out the list
+                print(f"Slot {slot_counter} picked up and cleared.")
+            else: # Slot is empty
+                slot_status[slot_counter] = 1
+                print(f"Slot {slot_counter} was already empty. Marked cleared.")
         
-        slot_counter += 1 # Move to next slot index for the next branch
+            slot_counter += 1 # Move to next slot index for the next branch
         
-        #add short sleep here 
-        # so it doesn't count the same branch multiple times.
-        while SL == 1:
-            pass 
-
-rack_cleared = True
+            #add short sleep here 
+            sleep(0.1)
+            # so it doesn't count the same branch multiple times.
+            while SL == 1:
+                pass 
+    rack_cleared = True
 
 
 
