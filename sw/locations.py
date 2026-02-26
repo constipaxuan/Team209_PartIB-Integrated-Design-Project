@@ -5,6 +5,7 @@ class Path(Enum):
     junction = 2
 
 class Location(Enum):
+    start = 0
     unloading = 1
     elevator_low = 2
     rack_orange_L = 3
@@ -29,3 +30,4 @@ class Junctions(Enum):
     R = 1
     L = 2
     RL = 3
+    nil = 4

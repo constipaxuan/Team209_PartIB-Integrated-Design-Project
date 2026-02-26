@@ -41,6 +41,7 @@ def line_follow_step(path):
  
   return Path.line
 
+#might want to modify so that SL and SR are taken as inputs instead. so we can easily call without having to redefine variables.
 def detect_junction():
     SL = SL_sensor.value()
     SR = SR_sensor.value()
@@ -56,6 +57,7 @@ def detect_junction_type(path):
             return Junctions.R
         elif (SL == 1 and SR == 1):
             return Junctions.RL
+    return Junctions.nil
 
 #Placeholders. Move to main file while loop. For testing purposes add a while loop.
 path = line_follow_step(path)    
