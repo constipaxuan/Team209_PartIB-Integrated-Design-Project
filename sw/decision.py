@@ -11,6 +11,9 @@ unloading_states = Unloading_States.none
 direction = Direction.cw
 mode = Mode.start
 
+def mode_tracker():
+    pass
+
 def start_mode():
     pass
 
