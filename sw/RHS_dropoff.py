@@ -3,7 +3,7 @@
 target_bay = 0 
 drop_off_bay = 0
 counting_line = False # This is our "latch"
-
+dropped_off = False # This is to prevent the car from dropping off multiple times after reaching the target bay
 def RHS_dropoff():
     if resistor_color == 0: 
         target_bay = 0 # Red
@@ -31,6 +31,7 @@ def RHS_dropoff():
         # 3. Check if we reached our target
         if drop_off_bay == target_bay:
             print("Target reached! Turning into bay")
+            dropped_off = True #the package has been dropped off
             if target_bay == 0: 
                 #code to go straight and drop off in red bay
                 slot_status = [0,0,0,0,0,0] # Reset slot status for next checking
