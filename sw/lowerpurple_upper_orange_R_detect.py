@@ -50,6 +50,9 @@ def lowP_upperO_R_detect():
                 sleep(1) # might need to adjust time depending on how long it takes to turn 90 degrees. Might also want to add some sort of feedback system to determine when to stop turning instead of just relying on time.
                 motor_l.Forward(speed = base)
                 motor_r.Forward(speed = base)
+                sleep (1) #car move forward and closer to resistor
+                motor_l.Forward(speed = 0)
+                motor_r.Forward(speed = 0)
               # 2. Once picked up resistor, mark as cleared
                 slot_status[slot_counter] = 1
                 #add code to measure resistor color and store resistor color as a variable

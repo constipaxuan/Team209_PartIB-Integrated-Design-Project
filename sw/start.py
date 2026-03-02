@@ -6,10 +6,10 @@ base = 70
 motor_l = Motor(dirPin=4, PWMPin=5)
 motor_r = Motor(dirPin=6, PWMPin=7) 
 counting = True
+start_T_shape_count = 0
 
 def update_start_T_count():
     global start_T_shape_count, counting
-    # We removed 'while True' so the rest of the script can run!
     if SL == 1 and SR == 1 and counting:
         start_T_shape_count += 1
         counting = False # Latch on
@@ -35,9 +35,10 @@ def get_out_of_box():
             sleep_ms(600) # Adjust this time so it clears the T-junction
             motor_l.Forward(base)
             motor_r.Forward(base)
-
+            start_T_shape_count = 2.1 # Increment to avoid re-triggering this state
+            
         # State 3: Hit third T shape, turn anti-clockwise
-        elif start_T_shape_count == 3:
+        elif start_T_shape_count > 3:
             print("Turning Anti-clockwise into rack...")
             motor_l.Reverse(base)
             motor_r.Forward(base)
