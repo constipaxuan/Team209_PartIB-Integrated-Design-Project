@@ -15,15 +15,13 @@ class Location(Enum):
     elevator = 7
     elevator_up = 8
 
-#class Unloading_States(Enum):
-    #none = 0
-    #red = 1
-    #yellow = 2
-    #green = 3
-    #blue = 4
-# Since the sequence of red blue green yellow depends on which side the robot comes down from (LHS,RHS), 
-# we defined the color to index locally in LHS_dropoff and RHS_dropoff
-
+class Unloading_States(Enum):
+    none = 0
+    red = 1
+    yellow = 2
+    green = 3
+    blue = 4
+    
 class Direction(Enum):
     cw = 1
     acw = 2
