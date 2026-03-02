@@ -1,3 +1,4 @@
+from RHS_dropoff import RHS_dropoff
 #define these variables globally so that we can clear them off and reuse them for other branches
 slot_status = [0,0,0,0,0,0] #0 means unknown slot status, 1 means cleared
 resistor_color = 0 
@@ -5,6 +6,7 @@ slot_counter = 0
 cleared_counter = slot_status.count(1)
 rack_cleared = False
 #set up laser sensor
+from email.mime import base
 from turtle import distance
 
 from machine import Pin, I2C
@@ -34,32 +36,36 @@ def rec_dist_laser():
     return laser_distance
     
 
+def lowP_upperO_R_detect():
+    while slot_status.count(1) < 6: #number of cleared slots is less than 6
+        if SL == 1:  # Branch detected
 
-while slot_status.count(1) < 6: #number of cleared slots is less than 6
-    if SL == 1:  # Branch detected
-
-        sleep(0.1) # Short delay to debounce the sensor
-        distance = rec_dist_laser()
+            sleep(0.1) # Short delay to debounce the sensor
+            distance = rec_dist_laser()
         
-        if distance < 100: # resistor detected
+            if distance < 100: # resistor detected
             # 1. Add code here to turn the car and pick up resistor
-            # 2. Once picked up resistor, mark as cleared
-            slot_status[slot_counter] = 1
-            #add code to measure resistor color and store resistor color as a variable
-            # add code to return the resistor and clear out the list
-            print(f"Slot {slot_counter} picked up and cleared.")
-        else: # Slot is empty
-            slot_status[slot_counter] = 1
-            print(f"Slot {slot_counter} was already empty. Marked cleared.")
+                motor_l.Reverse(speed = 50)
+                motor_r.Forward(speed = 50)
+                sleep(1) # might need to adjust time depending on how long it takes to turn 90 degrees. Might also want to add some sort of feedback system to determine when to stop turning instead of just relying on time.
+                motor_l.Forward(speed = base)
+                motor_r.Forward(speed = base)
+              # 2. Once picked up resistor, mark as cleared
+                slot_status[slot_counter] = 1
+                #add code to measure resistor color and store resistor color as a variable
+                # add code to return the resistor and clear out the list
+                RHS_dropoff() # Call RHS dropoff to drop off resistor from RH bay
+                print(f"Slot {slot_counter} picked up and cleared.")
+            else: # Slot is empty
+                slot_status[slot_counter] = 1
+                print(f"Slot {slot_counter} was already empty. Marked cleared.")
         
-        slot_counter += 1 # Move to next slot index for the next branch
+            slot_counter += 1 # Move to next slot index for the next branch
         
-        #add short sleep here 
-        # so it doesn't count the same branch multiple times.
-        while SL == 1:
-            pass 
-
-rack_cleared = True
+            #while below so it doesn't count the same branch multiple times.
+            while SL == 1:
+                pass 
+    rack_cleared = True
 
 
 

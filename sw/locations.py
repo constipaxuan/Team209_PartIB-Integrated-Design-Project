@@ -15,10 +15,12 @@ class Location(Enum):
     elevator = 7
     elevator_up = 8
 
-class Elevator(Enum):
+class Unloading_States(Enum):
     none = 0
-    low = 1
-    high = 2
+    red = 1
+    yellow = 2
+    green = 3
+    blue = 4
     
 class Direction(Enum):
     cw = 1

@@ -9,4 +9,5 @@ class Mode(Enum):
 def rotation_tracker():
     pass
 
-
+#count junctions upon state transition to avoid double counting. Need debouncing as well.
+def edge_triggering(junction):

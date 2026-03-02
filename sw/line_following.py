@@ -1,8 +1,7 @@
 from test_motor import Motor
 from locations import Path, Junctions
-
+from time import sleep
 path = Path.line
-
 
 
 #need to map pins
@@ -70,3 +69,19 @@ def detect_junction_type(prev_on_junction, path, SL_sensor, SR_sensor):
 path = line_follow_step(path)    
 junction_type = detect_junction_type(path)
 
+# Code for turning if it encounters a left turn or a right turn
+def turn(junction_type):
+  base = 70
+  if junction_type == Junctions.L:
+    motor_l.Reverse(speed = 50)
+    motor_r.Forward(speed = 50)
+    sleep(1) # might need to adjust time depending on how long it takes to turn 90 degrees. Might also want to add some sort of feedback system to determine when to stop turning instead of just relying on time.
+    motor_l.Forward(speed = base)
+    motor_r.Forward(speed = base)
+# turn line following off while turning
+  elif junction_type == Junctions.R:
+    motor_l.Forward(speed = 50)
+    motor_r.Reverse(speed = 50)
+    sleep(1) # might need to adjust time depending on how long it takes to turn 90 degrees. Might also want to add some sort of feedback system to determine when to stop turning instead of just relying on time.
+    motor_l.Forward(speed = base)
+    motor_r.Forward(speed = base)
