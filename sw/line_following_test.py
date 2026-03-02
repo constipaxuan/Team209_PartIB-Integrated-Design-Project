@@ -4,6 +4,7 @@ import utime
 
 from machine import Pin, PWM
 from utime import sleep
+from enum import Enum
 
 class Motor:
     def __init__(self, dirPin, PWMPin):
@@ -23,6 +24,11 @@ class Motor:
         self.mDir.value(1)
         self.pwm.duty_u16(int(65535 * speed / 100))
 
+class Junctions(Enum):
+    R = 1
+    L = 2
+    RL = 3
+    nil = 4
 
 
 

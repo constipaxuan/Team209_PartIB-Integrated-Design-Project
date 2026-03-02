@@ -5,6 +5,7 @@ from behaviour import Mode
 from decision import take_a_turn
 from machine import Pin
 
+#initialise - will be moved to main code later. 
 location = Location.start
 direction = Direction.cw
 mode = Mode.start
@@ -30,15 +31,29 @@ SL = SL_sensor.value()
 SR = SR_sensor.value()
 
 # Memory variables -- we want to store values across time steps.
-prev_on_junction = False
-rack_branches_OL = 0
-rack_branches_PL = 0
-rack_branches_OH = 0
-rack_branches_PH = 0
-elevator_low_branches = 0
-elevator_high_branches = 0
-take_next_turn = False # decide whether to take the turn.
-prev_elevator_state = None
+
+memory = {
+    "prev_on_junction" : False,
+    "rack_branches_OL" : 0,
+    "rack_branches_PL" : 0,
+    "rack_branches_OH" : 0,
+    "rack_branches_PH" : 0,
+    "elevator_low_branches" : 0,
+    "elevator_high_branches" : 0,
+    "prev_elevator_state" : Elevator.none
+}
+
+def init_memory():
+    return {
+        "prev_on_junction": False,
+        "rack_branches_OL": 0,
+        "rack_branches_PL": 0,
+        "rack_branches_OH": 0,
+        "rack_branches_PH": 0,
+        "elevator_low_branches": 0,
+        "elevator_high_branches": 0,
+        "prev_elevator_state": Elevator.none
+    }
 
 #Main forever loop
 #while True:
@@ -46,13 +61,15 @@ prev_elevator_state = None
     #AT the end of the loop. Memory stored for next cycle. 
 #    prev_on_junction = (SL == 1 or SR == 1)
 
-#DONT implement behaviour at all. JUST TRACK LOCATIONS GODDAMN
+#include in main while loop 
+junction_event = detect_junction(memory["prev_on_junction"], SL_sensor, SR_sensor)
+
+
 # Broken down into 3 modes.
-def mapping(previous_state, SL, SR, mode, direction):
+def mapping(previous_state, SL, SR, mode, direction, junction_event):
     #Only call once per cycle. 
-    junction_event = detect_junction(prev_on_junction, SL_sensor, SR_sensor)
     if junction_event:
-        junction_type = detect_junction_type(prev_on_junction, path, SL_sensor, SR_sensor)
+        junction_type = detect_junction_type(memory["prev_on_junction"], path, SL_sensor, SR_sensor)
     else:
         junction_type = Junctions.nil
     if mode == Mode.start():
@@ -71,105 +88,105 @@ def mapping(previous_state, SL, SR, mode, direction):
         elif previous_state == Location.rack_orange_L:
             if direction == Direction.cw:
                 if junction_type == Junctions.RL:
-                    rack_branches_OL = 0
-                    prev_elevator_state = Elevator.none
+                    memory["rack_branches_OL"] = 0
+                    memory["prev_elevator_state"] = Elevator.none
                     return Location.elevator_low
                 elif junction_type == Junctions.R:
-                    rack_branches_OL += 1
+                    memory["rack_branches_OL"] += 1
                 return Location.rack_orange_L
             if direction == Direction.acw:
                 if junction_type == Junctions.L:
-                    rack_branches_OL -= 1
-                if rack_branches_OL == -6:
-                    rack_branches_OL = 0
+                    memory["rack_branches_OL"] -= 1
+                if memory["rack_branches_OL"] == -6:
+                    memory["rack_branches_OL"] = 0
                     return Location.unloading()
                 return Location.rack_orange_L
 
         elif previous_state == Location.rack_purple_L:
             if direction == Direction.acw:
                 if junction_type == Junctions.RL:
-                    rack_branches_PL = 0
-                    prev_elevator_state = Elevator.none
+                    memory["rack_branches_PL"] = 0
+                    memory["prev_elevator_state"] = Elevator.none
                     return Location.elevator_low
                 elif junction_type == Junctions.L:
-                    rack_branches_PL += 1
+                    memory["rack_branches_PL"] += 1
                 return Location.rack_purple_L
             if direction == Direction.cw:
                 if junction_type == Junctions.R:
-                    rack_branches_PL -= 1
-                if rack_branches_PL == -6:
-                    rack_branches_PL = 0
+                    memory["rack_branches_PL"] -= 1
+                if memory["rack_branches_PL"] == -6:
+                    memory["rack_branches_PL"] = 0
                     return Location.unloading()
                 return Location.rack_purple_L
             
         elif previous_state == Location.elevator_low:
-            if prev_elevator_state == Elevator.none:
+            if memory["prev_elevator_state"] == Elevator.none:
                 if direction == Direction.cw:
                     if junction_type == Junctions.R:
-                        elevator_low_branches += 1
-                        if abs(elevator_low_branches) == 2 and take_a_turn() == True:
-                            elevator_low_branches = 0
-                            prev_elevator_state = Elevator.low
+                        memory["elevator_low_branches"] += 1
+                        if abs(memory["elevator_low_branches"]) == 2 and take_a_turn() == True:
+                            memory["elevator_low_branches"] = 0
+                            memory["prev_elevator_state"] = Elevator.low
                             return Location.elevator
                     elif junction_type == Junctions.RL:
-                        elevator_low_branches = 0
+                        memory["elevator_low_branches"] = 0
                         return Location.rack_purple_L
                     return Location.elevator_low
                 if direction == Direction.acw:
                     if junction_type == Junctions.L:
-                        elevator_low_branches -= 1
-                        if abs(elevator_low_branches) == 2 and take_a_turn() == True:
-                            elevator_low_branches = 0
-                            prev_elevator_state = Elevator.low
+                        memory["elevator_low_branches"] -= 1
+                        if abs(memory["elevator_low_branches"]) == 2 and take_a_turn() == True:
+                            memory["elevator_low_branches"] = 0
+                            memory["prev_elevator_state"] = Elevator.low
                             return Location.elevator
                     elif junction_type == Junctions.RL:
-                        elevator_low_branches = 0
+                        memory["elevator_low_branches"] = 0
                         return Location.rack_orange_L
             else:
                 if junction_type == (Junctions.R or Junctions.L):
                     #I am writing this on the assumption that once the bot reaches the lower floor T it will NOt suddenly turn 180 and go back up because it makes no sense.
                     #I have also assumed that the prev_on_junction thing will avoid double counting the same T junction after rotation.
-                    prev_elevator_state == Elevator.none
+                    memory["prev_elevator_state"] = Elevator.none
             return Location.elevator_low
             
         elif previous_state == Location.elevator:
             if junction_type == Junctions.RL:
-                if prev_elevator_state == Elevator.low:
+                if memory["prev_elevator_state"] == Elevator.low:
                     # I dont know whether the T junction right after turn will trigger this condition as well.
-                    prev_elevator_state = Elevator.high
+                    memory["prev_elevator_state"] = Elevator.high
                     return Location.elevator_up
-                elif prev_elevator_state == Elevator.high:
-                    prev_elevator_state = Elevator.low
+                elif memory["prev_elevator_state"] == Elevator.high:
+                    memory["prev_elevator_state"] = Elevator.low
                     return Location.elevator_low
             return Location.elevator
 
         elif previous_state == Location.elevator_up:
-            if prev_elevator_state == Elevator.none:
+            if memory["prev_elevator_state"] == Elevator.none:
                 if direction == Direction.cw:
                     if junction_type == Junctions.R:
-                        elevator_high_branches += 1
-                        if abs(elevator_high_branches) == 2 and take_a_turn() == True:
-                            elevator_high_branches = 0
-                            prev_elevator_state = Elevator.high
+                        memory["elevator_high_branches"] += 1
+                        if abs(memory["elevator_high_branches"]) == 2 and take_a_turn() == True:
+                            memory["elevator_high_branches"] = 0
+                            memory["prev_elevator_state"] = Elevator.high
                             return Location.elevator
                     elif junction_type == Junctions.L:
-                        elevator_high_branches = 0
+                        memory["elevator_high_branches"] = 0
                         return Location.rack_orange_U
                     return Location.elevator_up
                 if direction == Direction.acw:
                     if junction_type == Junctions.L:
-                        elevator_high_branches -= 1
-                        if abs(elevator_high_branches) == 2 and take_a_turn() == True:
-                            elevator_high_branches = 0
-                            prev_elevator_state = Elevator.high
+                        memory["elevator_high_branches"] -= 1
+                        if abs(memory["elevator_high_branches"]) == 2 and take_a_turn() == True:
+                            memory["elevator_high_branches"] = 0
+                            memory["prev_elevator_state"] = Elevator.high
                             return Location.elevator
                     elif junction_type == Junctions.R:
-                        elevator_low_branches = 0
+                        memory["elevator_high_branches"] = 0
                         return Location.rack_purple_U
             else:
                 if junction_type == (Junctions.R or Junctions.L):
-                    #I am writing this on the assumption that once the bot reaches the floor T it will NOt suddenly turn 180 and go back up because it makes no sense.
-                    prev_elevator_state == Elevator.none
+                    #I am writing this on the assumption that once the bot reaches the upper floor T it will NOt suddenly turn 180 and go back down because it makes no sense.
+                    memory["prev_elevator_state"] = Elevator.none
             return Location.elevator_up
 
         elif previous_state == Location.rack_orange_U:
