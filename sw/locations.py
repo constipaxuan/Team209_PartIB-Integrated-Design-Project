@@ -1,8 +1,8 @@
 from enum import Enum
 
-class Path(Enum):
-    line = 1
-    junction = 2
+class Action(Enum):
+    follow = 1
+    turning = 2
 
 class Location(Enum):
     start = 0
