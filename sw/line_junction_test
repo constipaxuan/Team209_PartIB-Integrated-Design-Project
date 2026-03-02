@@ -1,9 +1,15 @@
 #import utime
 
 from machine import Pin, PWM
-from utime import sleep
+from utime import sleep, sleep_ms
 from enum import Enum
-from start import update_start_T_count, get_out_of_box
+
+
+class Mode(Enum):
+    start = 0
+    search = 1
+    delivery = 2
+
 class Motion(Enum):
     follow = 1
     turning = 2
@@ -48,6 +54,9 @@ SR_sensor = Pin(SR_pin, Pin.IN)
 prev_on_junction = False
 new_junction = False
 motion = Motion.follow
+mode = Mode.start
+counting = True
+start_T_shape_count = 0
 
 #centering code
 def line_follow_step(S1, S2):
@@ -100,6 +109,50 @@ def turn(junction_type):
     motor_r.Forward(speed = base)
 
 
+def update_start_T_count(SL, SR):
+    global start_T_shape_count, counting
+    if SL == 1 and SR == 1 and counting:
+        start_T_shape_count += 1
+        counting = False # Latch on
+        print(f"Junction Detected! Total: {start_T_shape_count}")
+    elif SL == 0 and SR == 0:
+        counting = True # Ready for next junction
+
+def get_out_of_box(SL, SR):
+    # --- Main Mission Loop ---
+    base = 70
+    while True:
+
+        S1 = S1_sensor.value()
+        S2 = S2_sensor.value()
+        SL = SL_sensor.value()
+        SR = SR_sensor.value()
+
+        update_start_T_count(SL, SR)
+        
+        # State 1: Drive out of the box, drive straight
+        if start_T_shape_count < 2:
+            line_follow_step(S1, S2)
+
+        # State 2: Hit second T shape, turn clockwise
+        elif start_T_shape_count == 2:
+            print("Turning Clockwise into corridor...")
+            motor_l.Forward(base)
+            motor_r.Reverse(base)
+            sleep_ms(600) # Adjust this time so it clears the T-junction
+            line_follow_step(S1, S2)
+            start_T_shape_count = 2.1 # Increment to avoid re-triggering this state
+            
+        # State 3: Hit third T shape, turn anti-clockwise
+        elif start_T_shape_count > 3:
+            print("Turning Anti-clockwise into rack...")
+            motor_l.Reverse(base)
+            motor_r.Forward(base)
+            sleep_ms(600)
+            line_follow_step(S1, S2)
+            print("Arrived at the Purple Rack.")
+            break # Exit this navigation loop to start scanning
+
 
 while True:
     S1 = S1_sensor.value()
@@ -109,15 +162,21 @@ while True:
 
     on_junction = (SL == 1 or SR == 1)
     new_junction = (not prev_on_junction) and on_junction
-    if motion == Motion.follow:
-        if new_junction:
-            sleep(0.05)
-            junction_type = detect_junction_type(SL, SR)
-            motion = Motion.turning
-        else:
-            line_follow_step(S1, S2)
-    elif motion == Motion.turning:
-        turn(junction_type)
-        motion = Motion.follow
-    prev_on_junction = on_junction
+    if mode == Mode.start:
+       get_out_of_box(SL, SR)
+       mode = Mode.search
+    else:
+        if motion == Motion.follow:
+            if new_junction:
+                sleep(0.05)
+                SL = SL_sensor.value()
+                SR = SR_sensor.value()
+                junction_type = detect_junction_type(SL, SR)
+                motion = Motion.turning
+            else:
+                line_follow_step(S1, S2)
+        elif motion == Motion.turning:
+            turn(junction_type)
+            motion = Motion.follow
+        prev_on_junction = on_junction
 
