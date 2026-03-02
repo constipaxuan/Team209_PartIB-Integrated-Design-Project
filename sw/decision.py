@@ -6,15 +6,11 @@ location = Location.start
 direction = Direction.cw
 mode = Mode.start
 
-# Note that take_next_turn has been defined in both here and map_state
-take_next_turn = False 
 
-#take_next_turn is decided in decision code. 
-def take_a_turn():
-    if detect_junction() == True and take_next_turn == True:
-        turn()
-        return True
-    return False
+
+# For testing purposes: make it turn at every junction (maybe R if RL detected?) Just to make sure our junction detection logic works.
+def take_a_turn(junction_event):
+    return junction_event
 
 def mode_tracker():
     pass
