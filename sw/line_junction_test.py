@@ -2,17 +2,17 @@
 
 from machine import Pin, PWM
 from utime import sleep, sleep_ms
-from enum import Enum
+#from enum import Enum
 from map_state import mapping
 from locations import Location, Direction
 
 
-class Mode(Enum):
+class Mode():
     start = 0
     search = 1
     delivery = 2
 
-class Motion(Enum):
+class Motion():
     follow = 1
     turning = 2
 
