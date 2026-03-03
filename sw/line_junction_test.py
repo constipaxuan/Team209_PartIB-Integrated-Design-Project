@@ -59,6 +59,7 @@ motion = Motion.follow
 mode = Mode.start
 counting = True
 start_T_shape_count = 0
+junction_type = Junctions.nil
 #direction = Direction.acw
 
 #centering code
