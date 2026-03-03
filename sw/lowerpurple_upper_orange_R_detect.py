@@ -56,6 +56,12 @@ def lowP_upperO_R_detect():
               # 2. Once picked up resistor, mark as cleared
                 slot_status[slot_counter] = 1
                 #add code to measure resistor color and store resistor color as a variable
+                motor_l.Reverse(speed = 50)
+                motor_r.Reverse(speed = 50) #After grabbing R, the car reverses
+                sleep(1) # might need to adjust time depending on how long it takes to reverse. Might also want to add some sort of feedback system to determine when to stop reversing instead of just relying on time.
+                motor_l.Forward(speed = 50)
+                motor_r.Reverse(speed = 50) #turns 90 degrees to face the dropoff bay
+                #add code for it to travel to dropoff bay
                 # add code to return the resistor and clear out the list
                 RHS_dropoff() # Call RHS dropoff to drop off resistor from RH bay
                 print(f"Slot {slot_counter} picked up and cleared.")
