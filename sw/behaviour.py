@@ -1,6 +1,6 @@
-from enum import Enum
+#from enum import Enum
 
-class Mode(Enum):
+class Mode():
     start = 0
     search = 1
     delivery = 2
