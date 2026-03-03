@@ -165,17 +165,19 @@ def get_out_of_box(SL, SR, start_T_shape_count, counting):
         elif start_T_shape_count == 2:
             print("Turning Clockwise into corridor...")
             motor_l.Forward(base)
-            motor_r.Reverse(base)
-            sleep_ms(600) # Adjust this time so it clears the T-junction
+            motor_r.Reverse(0)
+            sleep_ms(2400) # Adjust this time so it clears the T-junction
+            motor_l.Forward(base)
+            motor_r.Forward(base)
             line_follow_step(S1, S2)
             start_T_shape_count = 2.1 # Increment to avoid re-triggering this state
             
         # State 3: Hit third T shape, turn anti-clockwise
         elif start_T_shape_count > 3:
             print("Turning Anti-clockwise into rack...")
-            motor_l.Reverse(base)
+            motor_l.Reverse(0)
             motor_r.Forward(base)
-            sleep_ms(600)
+            sleep_ms(1200)
             line_follow_step(S1, S2)
             print("Arrived at the Purple Rack.")
             break # Exit this navigation loop to start scanning
