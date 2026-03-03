@@ -181,9 +181,15 @@ def get_out_of_box(SL, SR, start_T_shape_count, counting):
         # State 3: Hit third T shape, turn anti-clockwise
         elif start_T_shape_count > 3:
             print("Turning Anti-clockwise into rack...")
-            motor_l.Reverse(base)
-            motor_r.Forward(base)
-            sleep_ms(600)
+            while True:
+               S1 = S1_sensor.value()
+               S2 = S2_sensor.value()
+               motor_l.Reverse(base)
+               motor_r.Forward(base)
+
+               if S1 == 1 or S2 == 1:
+                  break
+            #sleep_ms(600)
             line_follow_step(S1, S2)
             print("Arrived at the Purple Rack.")
             break # Exit this navigation loop to start scanning
