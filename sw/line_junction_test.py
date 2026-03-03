@@ -134,8 +134,8 @@ def turn(junction_type):
     motor_r.Forward(speed = base) 
 
 
-def update_start_T_count(SL, SR):
-    global start_T_shape_count, counting
+def update_start_T_count(SL, SR, start_T_shape_count, counting):
+    #global start_T_shape_count, counting
     if SL == 1 and SR == 1 and counting:
         start_T_shape_count += 1
         counting = False # Latch on
@@ -143,7 +143,7 @@ def update_start_T_count(SL, SR):
     elif SL == 0 and SR == 0:
         counting = True # Ready for next junction
 
-def get_out_of_box(SL, SR):
+def get_out_of_box(SL, SR, start_T_shape_count, counting):
     # --- Main Mission Loop ---
     base = 70
     while True:
@@ -189,7 +189,7 @@ while True:
     new_junction = (not prev_on_junction) and on_junction
 
     if mode == Mode.start:
-       get_out_of_box(SL, SR)
+       get_out_of_box(SL, SR, start_T_shape_count, counting)
        mode = Mode.search
     else:
         if motion == Motion.follow:
