@@ -34,7 +34,7 @@ class Motor:
         self.mDir.value(1)
         self.pwm.duty_u16(int(65535 * speed / 100))
 
-class Junctions(Enum):
+class Junctions():
     R = 1
     L = 2
     RL = 3
@@ -59,6 +59,7 @@ motion = Motion.follow
 mode = Mode.start
 counting = True
 start_T_shape_count = 0
+junction_type = Junctions.nil
 #direction = Direction.acw
 
 #centering code
