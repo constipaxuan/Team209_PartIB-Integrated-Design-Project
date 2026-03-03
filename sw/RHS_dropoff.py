@@ -4,7 +4,7 @@ target_bay = 0
 drop_off_bay = 0
 counting_line = False # This is our "latch"
 dropped_off = False # This is to prevent the car from dropping off multiple times after reaching the target bay
-def RHS_dropoff():
+def RHS_dropoff(resistor_color):
     if resistor_color == 0: 
         target_bay = 0 # Red
     if resistor_color == 1: 

@@ -30,7 +30,7 @@ SR_sensor = Pin(SR_pin, Pin.IN)
 SL = SL_sensor.value()
 SR = SR_sensor.value()
 
-# Memory variables -- we want to store values across time steps.
+# Memory variables -- we want to store values across time steps. Will be moved to main code.
 
 memory = {
     "prev_on_junction" : False,
@@ -43,6 +43,7 @@ memory = {
     "prev_elevator_state" : Elevator.none
 }
 
+#Will be moved to main code
 def init_memory():
     return {
         "prev_on_junction": False,
@@ -62,16 +63,20 @@ def init_memory():
 #    prev_on_junction = (SL == 1 or SR == 1)
 
 #include in main while loop 
-junction_event = detect_junction(memory["prev_on_junction"], SL_sensor, SR_sensor)
+on_junction = (SL == 1 or SR == 1)
+new_junction = (not memory["prev_on_junction"] and on_junction)
 
 
-# Broken down into 3 modes.
-def mapping(previous_state, SL, SR, mode, direction, junction_event):
+def mapping(previous_state, mode, direction, new_junction):
     #Only call once per cycle. 
-    if junction_event:
+
+    # between these 2 comments: move to main while loop in top_level
+    if new_junction:
         junction_type = detect_junction_type(memory["prev_on_junction"], path, SL_sensor, SR_sensor)
     else:
         junction_type = Junctions.nil
+    # end
+
     if mode == Mode.start():
             return Location.start
     if mode == Mode.search():
@@ -184,7 +189,7 @@ def mapping(previous_state, SL, SR, mode, direction, junction_event):
                         memory["elevator_high_branches"] = 0
                         return Location.rack_purple_U
             else:
-                if junction_type == (Junctions.R or Junctions.L):
+                if junction_type == Junctions.R or junction_type == Junctions.L:
                     #I am writing this on the assumption that once the bot reaches the upper floor T it will NOt suddenly turn 180 and go back down because it makes no sense.
                     memory["prev_elevator_state"] = Elevator.none
             return Location.elevator_up
