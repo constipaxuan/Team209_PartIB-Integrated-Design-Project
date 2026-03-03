@@ -153,7 +153,7 @@ def get_out_of_box(SL, SR, start_T_shape_count, counting):
         SL = SL_sensor.value()
         SR = SR_sensor.value()
 
-        update_start_T_count(SL, SR)
+        update_start_T_count(SL, SR, start_T_shape_count, counting)
         
         # State 1: Drive out of the box, drive straight
         if start_T_shape_count < 2:
