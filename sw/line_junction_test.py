@@ -3,8 +3,7 @@
 from machine import Pin, PWM
 from utime import sleep, sleep_ms
 #from enum import Enum
-from map_state import mapping
-from locations import Location, Direction
+
 
 
 class Mode():
@@ -60,8 +59,7 @@ mode = Mode.start
 counting = True
 start_T_shape_count = 0
 junction_type = Junctions.nil
-location = Location.start
-direction = Direction.acw
+
 
 #centering code
 def line_follow_step(S1, S2):
@@ -209,7 +207,7 @@ while True:
        mode = Mode.search
     else:
         if motion == Motion.follow:
-            if new_junction and location == Location.elevator_low:
+            if new_junction:
                 sleep(0.05)
                 SL = SL_sensor.value()
                 SR = SR_sensor.value()
