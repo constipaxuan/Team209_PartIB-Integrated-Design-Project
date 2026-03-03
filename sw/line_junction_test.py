@@ -142,6 +142,8 @@ def update_start_T_count(SL, SR, start_T_shape_count, counting):
         print(f"Junction Detected! Total: {start_T_shape_count}")
     elif SL == 0 and SR == 0:
         counting = True # Ready for next junction
+    
+    return start_T_shape_count, counting
 
 def get_out_of_box(SL, SR, start_T_shape_count, counting):
     # --- Main Mission Loop ---
@@ -153,7 +155,7 @@ def get_out_of_box(SL, SR, start_T_shape_count, counting):
         SL = SL_sensor.value()
         SR = SR_sensor.value()
 
-        update_start_T_count(SL, SR, start_T_shape_count, counting)
+        start_T_shape_count, counting = update_start_T_count(SL, SR, start_T_shape_count, counting)
         
         # State 1: Drive out of the box, drive straight
         if start_T_shape_count < 2:
