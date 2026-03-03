@@ -34,7 +34,7 @@ class Motor:
         self.mDir.value(1)
         self.pwm.duty_u16(int(65535 * speed / 100))
 
-class Junctions(Enum):
+class Junctions():
     R = 1
     L = 2
     RL = 3
