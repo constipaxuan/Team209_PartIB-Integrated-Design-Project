@@ -85,3 +85,6 @@ def turn(junction_type):
     sleep(1) # might need to adjust time depending on how long it takes to turn 90 degrees. Might also want to add some sort of feedback system to determine when to stop turning instead of just relying on time.
     motor_l.Forward(speed = base)
     motor_r.Forward(speed = base)
+  #if junction_type == Junctions.RL:
+    #can decide to turn left or right
+    #let it turn 180 degrees. 
