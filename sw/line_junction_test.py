@@ -3,8 +3,8 @@
 from machine import Pin, PWM
 from utime import sleep, sleep_ms
 #from enum import Enum
-#from map_state import mapping
-#from locations import Location, Direction
+from map_state import mapping
+from locations import Location, Direction
 
 
 class Mode():
@@ -60,7 +60,8 @@ mode = Mode.start
 counting = True
 start_T_shape_count = 0
 junction_type = Junctions.nil
-#direction = Direction.acw
+location = Location.start
+direction = Direction.acw
 
 #centering code
 def line_follow_step(S1, S2):
@@ -163,10 +164,17 @@ def get_out_of_box(SL, SR, start_T_shape_count, counting):
 
         # State 2: Hit second T shape, turn clockwise
         elif start_T_shape_count == 2:
-            print("Turning Clockwise into corridor...")
-            motor_l.Forward(base)
-            motor_r.Reverse(base)
-            sleep_ms(600) # Adjust this time so it clears the T-junction
+            print("Turning Clockwise into purple corridor...")
+            while True:
+               S1 = S1_sensor.value()
+               S2 = S2_sensor.value()
+            
+               motor_l.Forward(base)
+               motor_r.Reverse(base)
+
+               if S1 == 1 or S2 == 1:
+                  break
+            #sleep_ms(600) # Adjust this time so it clears the T-junction
             line_follow_step(S1, S2)
             start_T_shape_count = 2.1 # Increment to avoid re-triggering this state
             
@@ -195,7 +203,7 @@ while True:
        mode = Mode.search
     else:
         if motion == Motion.follow:
-            if new_junction:
+            if new_junction and location == Location.elevator_low:
                 sleep(0.05)
                 SL = SL_sensor.value()
                 SR = SR_sensor.value()
