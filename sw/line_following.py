@@ -44,6 +44,7 @@ def line_follow_step(path, S1_sensor, S2_sensor):
  
   return Path.line
 
+
 #might want to modify so that SL and SR are taken as inputs instead. so we can easily call without having to redefine variables.
 def detect_junction(prev_on_junction, SL_sensor, SR_sensor):
     SL = SL_sensor.value()

@@ -1,10 +1,10 @@
 #from enum import Enum
 
-class Action():
+class Action:
     follow = 1
     turning = 2
 
-class Location():
+class Location:
     start = 0
     unloading = 1
     elevator_low = 2
@@ -15,18 +15,18 @@ class Location():
     elevator = 7
     elevator_up = 8
 
-class Unloading_States():
+class Unloading_States:
     none = 0
     red = 1
     yellow = 2
     green = 3
     blue = 4
     
-class Direction():
+class Direction:
     cw = 1
     acw = 2
 
-class Junctions():
+class Junctions:
     R = 1
     L = 2
     RL = 3
