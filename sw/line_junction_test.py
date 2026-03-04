@@ -180,6 +180,8 @@ def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, counting, turn_complete,
             start_state = Start_States.turn1
             motor_l.Forward(speed = 0)
             motor_r.Forward(speed = 0)
+            turn_state = Turn_State.turn_search
+            turn_complete = False
         else:
             line_follow_step(S1, S2)
 
@@ -187,7 +189,7 @@ def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, counting, turn_complete,
 
     # State 2: Hit second T shape, turn clockwise
     if start_state == Start_States.turn1:
-        print("Turning Clockwise into purple corridor...")
+        print("Turn State: {turn_state}")
         if not turn_complete:
             turn_complete, turn_state = turn_v2(Turn_Direction.right, S1, S2, turn_state)
         else:
@@ -199,10 +201,12 @@ def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, counting, turn_complete,
     
     if start_state == Start_States.turn1_done:
         if start_T_shape_count == 3:
-            print("Turning Anti-clockwise into rack...")
+            print("Turning Anti-clockwise into purple corridoor...")
             start_state = Start_States.turn2
             motor_l.Forward(speed = 0)
             motor_r.Forward(speed = 0)
+            turn_state = Turn_State.turn_search
+            turn_complete = False
         else:
             line_follow_step(S1, S2)
         
