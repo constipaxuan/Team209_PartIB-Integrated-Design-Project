@@ -114,6 +114,12 @@ def detect_junction_type(SL, SR):
     done: S1 has unseen the line. Start line following. End when fully aligned.
 '''
 def turn_v2(turn_dir, S1, S2, turn_state):
+    if turn_dir == Turn_Direction.left:
+        if S1 == 0 and S2 == 1:
+            return False, Turn_State.done
+    elif turn_dir == Turn_Direction.right:
+        if S1 == 1 and S2 == 0:
+            return False, Turn_State.done
     if turn_state == Turn_State.turn_search:
         #still trying to find the line
         if turn_dir == Turn_Direction.left:
@@ -121,15 +127,12 @@ def turn_v2(turn_dir, S1, S2, turn_state):
             motor_r.Forward(speed = 0)
             if S1 == 1:
                 turn_state = Turn_State.turn_cross
-            if S1 == 0 and S2 == 1:
-                turn_state = Turn_State.done
         elif turn_dir == Turn_Direction.right:
             motor_l.Forward(speed = 0)
             motor_r.Forward(speed = 50)
             if S2 == 1:
                 turn_state = Turn_State.turn_cross
-            if S2 == 0 and S1 == 1:
-                turn_state = Turn_State.done
+           
         return False, turn_state
     
     if turn_state == Turn_State.turn_cross:
