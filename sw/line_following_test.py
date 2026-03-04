@@ -37,9 +37,7 @@ S2_pin = 20
 S1_sensor = Pin(S1_pin, Pin.IN)
 S2_sensor = Pin(S2_pin, Pin.IN)
 
-def line_follow_step(S1, S2):
-  base = 60
-  corr = 20
+def line_follow_step(S1, S2, base, corr):
   
   if (S1 == 0 and S2 == 1): # corrects left veer
     motor_r.Forward(speed = corr) # speed ranges from 0 to 100 as defined
@@ -54,4 +52,4 @@ def line_follow_step(S1, S2):
 while True:
     S1 = S1_sensor.value()
     S2 = S2_sensor.value()
-    line_follow_step(S1, S2) 
+    line_follow_step(S1, S2, 60, 20) 

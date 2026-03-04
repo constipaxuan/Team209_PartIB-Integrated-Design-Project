@@ -58,10 +58,8 @@ turn_state = Turn_State.turn_search
 start_state = Start_States.start
 
 #centering code
-def line_follow_step(S1, S2):
-  base = 70
-  corr = 40
-  
+def line_follow_step(S1, S2, base, corr):
+
   if (S1 == 0 and S2 == 1): # corrects left veer
     motor_r.Forward(speed = corr) # speed ranges from 0 to 100 as defined
     motor_l.Forward(speed = base)
@@ -113,6 +111,77 @@ def detect_junction_type(SL, SR):
     turn_cross: Has seen line, sensor that seen line has yet to unsee. When S1 unsees line the bot is in a safe geometry to start line following
     done: S1 has unseen the line. Start line following. End when fully aligned.
 '''
+def turn_v3(turn_dir, S1, S2, turn_state):
+    if turn_state == Turn_State.turn_search:
+        #Stop when S1 and S2 straddle the line.
+        if turn_dir == Turn_Direction.left:
+            if (S1 == 0 and S2 == 1):
+                turn_state = Turn_State.turn_cross
+                motor_l.Forward(speed = 0) # stops when it has seen the line.
+                motor_r.Forward(speed = 0)
+            else:
+                motor_l.Forward(speed = 30)
+                motor_r.Forward(speed = 0)
+        elif turn_dir == Turn_Direction.right:
+            if (S1 == 1 and S2 == 0):
+                turn_state = Turn_State.turn_cross
+                motor_l.Forward(speed = 0)
+                motor_r.Forward(speed = 0)
+            else:
+                motor_l.Forward(speed = 0)
+                motor_r.Forward(speed = 30)
+        
+        return False, turn_state
+
+    
+    # Want outer sensor to lose the line again -- this is half_done state.
+    if turn_state == Turn_State.turn_cross:
+        if turn_dir == Turn_Direction.left:
+            if S2 == 0:
+                turn_state = Turn_State.half_done
+            else:
+                motor_l.Forward(speed = 30)
+                motor_r.Forward(speed = 0)
+        elif turn_dir == Turn_Direction.right:
+            if S1 == 0:
+                turn_state = Turn_State.half_done
+            else:
+                motor_l.Forward(speed = 0)
+                motor_r.Forward(speed = 30)
+        
+        return False, turn_state
+    
+    # Stop when outer sensor reacquires the line -- transition to done state
+    if turn_state == Turn_State.half_done:
+        if turn_dir == Turn_Direction.left:
+            if S2 == 1:
+                turn_state = Turn_State.done
+                motor_l.Forward(speed = 0)
+                motor_r.Forward(speed = 0)
+            else:
+                motor_l.Forward(speed = 30)
+                motor_r.Forward(speed = 0)
+        elif turn_dir == Turn_Direction.right:
+            if S1 == 1:
+                turn_state = Turn_State.done
+                motor_l.Forward(speed = 0)
+                motor_r.Forward(speed = 0)
+            else:
+                motor_l.Forward(speed = 0)
+                motor_r.Forward(speed = 30)
+        
+        return False, turn_state
+    
+    if turn_state == Turn_State.done:
+        if not (S1 == 0 and S2 == 0):
+            line_follow_step(S1, S2, 60, 10)
+            return False, turn_state
+        if (S1 == 0 and S2 == 0):
+            return True, Turn_State.turn_search
+            
+
+            
+
 
 def turn_v2(turn_dir, S1, S2, turn_state):
     
@@ -123,15 +192,15 @@ def turn_v2(turn_dir, S1, S2, turn_state):
             motor_r.Forward(speed = 0)
             if S1 == 1:
                 turn_state = Turn_State.turn_cross
-                motor_l.Forward(speed = 0) # stops when it has seen the line.
-                motor_r.Forward(speed = 0)
+                #motor_l.Forward(speed = 0) # stops when it has seen the line.
+                #motor_r.Forward(speed = 0)
         elif turn_dir == Turn_Direction.right:
             motor_l.Forward(speed = 0)
             motor_r.Forward(speed = 50)
             if S2 == 1:
                 turn_state = Turn_State.turn_cross
-                motor_l.Forward(speed = 0)
-                motor_r.Forward(speed = 0)
+                #motor_l.Forward(speed = 0)
+                #motor_r.Forward(speed = 0)
             
         return False, turn_state
     
@@ -140,16 +209,16 @@ def turn_v2(turn_dir, S1, S2, turn_state):
         if turn_dir == Turn_Direction.left:
             if S1 == 0:
                 turn_state = Turn_State.half_done
-                motor_l.Forward(speed = 0)
-                motor_r.Forward(speed = 0)
+                #motor_l.Forward(speed = 0)
+                #motor_r.Forward(speed = 0)
             else:
                 motor_l.Forward(speed = 50)
                 motor_r.Forward(speed = 0)
         elif turn_dir == Turn_Direction.right:
             if S2 == 0:
                 turn_state = Turn_State.half_done  
-                motor_l.Forward(speed = 0)
-                motor_r.Forward(speed = 0)   
+                #motor_l.Forward(speed = 0)
+                #motor_r.Forward(speed = 0)   
             else:
                 motor_l.Forward(speed = 0)
                 motor_r.Forward(speed = 50)  
@@ -158,7 +227,7 @@ def turn_v2(turn_dir, S1, S2, turn_state):
     if turn_state == Turn_State.half_done:
     
         if turn_dir == Turn_Direction.left:
-            if S2 == 1:
+            if (S1 == 0 and S2 == 1):
                 motor_l.Forward(speed = 0)
                 motor_r.Forward(speed = 0)
                 turn_state = Turn_State.done
@@ -166,7 +235,7 @@ def turn_v2(turn_dir, S1, S2, turn_state):
                 motor_l.Forward(speed = 50)
                 motor_r.Forward(speed = 0)
         elif turn_dir == Turn_Direction.right:
-            if S1 == 1:
+            if (S1 == 1 and S2 == 0):
                 motor_l.Forward(speed = 0)
                 motor_r.Forward(speed = 0)
                 turn_state = Turn_State.done     
@@ -176,7 +245,11 @@ def turn_v2(turn_dir, S1, S2, turn_state):
         return False, turn_state
 
     if turn_state == Turn_State.done:
-        return True, Turn_State.turn_search
+        if not (S1 == 0 and S2 == 0):
+            line_follow_step(S1, S2, 60, 0)
+            return False, turn_state
+        if (S1 == 0 and S2 == 0):
+            return True, Turn_State.turn_search
         
 
 # turn_complete, seen_line = turn_v2(turn_dir, S1, S2, turn_state)
@@ -186,7 +259,6 @@ def update_start_T_count(SL, SR, start_T_shape_count, counting):
     if SL == 1 and SR == 1 and counting:
         start_T_shape_count += 1
         counting = False # Latch on
-        print(f"Junction Detected! Total: {start_T_shape_count}")
     elif SL == 0 and SR == 0:
         counting = True # Ready for next junction
     
@@ -210,15 +282,15 @@ def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, counting, turn_complete,
             turn_state = Turn_State.turn_search
             turn_complete = False
         else:
-            line_follow_step(S1, S2)
+            line_follow_step(S1, S2, 60, 20)
 
         return start_T_shape_count, counting, start_state, turn_complete, turn_state, mode
 
     # State 2: Hit second T shape, turn clockwise
     if start_state == Start_States.turn1:
-        print(f"Turn State: {turn_state}")
+
         if not turn_complete:
-            turn_complete, turn_state = turn_v2(Turn_Direction.right, S1, S2, turn_state)
+            turn_complete, turn_state = turn_v3(Turn_Direction.right, S1, S2, turn_state)
         if turn_complete:
             start_state = Start_States.turn1_done
 
@@ -226,20 +298,20 @@ def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, counting, turn_complete,
     
     if start_state == Start_States.turn1_done:
         if start_T_shape_count == 3:
-            print("Turning Anti-clockwise into purple corridoor...")
+   
             start_state = Start_States.turn2
             motor_l.Forward(speed = 0)
             motor_r.Forward(speed = 0)
             turn_state = Turn_State.turn_search
             turn_complete = False
         else:
-            line_follow_step(S1, S2)
+            line_follow_step(S1, S2, 60, 20)
         
         return start_T_shape_count, counting, start_state, turn_complete, turn_state, mode
 
     if start_state == Start_States.turn2:
         if not turn_complete:
-            turn_complete, turn_state = turn_v2(Turn_Direction.left, S1, S2, turn_state)
+            turn_complete, turn_state = turn_v3(Turn_Direction.left, S1, S2, turn_state)
         if turn_complete:
             start_state = Start_States.turn2_done
             turn_complete = False
@@ -248,8 +320,7 @@ def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, counting, turn_complete,
         return start_T_shape_count, counting, start_state, turn_complete, turn_state, mode
     
     if start_state == Start_States.turn2_done:
-        line_follow_step(S1, S2)
-        print("Arrived at the Purple Rack.")
+        line_follow_step(S1, S2, 60, 20)
         mode = Mode.search
         return start_T_shape_count, counting, start_state, turn_complete, turn_state, mode
 
@@ -258,7 +329,7 @@ def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, counting, turn_complete,
 turn_complete = False
 turn_state = Turn_State.turn_search
 
-""" while True:
+while True:
     S1 = S1_sensor.value()
     S2 = S2_sensor.value()
     SL = SL_sensor.value()
@@ -277,18 +348,19 @@ turn_state = Turn_State.turn_search
                 motor_l.Forward(speed = 0)
                 motor_r.Forward(speed = 0)
                 junction_type = detect_junction_type(SL, SR)
-                print(f"Junction type: {junction_type}")
+                #print(f"Junction type: {junction_type}")
                     # this makes bot turn at EVERY junction.
                 motion = Motion.turning
             else:
-                line_follow_step(S1, S2)
+                line_follow_step(S1, S2, 60, 20)
         if motion == Motion.turning:
             if not turn_complete:
-                turn_complete, turn_state = turn_v2(turn_dir, S1, S2, turn_state)
+                turn_complete, turn_state = turn_v3(turn_dir, S1, S2, turn_state)
             else:
                 turn_complete = False
                 turn_state = Turn_State.turn_search
                 motion = Motion.follow
-        prev_on_junction = on_junction
-        #utime.sleep(0.01)  """
+    
+    prev_on_junction = on_junction
+
 
