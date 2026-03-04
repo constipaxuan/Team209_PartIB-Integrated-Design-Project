@@ -193,7 +193,7 @@ def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, counting, turn_complete,
 
     # State 2: Hit second T shape, turn clockwise
     if start_state == Start_States.turn1:
-        print("Turn State: {turn_state}")
+        print(f"Turn State: {turn_state}")
         if not turn_complete:
             turn_complete, turn_state = turn_v2(Turn_Direction.right, S1, S2, turn_state)
         else:
