@@ -1,7 +1,7 @@
 from test_motor import Motor
-from locations import Path, Junctions
+from locations import Junctions
 from time import sleep
-path = Path.line
+
 
 
 #need to map pins

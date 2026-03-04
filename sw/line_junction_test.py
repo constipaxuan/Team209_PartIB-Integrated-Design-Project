@@ -113,6 +113,7 @@ def detect_junction_type(SL, SR):
     turn_cross: Has seen line, sensor that seen line has yet to unsee. When S1 unsees line the bot is in a safe geometry to start line following
     done: S1 has unseen the line. Start line following. End when fully aligned.
 '''
+
 def turn_v2(turn_dir, S1, S2, turn_state):
     
     if turn_state == Turn_State.turn_search:
@@ -151,6 +152,7 @@ def turn_v2(turn_dir, S1, S2, turn_state):
         return False, turn_state
 
     if turn_state == Turn_State.half_done:
+    
         if turn_dir == Turn_Direction.left:
             if S2 == 1:
                 motor_l.Forward(speed = 0)
@@ -170,12 +172,7 @@ def turn_v2(turn_dir, S1, S2, turn_state):
         return False, turn_state
 
     if turn_state == Turn_State.done:
-        #  Start realigning
-        line_follow_step(S1, S2)
-        if S1 == 0 and S2 == 0:
-            print(f"turn complete!")
-            return True, Turn_State.turn_search
-        return False, turn_state
+        return True, Turn_State.turn_search
         
 
 # turn_complete, seen_line = turn_v2(turn_dir, S1, S2, turn_state)
@@ -218,9 +215,7 @@ def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, counting, turn_complete,
         print(f"Turn State: {turn_state}")
         if not turn_complete:
             turn_complete, turn_state = turn_v2(Turn_Direction.right, S1, S2, turn_state)
-        else:
-            turn_complete = False
-            turn_state = Turn_State.turn_search
+        if turn_complete:
             start_state = Start_States.turn1_done
 
         return start_T_shape_count, counting, start_state, turn_complete, turn_state, mode
@@ -241,10 +236,10 @@ def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, counting, turn_complete,
     if start_state == Start_States.turn2:
         if not turn_complete:
             turn_complete, turn_state = turn_v2(Turn_Direction.left, S1, S2, turn_state)
-        else:
+        if turn_complete:
+            start_state = Start_States.turn2_done
             turn_complete = False
             turn_state = Turn_State.turn_search
-            start_state = Start_States.turn2_done
 
         return start_T_shape_count, counting, start_state, turn_complete, turn_state, mode
     
@@ -259,7 +254,7 @@ def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, counting, turn_complete,
 turn_complete = False
 turn_state = Turn_State.turn_search
 
-while True:
+""" while True:
     S1 = S1_sensor.value()
     S2 = S2_sensor.value()
     SL = SL_sensor.value()
@@ -291,5 +286,5 @@ while True:
                 turn_state = Turn_State.turn_search
                 motion = Motion.follow
         prev_on_junction = on_junction
-        #utime.sleep(0.01) 
+        #utime.sleep(0.01)  """
 
