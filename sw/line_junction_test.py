@@ -255,7 +255,7 @@ def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, counting, turn_complete,
 turn_complete = False
 turn_state = Turn_State.turn_search
 
-while True:
+""" while True:
     S1 = S1_sensor.value()
     S2 = S2_sensor.value()
     SL = SL_sensor.value()
@@ -287,4 +287,5 @@ while True:
                 turn_state = Turn_State.turn_search
                 motion = Motion.follow
         prev_on_junction = on_junction
+        utime.sleep(0.01) """
 

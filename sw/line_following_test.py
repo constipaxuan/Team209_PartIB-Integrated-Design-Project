@@ -4,7 +4,7 @@ import utime
 
 from machine import Pin, PWM
 from utime import sleep
-from enum import Enum
+
 
 class Motor:
     def __init__(self, dirPin, PWMPin):
@@ -24,11 +24,7 @@ class Motor:
         self.mDir.value(1)
         self.pwm.duty_u16(int(65535 * speed / 100))
 
-class Junctions(Enum):
-    R = 1
-    L = 2
-    RL = 3
-    nil = 4
+
 
 
 
@@ -41,21 +37,25 @@ S2_pin = 11
 S1_sensor = Pin(S1_pin, Pin.IN)
 S2_sensor = Pin(S2_pin, Pin.IN)
 
-def line_follow_step(S1_sensor, S2_sensor):
-  S1 = S1_sensor.value()
-  S2 = S2_sensor.value()
+def line_follow_step(S1, S2):
   base = 70
   corr = 40
+  
   if (S1 == 0 and S2 == 1): # corrects left veer
     motor_r.Forward(speed = corr) # speed ranges from 0 to 100 as defined
     motor_l.Forward(speed = base)
+    print("veering left!")
   elif (S1 == 1 and S2 == 0): #corrects right veer
     motor_l.Forward(speed = corr)
     motor_r.Forward(speed = base)
+    print("veering right!")
   else: #centered 
     motor_r.Forward(speed = base)
     motor_l.Forward(speed = base)
+    print("centered")
 
 while True:
-  line_follow_step(S1_sensor, S2_sensor)
+  S1 = S1_sensor.value()
+  S2 = S2_sensor.value()
+  line_follow_step(S1, S2)
   utime.sleep(0.01)
