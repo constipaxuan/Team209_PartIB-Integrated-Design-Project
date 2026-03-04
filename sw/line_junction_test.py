@@ -120,20 +120,21 @@ def turn_v2(turn_dir, S1, S2, turn_state):
         if turn_dir == Turn_Direction.left:
             motor_l.Forward(speed = 50)
             motor_r.Forward(speed = 0)
-            if S1 == 0 and S2 == 1:
-                return False, Turn_State.done
-            elif S1 == 1:
+            #if S1 == 0 and S2 == 1:
+                #return False, Turn_State.done
+            if S1 == 1:
                 turn_state = Turn_State.turn_cross
         elif turn_dir == Turn_Direction.right:
             motor_l.Forward(speed = 0)
             motor_r.Forward(speed = 50)
-            if S1 == 1 and S2 == 0:
-                return False, Turn_State.done
+            #if S1 == 1 and S2 == 0:
+                #return False, Turn_State.done
             if S2 == 1:
                 turn_state = Turn_State.turn_cross
             
         return False, turn_state
     
+    #Has found the line.
     if turn_state == Turn_State.turn_cross:
         if turn_dir == Turn_Direction.left:
             if S1 == 0:
@@ -170,8 +171,6 @@ def turn_v2(turn_dir, S1, S2, turn_state):
 
     if turn_state == Turn_State.done:
         #  Start realigning
-        motor_l.Forward(speed = 0)
-        motor_r.Forward(speed = 0)
         line_follow_step(S1, S2)
         if S1 == 0 and S2 == 0:
             print(f"turn complete!")
@@ -205,8 +204,8 @@ def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, counting, turn_complete,
     #if start_T_shape_count < 2:
         if start_T_shape_count == 2:
             start_state = Start_States.turn1
-            #motor_l.Forward(speed = 0)
-            #motor_r.Forward(speed = 0)
+            motor_l.Forward(speed = 0)
+            motor_r.Forward(speed = 0)
             turn_state = Turn_State.turn_search
             turn_complete = False
         else:
@@ -230,8 +229,8 @@ def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, counting, turn_complete,
         if start_T_shape_count == 3:
             print("Turning Anti-clockwise into purple corridoor...")
             start_state = Start_States.turn2
-            #motor_l.Forward(speed = 0)
-            #motor_r.Forward(speed = 0)
+            motor_l.Forward(speed = 0)
+            motor_r.Forward(speed = 0)
             turn_state = Turn_State.turn_search
             turn_complete = False
         else:
@@ -276,8 +275,8 @@ while True:
             if new_junction:
                 SL = SL_sensor.value()
                 SR = SR_sensor.value()
-                #motor_l.Forward(speed = 0)
-                #motor_r.Forward(speed = 0)
+                motor_l.Forward(speed = 0)
+                motor_r.Forward(speed = 0)
                 junction_type = detect_junction_type(SL, SR)
                 print(f"Junction type: {junction_type}")
                     # this makes bot turn at EVERY junction.
