@@ -13,7 +13,8 @@ class Turn_Direction:
 class Turn_State:
     turn_search = 0
     turn_cross = 1
-    done = 2
+    half_done = 2
+    done = 3
 
 class Start_States:
     start = 0

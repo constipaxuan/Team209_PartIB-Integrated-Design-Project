@@ -135,12 +135,27 @@ def turn_v2(turn_dir, S1, S2, turn_state):
     if turn_state == Turn_State.turn_cross:
         if turn_dir == Turn_Direction.left:
             if S1 == 0:
-                turn_state = Turn_State.done
+                turn_state = Turn_State.half_done
             else:
                 motor_l.Forward(speed = 50)
                 motor_r.Forward(speed = 0)
         elif turn_dir == Turn_Direction.right:
             if S2 == 0:
+                turn_state = Turn_State.half_done     
+            else:
+                motor_l.Forward(speed = 0)
+                motor_r.Forward(speed = 50)  
+        return False, turn_state
+
+    if turn_state == Turn_State.half_done:
+        if turn_dir == Turn_Direction.left:
+            if S2 == 1:
+                turn_state = Turn_State.done
+            else:
+                motor_l.Forward(speed = 50)
+                motor_r.Forward(speed = 0)
+        elif turn_dir == Turn_Direction.right:
+            if S1 == 1:
                 turn_state = Turn_State.done     
             else:
                 motor_l.Forward(speed = 0)
