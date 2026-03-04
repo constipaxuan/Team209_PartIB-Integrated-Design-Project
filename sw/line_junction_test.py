@@ -121,17 +121,17 @@ def turn_v2(turn_dir, S1, S2, turn_state):
         if turn_dir == Turn_Direction.left:
             motor_l.Forward(speed = 50)
             motor_r.Forward(speed = 0)
-            #if S1 == 0 and S2 == 1:
-                #return False, Turn_State.done
             if S1 == 1:
                 turn_state = Turn_State.turn_cross
+                motor_l.Forward(speed = 0) # stops when it has seen the line.
+                motor_r.Forward(speed = 0)
         elif turn_dir == Turn_Direction.right:
             motor_l.Forward(speed = 0)
             motor_r.Forward(speed = 50)
-            #if S1 == 1 and S2 == 0:
-                #return False, Turn_State.done
             if S2 == 1:
                 turn_state = Turn_State.turn_cross
+                motor_l.Forward(speed = 0)
+                motor_r.Forward(speed = 0)
             
         return False, turn_state
     
@@ -140,12 +140,16 @@ def turn_v2(turn_dir, S1, S2, turn_state):
         if turn_dir == Turn_Direction.left:
             if S1 == 0:
                 turn_state = Turn_State.half_done
+                motor_l.Forward(speed = 0)
+                motor_r.Forward(speed = 0)
             else:
                 motor_l.Forward(speed = 50)
                 motor_r.Forward(speed = 0)
         elif turn_dir == Turn_Direction.right:
             if S2 == 0:
-                turn_state = Turn_State.half_done     
+                turn_state = Turn_State.half_done  
+                motor_l.Forward(speed = 0)
+                motor_r.Forward(speed = 0)   
             else:
                 motor_l.Forward(speed = 0)
                 motor_r.Forward(speed = 50)  

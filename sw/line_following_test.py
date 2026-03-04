@@ -31,31 +31,27 @@ class Motor:
 motor_l = Motor(dirPin=4, PWMPin=5)
 motor_r = Motor(dirPin=7, PWMPin=6) 
 
-S1_pin = 10
-S2_pin = 11 
+S1_pin = 21
+S2_pin = 20 
 
 S1_sensor = Pin(S1_pin, Pin.IN)
 S2_sensor = Pin(S2_pin, Pin.IN)
 
 def line_follow_step(S1, S2):
-  base = 70
-  corr = 40
+  base = 60
+  corr = 20
   
   if (S1 == 0 and S2 == 1): # corrects left veer
     motor_r.Forward(speed = corr) # speed ranges from 0 to 100 as defined
     motor_l.Forward(speed = base)
-    print("veering left!")
   elif (S1 == 1 and S2 == 0): #corrects right veer
     motor_l.Forward(speed = corr)
     motor_r.Forward(speed = base)
-    print("veering right!")
   else: #centered 
     motor_r.Forward(speed = base)
     motor_l.Forward(speed = base)
-    print("centered")
 
-  while True:
-  S1 = S1_sensor.value()
-  S2 = S2_sensor.value()
-  line_follow_step(S1, S2)
-  utime.sleep(0.01) 
+while True:
+    S1 = S1_sensor.value()
+    S2 = S2_sensor.value()
+    line_follow_step(S1, S2) 
