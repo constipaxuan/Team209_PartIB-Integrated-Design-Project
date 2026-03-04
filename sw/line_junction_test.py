@@ -118,15 +118,15 @@ def turn_v2(turn_dir, S1, S2, turn_state):
     if turn_state == Turn_State.turn_search:
         #still trying to find the line
         if turn_dir == Turn_Direction.left:
-            motor_l.Forward(speed = 0)
-            motor_r.Forward(speed = 50)
+            motor_l.Forward(speed = 50)
+            motor_r.Forward(speed = 0)
             if S1 == 0 and S2 == 1:
                 return False, Turn_State.done
             elif S1 == 1:
                 turn_state = Turn_State.turn_cross
         elif turn_dir == Turn_Direction.right:
-            motor_l.Forward(speed = 50)
-            motor_r.Forward(speed = 0)
+            motor_l.Forward(speed = 0)
+            motor_r.Forward(speed = 50)
             if S1 == 1 and S2 == 0:
                 return False, Turn_State.done
             if S2 == 1:
@@ -139,14 +139,14 @@ def turn_v2(turn_dir, S1, S2, turn_state):
             if S1 == 0:
                 turn_state = Turn_State.half_done
             else:
-                motor_l.Forward(speed = 0)
-                motor_r.Forward(speed = 50)
+                motor_l.Forward(speed = 50)
+                motor_r.Forward(speed = 0)
         elif turn_dir == Turn_Direction.right:
             if S2 == 0:
                 turn_state = Turn_State.half_done     
             else:
-                motor_l.Forward(speed = 50)
-                motor_r.Forward(speed = 0)  
+                motor_l.Forward(speed = 0)
+                motor_r.Forward(speed = 50)  
         return False, turn_state
 
     if turn_state == Turn_State.half_done:
@@ -156,16 +156,16 @@ def turn_v2(turn_dir, S1, S2, turn_state):
                 motor_r.Forward(speed = 0)
                 turn_state = Turn_State.done
             else:
-                motor_l.Forward(speed = 0)
-                motor_r.Forward(speed = 50)
+                motor_l.Forward(speed = 50)
+                motor_r.Forward(speed = 0)
         elif turn_dir == Turn_Direction.right:
             if S1 == 1:
                 motor_l.Forward(speed = 0)
                 motor_r.Forward(speed = 0)
                 turn_state = Turn_State.done     
             else:
-                motor_l.Forward(speed = 50)
-                motor_r.Forward(speed = 0)  
+                motor_l.Forward(speed = 0)
+                motor_r.Forward(speed = 50)  
         return False, turn_state
 
     if turn_state == Turn_State.done:
