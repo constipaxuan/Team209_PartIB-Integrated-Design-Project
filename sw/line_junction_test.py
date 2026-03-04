@@ -114,25 +114,24 @@ def detect_junction_type(SL, SR):
     done: S1 has unseen the line. Start line following. End when fully aligned.
 '''
 def turn_v2(turn_dir, S1, S2, turn_state):
-    if turn_dir == Turn_Direction.left:
-        if S1 == 0 and S2 == 1:
-            return False, Turn_State.done
-    elif turn_dir == Turn_Direction.right:
-        if S1 == 1 and S2 == 0:
-            return False, Turn_State.done
+    
     if turn_state == Turn_State.turn_search:
         #still trying to find the line
         if turn_dir == Turn_Direction.left:
-            motor_l.Forward(speed = 50)
-            motor_r.Forward(speed = 0)
-            if S1 == 1:
-                turn_state = Turn_State.turn_cross
-        elif turn_dir == Turn_Direction.right:
             motor_l.Forward(speed = 0)
             motor_r.Forward(speed = 50)
+            if S1 == 0 and S2 == 1:
+                return False, Turn_State.done
+            elif S1 == 1:
+                turn_state = Turn_State.turn_cross
+        elif turn_dir == Turn_Direction.right:
+            motor_l.Forward(speed = 50)
+            motor_r.Forward(speed = 0)
+            if S1 == 1 and S2 == 0:
+                return False, Turn_State.done
             if S2 == 1:
                 turn_state = Turn_State.turn_cross
-           
+            
         return False, turn_state
     
     if turn_state == Turn_State.turn_cross:
@@ -140,33 +139,39 @@ def turn_v2(turn_dir, S1, S2, turn_state):
             if S1 == 0:
                 turn_state = Turn_State.half_done
             else:
-                motor_l.Forward(speed = 50)
-                motor_r.Forward(speed = 0)
+                motor_l.Forward(speed = 0)
+                motor_r.Forward(speed = 50)
         elif turn_dir == Turn_Direction.right:
             if S2 == 0:
                 turn_state = Turn_State.half_done     
             else:
-                motor_l.Forward(speed = 0)
-                motor_r.Forward(speed = 50)  
+                motor_l.Forward(speed = 50)
+                motor_r.Forward(speed = 0)  
         return False, turn_state
 
     if turn_state == Turn_State.half_done:
         if turn_dir == Turn_Direction.left:
             if S2 == 1:
+                motor_l.Forward(speed = 0)
+                motor_r.Forward(speed = 0)
                 turn_state = Turn_State.done
             else:
-                motor_l.Forward(speed = 50)
-                motor_r.Forward(speed = 0)
+                motor_l.Forward(speed = 0)
+                motor_r.Forward(speed = 50)
         elif turn_dir == Turn_Direction.right:
             if S1 == 1:
+                motor_l.Forward(speed = 0)
+                motor_r.Forward(speed = 0)
                 turn_state = Turn_State.done     
             else:
-                motor_l.Forward(speed = 0)
-                motor_r.Forward(speed = 50)  
+                motor_l.Forward(speed = 50)
+                motor_r.Forward(speed = 0)  
         return False, turn_state
 
     if turn_state == Turn_State.done:
         #  Start realigning
+        motor_l.Forward(speed = 0)
+        motor_r.Forward(speed = 0)
         line_follow_step(S1, S2)
         if S1 == 0 and S2 == 0:
             print(f"turn complete!")
@@ -255,7 +260,7 @@ def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, counting, turn_complete,
 turn_complete = False
 turn_state = Turn_State.turn_search
 
-""" while True:
+while True:
     S1 = S1_sensor.value()
     S2 = S2_sensor.value()
     SL = SL_sensor.value()
@@ -287,5 +292,5 @@ turn_state = Turn_State.turn_search
                 turn_state = Turn_State.turn_search
                 motion = Motion.follow
         prev_on_junction = on_junction
-        utime.sleep(0.01) """
+        #utime.sleep(0.01) 
 

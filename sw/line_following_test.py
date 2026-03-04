@@ -54,8 +54,8 @@ def line_follow_step(S1, S2):
     motor_l.Forward(speed = base)
     print("centered")
 
-while True:
+""" while True:
   S1 = S1_sensor.value()
   S2 = S2_sensor.value()
   line_follow_step(S1, S2)
-  utime.sleep(0.01)
+  utime.sleep(0.01) """
