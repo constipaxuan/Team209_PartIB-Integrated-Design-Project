@@ -117,13 +117,13 @@ def turn_v2(turn_dir, S1, S2, turn_state):
     if turn_state == Turn_State.turn_search:
         #still trying to find the line
         if turn_dir == Turn_Direction.left:
-            motor_l.Forward(speed = 0)
-            motor_r.Forward(speed = 50)
+            motor_l.Forward(speed = 50)
+            motor_r.Forward(speed = 0)
             if S1 == 1:
                turn_state = Turn_State.turn_cross
         elif turn_dir == Turn_Direction.right:
-            motor_l.Forward(speed = 50)
-            motor_r.Forward(speed = 0)
+            motor_l.Forward(speed = 0)
+            motor_r.Forward(speed = 50)
             if S2 == 1:
                turn_state = Turn_State.turn_cross
         return False, turn_state
