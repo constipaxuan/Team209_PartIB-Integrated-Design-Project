@@ -4,7 +4,7 @@ import utime
 
 from machine import Pin, PWM
 from utime import sleep
-from enum import Enum
+#from enum import Enum
 
 class Motor:
     def __init__(self, dirPin, PWMPin):
