@@ -181,79 +181,6 @@ def turn_v3(turn_dir, S1, S2, turn_state):
             
 
             
-
-
-def turn_v2(turn_dir, S1, S2, turn_state):
-    
-    if turn_state == Turn_State.turn_search:
-        #still trying to find the line
-        if turn_dir == Turn_Direction.left:
-            motor_l.Forward(speed = 50)
-            motor_r.Forward(speed = 0)
-            if S1 == 1:
-                turn_state = Turn_State.turn_cross
-                #motor_l.Forward(speed = 0) # stops when it has seen the line.
-                #motor_r.Forward(speed = 0)
-        elif turn_dir == Turn_Direction.right:
-            motor_l.Forward(speed = 0)
-            motor_r.Forward(speed = 50)
-            if S2 == 1:
-                turn_state = Turn_State.turn_cross
-                #motor_l.Forward(speed = 0)
-                #motor_r.Forward(speed = 0)
-            
-        return False, turn_state
-    
-    #Has found the line.
-    if turn_state == Turn_State.turn_cross:
-        if turn_dir == Turn_Direction.left:
-            if S1 == 0:
-                turn_state = Turn_State.half_done
-                #motor_l.Forward(speed = 0)
-                #motor_r.Forward(speed = 0)
-            else:
-                motor_l.Forward(speed = 50)
-                motor_r.Forward(speed = 0)
-        elif turn_dir == Turn_Direction.right:
-            if S2 == 0:
-                turn_state = Turn_State.half_done  
-                #motor_l.Forward(speed = 0)
-                #motor_r.Forward(speed = 0)   
-            else:
-                motor_l.Forward(speed = 0)
-                motor_r.Forward(speed = 50)  
-        return False, turn_state
-
-    if turn_state == Turn_State.half_done:
-    
-        if turn_dir == Turn_Direction.left:
-            if (S1 == 0 and S2 == 1):
-                motor_l.Forward(speed = 0)
-                motor_r.Forward(speed = 0)
-                turn_state = Turn_State.done
-            else:
-                motor_l.Forward(speed = 50)
-                motor_r.Forward(speed = 0)
-        elif turn_dir == Turn_Direction.right:
-            if (S1 == 1 and S2 == 0):
-                motor_l.Forward(speed = 0)
-                motor_r.Forward(speed = 0)
-                turn_state = Turn_State.done     
-            else:
-                motor_l.Forward(speed = 0)
-                motor_r.Forward(speed = 50)  
-        return False, turn_state
-
-    if turn_state == Turn_State.done:
-        if not (S1 == 0 and S2 == 0):
-            line_follow_step(S1, S2, 60, 0)
-            return False, turn_state
-        if (S1 == 0 and S2 == 0):
-            return True, Turn_State.turn_search
-        
-
-# turn_complete, seen_line = turn_v2(turn_dir, S1, S2, turn_state)
-
 def update_start_T_count(SL, SR, start_T_shape_count, counting):
     #global start_T_shape_count, counting
     if SL == 1 and SR == 1 and counting:
@@ -263,6 +190,7 @@ def update_start_T_count(SL, SR, start_T_shape_count, counting):
         counting = True # Ready for next junction
     
     return start_T_shape_count, counting
+
 
 # Call this in discrete time steps while mode = Mode.start
 def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, counting, turn_complete, turn_state, start_state, mode):
@@ -281,6 +209,9 @@ def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, counting, turn_complete,
             #motor_r.Forward(speed = 0)
             turn_state = Turn_State.turn_search
             turn_complete = False
+
+            # START TURN IMMEDIATELY
+            turn_complete, turn_state = turn_v3(Turn_Direction.right, S1, S2, turn_state)
         else:
             line_follow_step(S1, S2, 60, 20)
 

@@ -89,3 +89,84 @@ def turn(junction_type):
   #if junction_type == Junctions.RL:
     #can decide to turn left or right
     #let it turn 180 degrees. 
+
+    def turn_v2(turn_dir, S1, S2, turn_state):
+    
+    if turn_state == Turn_State.turn_search:
+        #still trying to find the line
+        if turn_dir == Turn_Direction.left:
+            motor_l.Forward(speed = 50)
+            motor_r.Forward(speed = 0)
+            if S1 == 1:
+                turn_state = Turn_State.turn_cross
+                #motor_l.Forward(speed = 0) # stops when it has seen the line.
+                #motor_r.Forward(speed = 0)
+        elif turn_dir == Turn_Direction.right:
+            motor_l.Forward(speed = 0)
+            motor_r.Forward(speed = 50)
+            if S2 == 1:
+                turn_state = Turn_State.turn_cross
+                #motor_l.Forward(speed = 0)
+                #motor_r.Forward(speed = 0)
+            
+        return False, turn_state
+    
+    #Has found the line.
+    if turn_state == Turn_State.turn_cross:
+        if turn_dir == Turn_Direction.left:
+            if S1 == 0:
+                turn_state = Turn_State.half_done
+                #motor_l.Forward(speed = 0)
+                #motor_r.Forward(speed = 0)
+            else:
+                motor_l.Forward(speed = 50)
+                motor_r.Forward(speed = 0)
+        elif turn_dir == Turn_Direction.right:
+            if S2 == 0:
+                turn_state = Turn_State.half_done  
+                #motor_l.Forward(speed = 0)
+                #motor_r.Forward(speed = 0)   
+            else:
+                motor_l.Forward(speed = 0)
+                motor_r.Forward(speed = 50)  
+        return False, turn_state
+
+    if turn_state == Turn_State.half_done:
+    
+        if turn_dir == Turn_Direction.left:
+            if (S1 == 0 and S2 == 1):
+                motor_l.Forward(speed = 0)
+                motor_r.Forward(speed = 0)
+                turn_state = Turn_State.done
+            else:
+                motor_l.Forward(speed = 50)
+                motor_r.Forward(speed = 0)
+        elif turn_dir == Turn_Direction.right:
+            if (S1 == 1 and S2 == 0):
+                motor_l.Forward(speed = 0)
+                motor_r.Forward(speed = 0)
+                turn_state = Turn_State.done     
+            else:
+                motor_l.Forward(speed = 0)
+                motor_r.Forward(speed = 50)  
+        return False, turn_state
+
+    if turn_state == Turn_State.done:
+        if not (S1 == 0 and S2 == 0):
+            line_follow_step(S1, S2, 60, 0)
+            return False, turn_state
+        if (S1 == 0 and S2 == 0):
+            return True, Turn_State.turn_search
+        
+
+# turn_complete, seen_line = turn_v2(turn_dir, S1, S2, turn_state)
+
+def update_start_T_count(SL, SR, start_T_shape_count, counting):
+    #global start_T_shape_count, counting
+    if SL == 1 and SR == 1 and counting:
+        start_T_shape_count += 1
+        counting = False # Latch on
+    elif SL == 0 and SR == 0:
+        counting = True # Ready for next junction
+    
+    return start_T_shape_count, counting
