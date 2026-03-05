@@ -324,6 +324,12 @@ def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, counting, turn_complete,
         mode = Mode.search
         return start_T_shape_count, counting, start_state, turn_complete, turn_state, mode
 
+''' upper right refers to the one above purple rack, 
+    upper left is above orange rack, 
+    unloading is the one turning into unloading bay and 
+    back_to_start is the turn back into starting box. 
+
+'''
 class Test_Corners:
     upper_right = 1
     upper_left = 2
@@ -337,6 +343,7 @@ take_next_turn = False
 test_corner = Test_Corners.upper_right
 OB_counter = 0
 
+# defines turning sequence in line following test 5 Mar.
 def test_main_loop(SL, SR, test_corner, take_next_turn, OB_counter, turn_dir, new_junction):
     if test_corner == Test_Corners.upper_right:
         if (SL == 1 and SR == 1) and new_junction:
