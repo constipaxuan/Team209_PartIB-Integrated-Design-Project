@@ -48,6 +48,10 @@ SR_sensor = Pin(SR_pin, Pin.IN)
 
 button = Pin(14, Pin.IN, Pin.PULL_UP)
 
+# STOP IMMEDIATELY AFTER RESET
+motor_l.Forward(0)
+motor_r.Forward(0)
+
 ON = False
 prev_button = 1
 
