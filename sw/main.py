@@ -1,7 +1,7 @@
 #import utime
 
 from machine import Pin, PWM
-from utime import sleep, sleep_ms
+from time import sleep, sleep_ms
 #from enum import Enum
 from behaviour import Turn_Direction, Turn_State, Mode, Start_States
 from locations import Junctions
@@ -324,7 +324,7 @@ while True:
 
     if button.value() == 0:
         ON = not ON
-        utime.sleep(0.3)
+        sleep(0.3)
     
     if not ON:
         motor_l.Forward(speed = 0)
