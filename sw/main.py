@@ -338,7 +338,7 @@ while True:
         motor_l.Forward(speed = 0)
         motor_r.Forward(speed = 0)
         
-    else:
+    elif ON:
 
         on_junction = (SL == 1 or SR == 1)
         new_junction = (not prev_on_junction) and on_junction
