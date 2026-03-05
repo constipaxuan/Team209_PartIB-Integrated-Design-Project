@@ -337,6 +337,8 @@ while True:
     if not ON:
         motor_l.Forward(speed = 0)
         motor_r.Forward(speed = 0)
+        prev_on_junction = on_junction
+        continue
         
     elif ON:
 
