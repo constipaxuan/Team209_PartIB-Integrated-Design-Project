@@ -235,6 +235,9 @@ def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, counting, turn_complete,
             motor_r.Forward(speed = 0)
             turn_state = Turn_State.turn_search
             turn_complete = False
+
+            # START TURN IMMEDIATELY
+            turn_complete, turn_state = turn_v3(Turn_Direction.right, S1, S2, turn_state)
         else:
             line_follow_step(S1, S2, 60, 20)
         
