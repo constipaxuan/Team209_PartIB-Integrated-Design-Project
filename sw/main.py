@@ -323,7 +323,7 @@ while True:
     SR = SR_sensor.value()
 
     if button.value() == 0:
-        state = not state
+        ON = not ON
         utime.sleep(0.3)
     
     if not ON:
