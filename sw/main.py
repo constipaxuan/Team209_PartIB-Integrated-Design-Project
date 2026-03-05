@@ -325,45 +325,51 @@ while True:
     if button.value() == 0:
         state = not state
         utime.sleep(0.3)
-
-    on_junction = (SL == 1 or SR == 1)
-    new_junction = (not prev_on_junction) and on_junction
-
-    if mode == Mode.start:
-       start_T_shape_count, start_state, turn_complete, turn_state, mode = get_out_of_box(S1, S2, SL, SR, start_T_shape_count, new_junction, turn_complete, turn_state, start_state, mode)
+    
+    if not ON:
+        motor_l.Forward(speed = 0)
+        motor_r.Forward(speed = 0)
+        
     else:
-        test_corner, take_next_turn, OB_counter, turn_dir = test_main_loop(SL, SR, test_corner, take_next_turn, OB_counter, turn_dir, new_junction)
 
-        if motion == Motion.follow:
-            if take_next_turn == True and new_junction:
-                SL = SL_sensor.value()
-                SR = SR_sensor.value()
-                motor_l.Forward(speed = 0)
-                motor_r.Forward(speed = 0)
-                motion = Motion.turning
-                turn_state = Turn_State.turn_search
-                turn_complete = False
-            else:
-                line_follow_step(S1, S2, 60, 20)
+        on_junction = (SL == 1 or SR == 1)
+        new_junction = (not prev_on_junction) and on_junction
 
-        if motion == Motion.turning:
-            if not turn_complete:
-                turn_complete, turn_state = turn_v3(turn_dir, S1, S2, turn_state)
-                
-            else:
-                motion = Motion.follow
-                turn_complete = False
-                turn_state = Turn_State.turn_search
-                if corner_idx < len(corners) - 1:
-                    corner_idx += 1
-                else:
-                    corner_idx = 0
-                    sleep_ms(500)
+        if mode == Mode.start:
+            start_T_shape_count, start_state, turn_complete, turn_state, mode = get_out_of_box(S1, S2, SL, SR, start_T_shape_count, new_junction, turn_complete, turn_state, start_state, mode)
+        else:
+            test_corner, take_next_turn, OB_counter, turn_dir = test_main_loop(SL, SR, test_corner, take_next_turn, OB_counter, turn_dir, new_junction)
+
+            if motion == Motion.follow:
+                if take_next_turn == True and new_junction:
+                    SL = SL_sensor.value()
+                    SR = SR_sensor.value()
                     motor_l.Forward(speed = 0)
                     motor_r.Forward(speed = 0)
-                test_corner = corners[corner_idx]
-                take_next_turn = False
-  
-    prev_on_junction = on_junction 
+                    motion = Motion.turning
+                    turn_state = Turn_State.turn_search
+                    turn_complete = False
+                else:
+                    line_follow_step(S1, S2, 60, 20)
+
+            if motion == Motion.turning:
+                if not turn_complete:
+                    turn_complete, turn_state = turn_v3(turn_dir, S1, S2, turn_state)
+                    
+                else:
+                    motion = Motion.follow
+                    turn_complete = False
+                    turn_state = Turn_State.turn_search
+                    if corner_idx < len(corners) - 1:
+                        corner_idx += 1
+                    else:
+                        corner_idx = 0
+                        sleep_ms(500)
+                        motor_l.Forward(speed = 0)
+                        motor_r.Forward(speed = 0)
+                    test_corner = corners[corner_idx]
+                    take_next_turn = False
+    
+        prev_on_junction = on_junction 
 
 
