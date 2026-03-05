@@ -277,8 +277,8 @@ def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, counting, turn_complete,
     #if start_T_shape_count < 2:
         if start_T_shape_count == 2:
             start_state = Start_States.turn1
-            motor_l.Forward(speed = 0)
-            motor_r.Forward(speed = 0)
+            #motor_l.Forward(speed = 0)
+            #motor_r.Forward(speed = 0)
             turn_state = Turn_State.turn_search
             turn_complete = False
         else:
