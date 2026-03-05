@@ -120,7 +120,7 @@ def turn_v3(turn_dir, S1, S2, turn_state):
                 motor_l.Forward(speed = 0) # stops when it has seen the line.
                 motor_r.Forward(speed = 0)
             else:
-                motor_l.Forward(speed = 30)
+                motor_l.Forward(speed = 50)
                 motor_r.Forward(speed = 0)
         elif turn_dir == Turn_Direction.right:
             if (S1 == 1 and S2 == 0):
@@ -129,7 +129,7 @@ def turn_v3(turn_dir, S1, S2, turn_state):
                 motor_r.Forward(speed = 0)
             else:
                 motor_l.Forward(speed = 0)
-                motor_r.Forward(speed = 30)
+                motor_r.Forward(speed = 50)
         
         return False, turn_state
 
@@ -140,14 +140,14 @@ def turn_v3(turn_dir, S1, S2, turn_state):
             if S2 == 0:
                 turn_state = Turn_State.half_done
             else:
-                motor_l.Forward(speed = 30)
+                motor_l.Forward(speed = 50)
                 motor_r.Forward(speed = 0)
         elif turn_dir == Turn_Direction.right:
             if S1 == 0:
                 turn_state = Turn_State.half_done
             else:
                 motor_l.Forward(speed = 0)
-                motor_r.Forward(speed = 30)
+                motor_r.Forward(speed = 50)
         
         return False, turn_state
     
@@ -159,7 +159,7 @@ def turn_v3(turn_dir, S1, S2, turn_state):
                 motor_l.Forward(speed = 0)
                 motor_r.Forward(speed = 0)
             else:
-                motor_l.Forward(speed = 30)
+                motor_l.Forward(speed = 50)
                 motor_r.Forward(speed = 0)
         elif turn_dir == Turn_Direction.right:
             if S1 == 1:
@@ -168,7 +168,7 @@ def turn_v3(turn_dir, S1, S2, turn_state):
                 motor_r.Forward(speed = 0)
             else:
                 motor_l.Forward(speed = 0)
-                motor_r.Forward(speed = 30)
+                motor_r.Forward(speed = 50)
         
         return False, turn_state
     
@@ -204,10 +204,9 @@ def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, counting, turn_complete,
         # State 1: Drive out of the box, drive straight
     #if start_T_shape_count < 2:
         if start_T_shape_count == 2:
-            print("turn time")
             start_state = Start_States.turn1
-            #motor_l.Forward(speed = 0)
-            #motor_r.Forward(speed = 0)
+            motor_l.Forward(speed = 0)
+            motor_r.Forward(speed = 0)
             turn_state = Turn_State.turn_search
             turn_complete = False
 
