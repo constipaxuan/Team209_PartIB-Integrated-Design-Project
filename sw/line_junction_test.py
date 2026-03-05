@@ -312,7 +312,7 @@ corners = [
 
 corner_idx = 0
 
-""" while True:
+while True:
     S1 = S1_sensor.value()
     S2 = S2_sensor.value()
     SL = SL_sensor.value()
@@ -357,6 +357,6 @@ corner_idx = 0
                 test_corner = corners[corner_idx]
                 take_next_turn = False
   
-    prev_on_junction = on_junction """
+    prev_on_junction = on_junction 
 
 
