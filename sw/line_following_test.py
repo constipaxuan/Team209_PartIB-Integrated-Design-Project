@@ -49,7 +49,8 @@ def line_follow_step(S1, S2, base, corr):
     motor_r.Forward(speed = base)
     motor_l.Forward(speed = base)
 
-while True:
+
+""" while True:
     S1 = S1_sensor.value()
     S2 = S2_sensor.value()
-    line_follow_step(S1, S2, 60, 20) 
+    line_follow_step(S1, S2, 60, 20)  """
