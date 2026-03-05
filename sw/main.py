@@ -49,6 +49,7 @@ SR_sensor = Pin(SR_pin, Pin.IN)
 button = Pin(14, Pin.IN, Pin.PULL_UP)
 
 ON = False
+prev_button = 1
 
 prev_on_junction = False
 new_junction = False
@@ -321,10 +322,13 @@ while True:
     S2 = S2_sensor.value()
     SL = SL_sensor.value()
     SR = SR_sensor.value()
+    
+    button_now = button.value()
 
-    if button.value() == 0:
+    if button_now == 0 and prev_button == 1:
         ON = not ON
-        sleep(0.3)
+    
+    prev_button = button_now #debouncing button
     
     if not ON:
         motor_l.Forward(speed = 0)
