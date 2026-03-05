@@ -324,10 +324,55 @@ def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, counting, turn_complete,
         mode = Mode.search
         return start_T_shape_count, counting, start_state, turn_complete, turn_state, mode
 
-
+class Test_Corners:
+    upper_right = 1
+    upper_left = 2
+    unloading = 3
+    back_to_start = 4
 
 turn_complete = False
 turn_state = Turn_State.turn_search
+take_next_turn = False
+# test_corner is the next corner to be turned.
+test_corner = Test_Corners.upper_right
+OB_counter = 0
+
+def test_main_loop(SL, SR, test_corner, take_next_turn, OB_counter, turn_dir, new_junction):
+    if test_corner == Test_Corners.upper_right:
+        if (SL == 1 and SR == 1) and new_junction:
+            take_next_turn = True
+            turn_dir = Turn_Direction.left
+    if test_corner == Test_Corners.upper_left:
+        if (SL == 1) and new_junction:
+            take_next_turn = True
+            turn_dir = Turn_Direction.left
+    if test_corner == Test_Corners.unloading:
+        if OB_counter == 6:
+            take_next_turn = True
+            turn_dir = Turn_Direction.left
+            OB_counter = 0
+        else:
+            if (SL == 1 and SR == 1) and new_junction:
+                OB_counter = 0
+            elif (SL == 1 and SR == 0) and new_junction:
+                OB_counter += 1
+            take_next_turn = False
+    if test_corner == Test_Corners.back_to_start:
+        if (SR == 1 and SL == 0) and new_junction:
+            take_next_turn = True
+            turn_dir = Turn_Direction.right
+    
+    return test_corner, take_next_turn, OB_counter, turn_dir, new_junction
+
+
+corners = [
+    Test_Corners.upper_right,
+    Test_Corners.upper_left,
+    Test_Corners.unloading,
+    Test_Corners.back_to_start
+]
+
+corner_idx = 0
 
 while True:
     S1 = S1_sensor.value()
@@ -341,26 +386,39 @@ while True:
     if mode == Mode.start:
        start_T_shape_count, counting, start_state, turn_complete, turn_state, mode = get_out_of_box(S1, S2, SL, SR, start_T_shape_count, counting, turn_complete, turn_state, start_state, mode)
     else:
+        test_corner, take_next_turn, OB_counter, turn_dir, new_junction = test_main_loop(SL, SR, test_corner, take_next_turn, OB_counter, turn_dir, new_junction)
+
         if motion == Motion.follow:
-            if new_junction:
+            if take_next_turn == True and new_junction:
                 SL = SL_sensor.value()
                 SR = SR_sensor.value()
                 motor_l.Forward(speed = 0)
                 motor_r.Forward(speed = 0)
                 junction_type = detect_junction_type(SL, SR)
-                #print(f"Junction type: {junction_type}")
-                    # this makes bot turn at EVERY junction.
                 motion = Motion.turning
+                turn_state = Turn_State.turn_search
+                turn_complete = False
             else:
                 line_follow_step(S1, S2, 60, 20)
+
         if motion == Motion.turning:
             if not turn_complete:
                 turn_complete, turn_state = turn_v3(turn_dir, S1, S2, turn_state)
+                
             else:
+                motion = Motion.follow
                 turn_complete = False
                 turn_state = Turn_State.turn_search
-                motion = Motion.follow
-    
+                if corner_idx < len(corners) - 1:
+                    corner_idx += 1
+                else:
+                    corner_idx = 0
+                    sleep_ms(500)
+                    motor_l.Forward(speed = 0)
+                    motor_r.Forward(speed = 0)
+                test_corner = corners[corner_idx]
+                take_next_turn = False
+  
     prev_on_junction = on_junction
 
 
