@@ -204,6 +204,7 @@ def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, counting, turn_complete,
         # State 1: Drive out of the box, drive straight
     #if start_T_shape_count < 2:
         if start_T_shape_count == 2:
+            print("turn time")
             start_state = Start_States.turn1
             #motor_l.Forward(speed = 0)
             #motor_r.Forward(speed = 0)
