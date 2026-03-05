@@ -11,10 +11,9 @@ class Turn_Direction:
     nil = 2
 
 class Turn_State:
-    turn_search = 0
-    turn_cross = 1
-    half_done = 2
-    done = 3
+    start = 0
+    line_lost = 1
+    done = 2
 
 class Start_States:
     start = 0

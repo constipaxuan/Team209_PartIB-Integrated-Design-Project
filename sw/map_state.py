@@ -17,10 +17,10 @@ upstairs = False
 
 
 #need to map pins
-S1_pin = 10
-S2_pin = 11 
-SL_pin = 
-SR_pin =
+S1_pin = 21
+S2_pin = 20
+SL_pin = 26
+SR_pin = 22
 
 S1_sensor = Pin(S1_pin, Pin.IN)
 S2_sensor = Pin(S2_pin, Pin.IN)
@@ -77,9 +77,9 @@ def mapping(previous_state, mode, direction, new_junction):
         junction_type = Junctions.nil
     # end
 
-    if mode == Mode.start():
+    if mode == Mode.start:
             return Location.start
-    if mode == Mode.search():
+    if mode == Mode.search:
         if previous_state == Location.unloading:
         # once it detects the RL (T) junction at the end it knows it has reached the end of the unloading bay. 
         # Only applies when the robot is already in search mode. If it is in delivery mode it will be coming out of a branch and will detect a RL within unloading area.
@@ -148,7 +148,7 @@ def mapping(previous_state, mode, direction, new_junction):
                         memory["elevator_low_branches"] = 0
                         return Location.rack_orange_L
             else:
-                if junction_type == (Junctions.R or Junctions.L):
+                if (junction_type == Junctions.R or junction_type == Junctions.L):
                     #I am writing this on the assumption that once the bot reaches the lower floor T it will NOt suddenly turn 180 and go back up because it makes no sense.
                     #I have also assumed that the prev_on_junction thing will avoid double counting the same T junction after rotation.
                     memory["prev_elevator_state"] = Elevator.none
@@ -206,7 +206,7 @@ def mapping(previous_state, mode, direction, new_junction):
                     return Location.elevator_up
             return Location.rack_purple_U
         
-    if mode == Mode.delivery():
+    if mode == Mode.delivery:
         pass
 
 #direction = rotation_tracker()
