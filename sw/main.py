@@ -329,6 +329,9 @@ while True:
     
     button_now = button.value()
 
+    on_junction = (SL == 1 or SR == 1)
+    new_junction = (not prev_on_junction) and on_junction
+    
     if button_now == 0 and prev_button == 1:
         ON = not ON
     
@@ -341,9 +344,6 @@ while True:
         continue
         
     elif ON:
-
-        on_junction = (SL == 1 or SR == 1)
-        new_junction = (not prev_on_junction) and on_junction
 
         if mode == Mode.start:
             start_T_shape_count, start_state, turn_complete, turn_state, mode = get_out_of_box(S1, S2, SL, SR, start_T_shape_count, new_junction, turn_complete, turn_state, start_state, mode)
