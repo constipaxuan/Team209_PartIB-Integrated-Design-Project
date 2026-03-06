@@ -5,6 +5,7 @@ resistor_color = 0
 slot_counter = 0
 cleared_counter = slot_status.count(1)
 rack_cleared = False
+R_detected = False
 #set up laser sensor
 from email.mime import base
 from turtle import distance
@@ -37,14 +38,15 @@ def rec_dist_laser():
     
 
 def lowP_upperO_R_detect():
+    global R_detected, rack_cleared, slot_counter, slot_status
     while slot_status.count(1) < 6: #number of cleared slots is less than 6
         if SL == 1:  # Branch detected
-
             sleep(0.1) # Short delay to debounce the sensor
             distance = rec_dist_laser()
         
             if distance < 100: # resistor detected
             # 1. Add code here to turn the car and pick up resistor
+                R_detected = True
                 motor_l.Reverse(speed = 50)
                 motor_r.Forward(speed = 50)
                 sleep(1) # might need to adjust time depending on how long it takes to turn 90 degrees. Might also want to add some sort of feedback system to determine when to stop turning instead of just relying on time.
