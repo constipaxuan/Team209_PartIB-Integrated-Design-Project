@@ -46,14 +46,14 @@ S2_sensor = Pin(S2_pin, Pin.IN)
 SL_sensor = Pin(SL_pin, Pin.IN)
 SR_sensor = Pin(SR_pin, Pin.IN)
 
-button = Pin(14, Pin.IN, Pin.PULL_UP)
+button = Pin(14, Pin.IN) # button is a PULL_DOWN so it reads 0 when not pressed and 1 when pressed.
 
 # STOP IMMEDIATELY AFTER RESET
 motor_l.Forward(0)
 motor_r.Forward(0)
 
 ON = False
-prev_button = 1
+prev_button = 0
 
 prev_on_junction = False
 new_junction = False
@@ -116,24 +116,26 @@ def detect_junction_type(SL, SR):
 
 
 # returns True when turn complete, False otherwise. Call in discrete time steps while in turning mode.
+# change speed of wheel to match position of ideal pivot (lies on 45 degree line from the corner)
+# Prevents original line from being misidentified as the new line by forcing bot to lose the first line before finding the new one.
 def turn_v4(turn_dir, S1, S2, turn_state):
     if turn_state == Turn_State.start:
-        if (S1 == 0 and S2 == 0):
+        if (S1 == 0 or S2 == 0): # Lost the original line
             turn_state = Turn_State.line_lost
     
     elif turn_state == Turn_State.line_lost:
-        if (S1 == 1 or S2 == 1):
+        if (S1 == 1 and S2 == 1): # Found the new line. 
             motor_l.Forward(speed = 0)
             motor_r.Forward(speed = 0)
             return Turn_State.done, True
         
     if turn_dir == Turn_Direction.left:
-        motor_l.Forward(speed = 0)
+        motor_l.Reverse(speed = 10)
         motor_r.Forward(speed = 60)
 
     elif turn_dir == Turn_Direction.right:
         motor_l.Forward(speed = 60)
-        motor_r.Forward(speed = 0)
+        motor_r.Reverse(speed = 10)
     
     return turn_state, False
     
@@ -161,17 +163,18 @@ def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, new_junction, turn_compl
     # State 1: Drive out of the box, drive straight
     #if start_T_shape_count < 2:
         if start_T_shape_count == 2:
-            print("turn time!")
-            start_state = Start_States.turn1
-            motor_l.Forward(speed = 0)
-            motor_r.Forward(speed = 0)
-            turn_state = Turn_State.start
-            turn_complete = False
+            if SL == 0 and SR == 0: # Move forward until the SL and SR lose the white line. 
+                print("turn time!")
+                start_state = Start_States.turn1
+                motor_l.Forward(speed = 0)
+                motor_r.Forward(speed = 0)
+                turn_state = Turn_State.start
+                turn_complete = False
 
         else:
             line_follow_step(S1, S2, 60, 20)
 
-        return start_T_shape_count, start_state, turn_complete, mode
+        return start_T_shape_count, start_state, turn_complete, turn_state, mode
 
     # State 2: Hit second T shape, turn clockwise
     if start_state == Start_States.turn1:
@@ -181,21 +184,21 @@ def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, new_junction, turn_compl
         if turn_complete:
             start_state = Start_States.turn1_done
 
-        return start_T_shape_count, start_state, turn_complete, mode
+        return start_T_shape_count, start_state, turn_complete, turn_state,mode
     
     if start_state == Start_States.turn1_done:
         if start_T_shape_count == 3:
-   
-            start_state = Start_States.turn2
-            motor_l.Forward(speed = 0)
-            motor_r.Forward(speed = 0)
-            turn_complete = False
-            turn_state = Turn_State.start
+            if SL == 0 and SR == 0: # Move forward until the SL and SR lose the white line. 
+                start_state = Start_States.turn2
+                motor_l.Forward(speed = 0)
+                motor_r.Forward(speed = 0)
+                turn_complete = False
+                turn_state = Turn_State.start
 
         else:
             line_follow_step(S1, S2, 60, 20)
         
-        return start_T_shape_count, start_state, turn_complete, mode
+        return start_T_shape_count, start_state, turn_complete, turn_state,mode
 
     if start_state == Start_States.turn2:
         if not turn_complete:
@@ -205,12 +208,12 @@ def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, new_junction, turn_compl
             turn_complete = False
             turn_state = Turn_State.start
             
-        return start_T_shape_count, start_state, turn_complete, mode
+        return start_T_shape_count, start_state, turn_complete, turn_state, mode
     
     if start_state == Start_States.turn2_done:
         line_follow_step(S1, S2, 60, 20)
         mode = Mode.search
-        return start_T_shape_count, start_state, turn_complete, mode
+        return start_T_shape_count, start_state, turn_complete, turn_state, mode
 
 ''' upper right refers to the one above purple rack, 
     upper left is above orange rack, 
@@ -282,7 +285,7 @@ while True:
     new_junction = (not prev_on_junction) and on_junction
 
     # non blocking debouncing. this allows sensors to still be read while button is being debounced, preventing missed junctions.
-    if button_now == 0 and prev_button == 1:
+    if button_now == 1 and prev_button == 0:
         if ticks_diff(ticks_ms(), last_press) > 200:
             ON = not ON
             last_press = ticks_ms()
@@ -298,7 +301,7 @@ while True:
     elif ON:
 
         if mode == Mode.start:
-            start_T_shape_count, start_state, turn_complete, mode = get_out_of_box(S1, S2, SL, SR, start_T_shape_count, new_junction, turn_complete, start_state, mode)
+            start_T_shape_count, start_state, turn_complete, turn_state, mode = get_out_of_box(S1, S2, SL, SR, start_T_shape_count, new_junction, turn_complete, turn_state, start_state, mode)
         else:
             test_corner, take_next_turn, OB_counter, turn_dir = test_main_loop(SL, SR, test_corner, take_next_turn, OB_counter, turn_dir, new_junction)
 
@@ -306,10 +309,11 @@ while True:
                 if take_next_turn == True and new_junction:
                     SL = SL_sensor.value()
                     SR = SR_sensor.value()
-                    motor_l.Forward(speed = 0)
-                    motor_r.Forward(speed = 0)
-                    motion = Motion.turning
-                    turn_complete = False
+                    if SL == 0 and SR == 0: # Move forward until the SL and SR lose the white line. 
+                        motor_l.Forward(speed = 0)
+                        motor_r.Forward(speed = 0)
+                        motion = Motion.turning
+                        turn_complete = False
                 else:
                     line_follow_step(S1, S2, 60, 20)
 
