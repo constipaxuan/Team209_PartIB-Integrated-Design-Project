@@ -35,6 +35,7 @@ def rec_dist_laser():
     
 
 def lowP_upperO_R_detect():
+    global R_detected, rack_cleared, slot_counter, slot_status
     while slot_status.count(1) < 6: #number of cleared slots is less than 6
         if SR == 1:  # Branch detected
 
@@ -42,6 +43,7 @@ def lowP_upperO_R_detect():
             distance = rec_dist_laser()
             
             if distance < 100: # resistor detected
+                R_detected = True
                 # 1. Add code here to turn the car and pick up resistor
                 # 2. Once picked up resistor, mark as cleared
                 slot_status[slot_counter] = 1
