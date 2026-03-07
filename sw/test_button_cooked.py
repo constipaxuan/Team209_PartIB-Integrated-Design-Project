@@ -20,3 +20,5 @@ while True:
 
     print(button_now, ON, prev_button)
     
+# Result: Button works as expected. Reads 0 when not pressed, 1 when pressed. ON toggles between True and False with each press. Debouncing works, as long as button is not pressed again within 200ms of the last press.
+# But print is causing delayed response. Will remove print statements in final code.

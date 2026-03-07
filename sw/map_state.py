@@ -11,8 +11,6 @@ direction = Direction.cw
 mode = Mode.start
 
 
-path = Path.line
-upstairs = False
 
 
 
@@ -40,7 +38,6 @@ memory = {
     "rack_branches_PH" : 0,
     "elevator_low_branches" : 0,
     "elevator_high_branches" : 0,
-    "prev_elevator_state" : Elevator.none
 }
 
 #Will be moved to main code
@@ -53,7 +50,6 @@ def init_memory():
         "rack_branches_PH": 0,
         "elevator_low_branches": 0,
         "elevator_high_branches": 0,
-        "prev_elevator_state": Elevator.none
     }
 
 #Main forever loop
@@ -66,16 +62,181 @@ def init_memory():
 on_junction = (SL == 1 or SR == 1)
 new_junction = (not memory["prev_on_junction"] and on_junction)
 
+if new_junction:
+    junction_type = detect_junction_type(memory["prev_on_junction"], SL_sensor, SR_sensor)
+else:
+    junction_type = Junctions.nil
+# end
 
-def mapping(previous_state, mode, direction, new_junction):
+#replace take_a_turn with take_next_turn
+def mapping(previous_state, mode, direction, junction_type):
     #Only call once per cycle. 
 
-    # between these 2 comments: move to main while loop in top_level
-    if new_junction:
-        junction_type = detect_junction_type(memory["prev_on_junction"], path, SL_sensor, SR_sensor)
-    else:
-        junction_type = Junctions.nil
-    # end
+    if mode == Mode.start:
+            return Location.start
+    if mode == Mode.search:
+        key = (mode, previous_state, direction, junction_type)
+        if key in SEARCH_TRANSITIONS:
+            next_state = SEARCH_TRANSITIONS[key]()
+            return next_state
+        return previous_state
+    if mode == Mode.delivery:
+        pass
+
+#direction = rotation_tracker()
+#mode = mode_tracker()
+#location = mapping(location, SL, SR, mode, direction)
+
+# State transition table : keys are (mode, previous_location, direction, junction_type). Values are location
+# For search mode. output is location and location only. No decision making involved.
+SEARCH_TRANSITIONS = {
+    #start mode: only one state so no transitions needed.
+    
+    #unloading 
+    (Mode.search, Location.unloading, Direction.cw, Junctions.RL): lambda :Location.rack_orange_L,
+    (Mode.search, Location.unloading, Direction.acw, Junctions.RL): Location.rack_purple_L,
+
+    #rack_orange_L
+    (Mode.search, Location.rack_orange_L, Direction.cw, Junctions.RL): lambda : handler_rack_orange_L(Direction.cw, Junctions.RL),
+    (Mode.search, Location.rack_orange_L, Direction.cw, Junctions.R): lambda : handler_rack_orange_L(Direction.cw, Junctions.R),
+    (Mode.search, Location.rack_orange_L, Direction.acw, Junctions.L): lambda : handler_rack_orange_L(Direction.acw, Junctions.L),
+
+    #rack_purple_L
+    (Mode.search, Location.rack_purple_L, Direction.acw, Junctions.RL): lambda : handler_rack_purple_L(Direction.acw, Junctions.RL),
+    (Mode.search, Location.rack_purple_L, Direction.acw, Junctions.L): lambda : handler_rack_purple_L(Direction.acw, Junctions.L),
+    (Mode.search, Location.rack_purple_L, Direction.cw, Junctions.R): lambda : handler_rack_purple_L(Direction.cw, Junctions.R),
+
+    #elevator_low
+    (Mode.search, Location.elevator_low, Direction.cw, Junctions.R): lambda : handler_elevator_low(Direction.cw, Junctions.R),
+    (Mode.search, Location.elevator_low, Direction.cw, Junctions.RL): lambda : handler_elevator_low(Direction.cw, Junctions.RL),
+    (Mode.search, Location.elevator_low, Direction.acw, Junctions.L): lambda : handler_elevator_low(Direction.acw, Junctions.L),
+    (Mode.search, Location.elevator_low, Direction.acw, Junctions.RL): lambda : handler_elevator_low(Direction.acw, Junctions.RL),
+
+    #elevator_up
+    (Mode.search, Location.elevator_up, Direction.cw, Junctions.R): lambda : handler_elevator_up(Direction.cw, Junctions.R),
+    (Mode.search, Location.elevator_up, Direction.cw, Junctions.L): lambda : handler_elevator_up(Direction.cw, Junctions.L),
+    (Mode.search, Location.elevator_up, Direction.cw, Junctions.RL): lambda : handler_elevator_up(Direction.cw, Junctions.RL),
+    (Mode.search, Location.elevator_up, Direction.acw, Junctions.L): lambda : handler_elevator_up(Direction.acw, Junctions.L),
+    (Mode.search, Location.elevator_up, Direction.acw, Junctions.R): lambda : handler_elevator_up(Direction.acw, Junctions.R),
+    (Mode.search, Location.elevator_up, Direction.acw, Junctions.RL): lambda : handler_elevator_up(Direction.acw, Junctions.RL),
+
+    #rack_orange_U
+    (Mode.search, Location.rack_orange_U, Direction.acw, Junctions.L): lambda : handler_rack_orange_U(Direction.acw, Junctions.L),
+
+    #rack_purple_U
+    (Mode.search, Location.rack_purple_U, Direction.cw, Junctions.R): lambda : handler_rack_purple_U(Direction.cw, Junctions.R)
+}
+
+#Local rack handlers
+def handler_rack_orange_L(direction, junction_type):
+    if direction == Direction.cw:
+        if junction_type == Junctions.RL:
+            memory["rack_branches_OL"] = 0
+            #memory["prev_elevator_state"] = Elevator.none
+            return Location.elevator_low
+        elif junction_type == Junctions.R:
+            memory["rack_branches_OL"] += 1
+            return Location.rack_orange_L
+        
+    if direction == Direction.acw:
+        if junction_type == Junctions.L:
+            memory["rack_branches_OL"] -= 1
+        if memory["rack_branches_OL"] == -6:
+            memory["rack_branches_OL"] = 0
+            return Location.unloading
+    return Location.rack_orange_L
+
+def handler_rack_purple_L(direction, junction_type):
+    if direction == Direction.acw:
+        if junction_type == Junctions.RL:
+            memory["rack_branches_PL"] = 0
+            #memory["prev_elevator_state"] = Elevator.none
+            return Location.elevator_low
+        elif junction_type == Junctions.L:
+            memory["rack_branches_PL"] += 1
+            return Location.rack_purple_L
+    if direction == Direction.cw:
+        if junction_type == Junctions.R:
+            memory["rack_branches_PL"] -= 1
+            if memory["rack_branches_PL"] == -6:
+                memory["rack_branches_PL"] = 0
+                return Location.unloading()
+    return Location.rack_purple_L
+
+def handler_elevator_low(direction, junction_type):
+        if direction == Direction.cw:
+            # This occurs when the bot did take a turn to go up the elevator, so the next junction it sees is the T junction at the end of the elevator path.
+            if abs(memory["elevator_low_branches"]) == 2 and junction_type == Junctions.RL:
+                memory["elevator_low_branches"] = 0
+                return Location.elevator_up
+            
+            elif junction_type == Junctions.R:
+                memory["elevator_low_branches"] += 1
+            
+            elif junction_type == Junctions.RL:
+                memory["elevator_low_branches"] = 0
+                return Location.rack_purple_L
+
+        if direction == Direction.acw:
+            
+            # assuming the bot doesnt make 180 turn in elevator because it makes no sense and is a waste of time.
+            if abs(memory["elevator_low_branches"]) == 2 and junction_type == Junctions.RL:
+                memory["elevator_low_branches"] = 0
+                return Location.elevator_up
+            
+            elif junction_type == Junctions.L:
+                memory["elevator_low_branches"] -= 1
+
+            elif junction_type == Junctions.RL:
+                memory["elevator_low_branches"] = 0
+                return Location.rack_orange_L
+            
+        return Location.elevator_low
+
+def handler_elevator_up(direction, junction_type):
+    if direction == Direction.cw:
+        if abs(memory["elevator_high_branches"]) == 2 and junction_type == Junctions.RL:
+            memory["elevator_high_branches"] = 0
+            return Location.elevator_low
+        
+        elif junction_type == Junctions.R:
+            memory["elevator_high_branches"] += 1
+        
+        # crossed first branch of orange upper rack.
+        elif junction_type == Junctions.L:
+            memory["elevator_high_branches"] = 0
+            return Location.rack_orange_U
+    
+    if direction == Direction.acw:
+        if abs(memory["elevator_high_branches"]) == 2 and junction_type == Junctions.RL:
+            memory["elevator_high_branches"] = 0
+            return Location.elevator_low
+        
+        elif junction_type == Junctions.L:
+                memory["elevator_high_branches"] -= 1
+        
+        # crossed first branch of purple upper rack.
+        elif junction_type == Junctions.R:
+            memory["elevator_high_branches"] = 0
+            return Location.rack_purple_U
+
+    return Location.elevator_up
+
+def handler_rack_orange_U(direction, junction_type):
+    if direction == Direction.acw:
+        if junction_type == Junctions.L:
+        # Again this is assuming logical decision making and the bot wont randomly turn 180 deg and go back into rack area once its coming back out.
+            return Location.elevator_up
+    return Location.rack_orange_U
+
+def handler_rack_purple_U(direction, junction_type):
+    if direction == Direction.cw:
+        if junction_type == Junctions.R:
+            return Location.elevator_up
+    return Location.rack_purple_U
+
+""" def mapping(previous_state, mode, direction, junction_type):
+    #Only call once per cycle. 
 
     if mode == Mode.start:
             return Location.start
@@ -129,7 +290,7 @@ def mapping(previous_state, mode, direction, new_junction):
                 if direction == Direction.cw:
                     if junction_type == Junctions.R:
                         memory["elevator_low_branches"] += 1
-                        if abs(memory["elevator_low_branches"]) == 2 and take_a_turn() == True:
+                        if abs(memory["elevator_low_branches"]) == 2 and memory["take_next_turn"] == True:
                             memory["elevator_low_branches"] = 0
                             memory["prev_elevator_state"] = Elevator.low
                             return Location.elevator
@@ -140,7 +301,7 @@ def mapping(previous_state, mode, direction, new_junction):
                 if direction == Direction.acw:
                     if junction_type == Junctions.L:
                         memory["elevator_low_branches"] -= 1
-                        if abs(memory["elevator_low_branches"]) == 2 and take_a_turn() == True:
+                        if abs(memory["elevator_low_branches"]) == 2 and memory["take_next_turn"] == True:
                             memory["elevator_low_branches"] = 0
                             memory["prev_elevator_state"] = Elevator.low
                             return Location.elevator
@@ -207,10 +368,4 @@ def mapping(previous_state, mode, direction, new_junction):
             return Location.rack_purple_U
         
     if mode == Mode.delivery:
-        pass
-
-#direction = rotation_tracker()
-#mode = mode_tracker()
-#location = mapping(location, SL, SR, mode, direction)
-
-
+        pass """

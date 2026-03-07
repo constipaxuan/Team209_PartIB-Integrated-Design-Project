@@ -12,8 +12,7 @@ class Location:
     rack_purple_L = 4
     rack_orange_U = 5
     rack_purple_U = 6
-    elevator = 7
-    elevator_up = 8
+    elevator_up = 7
 
 class Unloading_States:
     none = 0

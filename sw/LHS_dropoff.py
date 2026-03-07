@@ -4,7 +4,7 @@ target_bay = 0
 drop_off_bay = 0
 counting_line = False # This is our "latch"
 
-def LHS_dropoff():
+def LHS_dropoff(resistor_color):
     if resistor_color == 0: 
         target_bay = 4 # Red, which is the rightmost bay
     if resistor_color == 1: 
