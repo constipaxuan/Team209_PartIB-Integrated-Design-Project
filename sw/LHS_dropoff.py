@@ -1,5 +1,12 @@
 # Coming from the LHS main spine back down to loading bays
 # Red = 0, Yellow = 1, SKIP the starting box = 2, Green = 3, Blue = 4
+
+from sw.behaviour import Turn_Direction
+from sw.line_following import line_follow_step
+from sw.locations import Junctions
+from sw.main import S1, S2, SR, detect_junction_type, turn_v4
+from R_pickup_N_measure import release
+
 target_bay = 0 
 drop_off_bay = 0
 counting_line = False # This is our "latch"
@@ -15,11 +22,10 @@ def LHS_dropoff(resistor_color):
         target_bay = 0 # Blue
 
 
-
+    # 1. Line following code goes here (keep the car on the main spine)
+    line_follow_step(S1, S2) # Placeholder for line following function, replace with actual function
+    # 2. Check for branches
     while True:
-        # 1. Line following code goes here (keep the car on the main spine)
-        
-        # 2. Check for branches
         if SR == 1 and not counting_line:
             drop_off_bay += 1
             counting_line = True # Block further counting until we leave the line
@@ -29,14 +35,24 @@ def LHS_dropoff(resistor_color):
             counting_line = False # Reset the latch once we are back on black
             
         # 3. Check if we reached our target
-        if drop_off_bay == target_bay:
-            print("Target reached! Turning into bay")
-            if target_bay == 0: 
-                #code to go straight and drop off in blue bay
-                slot_status = [0,0,0,0,0,0] # Reset slot status for next checking
+        # case when the target bay is blue, no need to turn
+        if target_bay == 0: 
+            if detect_junction_type == Junctions.RL: # Went straight and arrived at blue box
+                #stop car 
+                motor_l.Forward(speed = 0)
+                motor_r.Forward(speed = 0)
                 break
-            else:
-                #code to turn 90 degrees and drop off in other bays
-                # Insert code to turn 90 degrees and drop off
-                slot_status = [0,0,0,0,0,0] # Reset slot status for next checking
-                break # Exit loop after drop off
+        if target_bay != 0:
+            if detect_junction_type == Junctions.L:
+                turn_v4(Turn_Direction.left, S1, S2, turn_state) #turn into bay corridor
+                line_follow_step(S1, S2)
+            if drop_off_bay == target_bay:
+                print("Target reached! Turning into bay")
+                turn_v4(Turn_Direction.right, S1, S2, turn_state) #turn into box
+                line_follow_step(S1, S2) #line follow into box
+                if detect_junction_type == Junctions.RL: #arrived at box
+                    #stop car 
+                    motor_l.Forward(speed = 0)
+                    motor_r.Forward(speed = 0)
+                    break
+    release() #release grabber

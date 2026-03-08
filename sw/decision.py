@@ -1,13 +1,14 @@
 from line_following import detect_junction_type, line_follow_step, detect_junction, turn
 from locations import Location, Direction, Junctions
 from behaviour import Mode, Turn_Direction, Turn_State, Start_States
-from lowerpurple_upper_orange_R_detect import lowP_upperO_R_detect, rec_dist_laser #detection for lower purple upper orange
-from upperpurple_lowerorange_R_detect import lowP_upperO_R_detect, rec_dist_laser #detection for upper purple lower orange
+from lowerpurple_upper_orange_R_detect import * #detection for lower purple upper orange
+from upperpurple_lowerorange_R_detect import * #detection for upper purple lower orange
 from LHS_dropoff import LHS_dropoff
 from RHS_dropoff import RHS_dropoff
 from test_motor import Motor
 from utime import sleep
-from main import turn_v4, Motion
+from main import SR_sensor, turn_v4, Motion
+from R_pickup_N_measure import Pgram_tilt, grab, R_measure #variables & functions for R measurement and pickup
 
 location = Location.start
 direction = Direction.cw
@@ -32,12 +33,18 @@ motor_r = Motor(dirPin=7, PWMPin=6)
 #def start_mode():
 #    pass
 
-def search_mode():
-    pass
+def search_mode(location):
+    # I assume that this function is called when the bot should turn on the side sensor, I assume that the bot is already at the rack positions
+    if location in [Location.rack_orange_U, Location.rack_purple_L]:
+        if slot_status.count(1) < 6: #number of cleared slots is less than 6
+            lowP_upperO_R_detect() #this keeps on running until the rack is cleared
+    elif location in [Location.rack_orange_L, Location.rack_purple_U]:
+        if slot_status.count(1) < 6: #number of cleared slots is less than 6
+            upperP_lowO_R_detect() #this keeps on running until the rack is cleared
 
 def delivery_mode(S1, S2, location, direction, junction_type, new_junction, resistor_color, turn_state, turn_complete):
     base = 70
-    # Step 1: Enter delivery mode when laser detects a resistor load while bot is on a branch. 
+    # Step 1: Enter delivery mode when laser detects a resistor load while bot is on a branch. (is insidelowerpurple_upperorange_R_detect and upperpurple_lowerorange_R_detect)
     if location == Location.rack_orange_L:
         if new_junction and motion != Motion.turning:
             motor_l.Forward(speed = 0)
@@ -57,11 +64,18 @@ def delivery_mode(S1, S2, location, direction, junction_type, new_junction, resi
                 turn_complete = False
                 turn_state = Turn_State.start
         
-        # Step 2: Move forward. Stop when the ToF distance measurement reaches a threshold. [Insert code]
+        #Step 2: Move forward closer to resistor
+        motor_l.Forward(speed = base)
+        motor_r.Forward(speed = base)
+        sleep(0.5) # might need to adjust time 
+        motor_l.Forward(speed = 0)
+        motor_r.Forward(speed = 0)
 
         # Step 3: Grab the load. [Insert grabber code here]
-
+        grab() 
+        R_measure(resistor_color) #measure the resistor color and store it as a variable so that the bot knows which bay to drop it off at
         # Step 4: Reverse until RL junction is detected. Then turn right towards the drop off bay.
+
         #move forward until you grab. After grabbing reverse until reach RL junction, turn 90 deg right (cw)
         if rack_junction_reached == False:
             motor_l.Reverse(speed = 60)
@@ -101,3 +115,5 @@ def delivery_mode(S1, S2, location, direction, junction_type, new_junction, resi
         #decide to turn left or right depending on which rack it wants to go to.
     
     elif location == Location.rack_purple_L:
+    #copy and paste later
+        pass

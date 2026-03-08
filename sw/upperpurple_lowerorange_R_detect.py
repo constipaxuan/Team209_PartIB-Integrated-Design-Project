@@ -34,7 +34,7 @@ def rec_dist_laser():
     return laser_distance
     
 
-def lowP_upperO_R_detect():
+def upperP_lowO_R_detect():
     global R_detected, rack_cleared, slot_counter, slot_status
     while slot_status.count(1) < 6: #number of cleared slots is less than 6
         if SR == 1:  # Branch detected

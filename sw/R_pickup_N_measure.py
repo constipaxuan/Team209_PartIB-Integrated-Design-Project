@@ -3,13 +3,11 @@ from behaviour import *
 from locations import Location
 from test_3wireservo import set_angle
 from test_4wireservo import set_angle_4wire
-from lowerpurple_upper_orange_R_detect import R_detected
-from upperpurple_lowerorange_R_detect import R_detected
 #use the 3 wire servo for the parallelogram because it has no feedback and the parallelogram has no mechanical resistance anyways
 from time import sleep
 from machine import ADC, Pin
 import time
-
+#Rdetected is already a global variable
 # Constants (same logic as Arduino code)
 ADC_SOLUTION = 65535  # Pico ADC is 16-bit (0–65535)
 
@@ -27,7 +25,6 @@ Blue.value(0)
 Green.value(0)
 Red.value(0)
 Yellow.value(0)
-resistor_color = 0
 # Sensor connected to ADC0 (GP26)
 sensor = ADC(26)
 
@@ -45,14 +42,11 @@ def Pgram_tilt(mode, location): #tilting of parallelogram
             # tilt a bit higher to reach the resistors
             set_angle(45)
 
-def claw(R_detected):
-    if R_detected == True:
-        # close claw to pick up resistor
-        set_angle_4wire(0) # might need to adjust angle depending on how the servo is mounted and how the claw is designed
-    else:
-        # open claw
-        set_angle_4wire(90) # might need to adjust angle depending on how the servo is mounted and how the claw is designed
+def grab():
+    set_angle_4wire(0) # might need to adjust angle depending on how the servo is mounted and how the claw is designed
 
+def release():
+    set_angle_4wire(90) # might need to adjust angle depending on how the servo is mounted and how the claw is designed
 def R_measure(resistor_color):
     #pass current through and measure voltage V&I
     voltage = 3.3*sensor.read_u16()/ADC_SOLUTION
@@ -64,7 +58,7 @@ def R_measure(resistor_color):
 
     # Turn on correct led
     if voltage > 3:
-        Blue.value(1)
+        Blue.value(1) #turns LED on to blue
         resistor_color = 4 # Blue
     elif 3 > voltage > 2.5:
         Green.value(1)
@@ -75,22 +69,9 @@ def R_measure(resistor_color):
     elif 1 > voltage > 0.2:
         Yellow.value(1)
         resistor_color = 1 # Yellow
-
-
-def LED_lightup(R):
-    if R < 100:
-        resistor_color = 0 # Red
-        #LED light up red (ADD CODE)
-    elif R < 220:
-        resistor_color = 1 # Yellow
-        #LED light up yellow (ADD CODE)
-    elif R < 470:
-        resistor_color = 3 # Green
-        #LED light up green (ADD CODE)
-    else:
-        resistor_color = 4 # Blue
-        #LED light up blue (ADD CODE)
     return resistor_color
+
+
 
 
 
