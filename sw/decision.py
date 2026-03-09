@@ -200,8 +200,7 @@ def search_mode(location):
                 # INSERT code to swap to delivery mode to pick up resistor and drop off at bay (The else error above will go away once this function is added)
 
 def delivery_mode(S1, S2, location, direction, junction_type, new_junction, resistor_color, turn_state, turn_complete):
-    base = 70
-    # Step 1: Enter delivery mode when laser detects a resistor load while bot is on a branch. 
+    base = 70 # Step 1: Enter delivery mode when laser detects a resistor load while bot is on a branch. 
     if location == Location.rack_orange_L:
         if new_junction and motion != Motion.turning:
             motor_l.Forward(speed = 0)
