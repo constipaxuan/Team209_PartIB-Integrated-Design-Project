@@ -55,17 +55,23 @@ def R_measure():
     voltage = 3.3*sensor.read_u16()/ADC_SOLUTION 
     #this is the final voltage reading
 
-    # Turn on correct led
+    # Turn off all LEDs before turning on the correct one
+    Blue.value(0)
+    Green.value(0)
+    Red.value(0)
+    Yellow.value(0)
+
+    # Turn on correct led -- We are assuming no values outside the given ranges will be read. Otherwise there will be an error, consider putting an else statement to handle unexpected values.
     if voltage > 3:
         Blue.value(1) #turns LED on to blue
         resistor_color = Resistor_Color.blue # Blue
-    elif 3 > voltage > 2.5:
+    elif 2.5 < voltage <= 3:
         Green.value(1)
         resistor_color = Resistor_Color.green # Green
-    elif 2.5 > voltage > 1:
+    elif 1 < voltage <= 2.5:
         Red.value(1)
         resistor_color = Resistor_Color.red # Red
-    elif 1 > voltage > 0.2:
+    elif 0.2 < voltage <= 1:
         Yellow.value(1)
         resistor_color = Resistor_Color.yellow # Yellow
     return resistor_color
