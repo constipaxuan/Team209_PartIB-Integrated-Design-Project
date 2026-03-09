@@ -2,14 +2,16 @@
 # Red = 0, Yellow = 1, SKIP the starting box = 2, Green = 3, Blue = 4
 
 from sw.behaviour import Turn_Direction
-from sw.line_following import line_follow_step
 from sw.locations import Junctions, Resistor_Color
-from sw.main import S1, S2, SR, detect_junction_type, turn_v4
+from sw.main import S1, S2, SR, detect_junction_type, turn_v4, line_follow_step
 from R_pickup_N_measure import release
 
 target_bay = 0 
 drop_off_bay = 0
 counting_line = False # This is our "latch"
+
+on_junction = (SL == 1 or SR == 1)
+new_junction = (not prev_on_junction) and on_junction
 
 def LHS_dropoff(resistor_color):
     if resistor_color == Resistor_Color.red: 
@@ -23,7 +25,7 @@ def LHS_dropoff(resistor_color):
 
 
     # 1. Line following code goes here (keep the car on the main spine)
-    line_follow_step(S1, S2) # Placeholder for line following function, replace with actual function
+    line_follow_step(S1, S2, 60, 20) # Placeholder for line following function, replace with actual function
     # 2. Check for branches
     while True:
         if SR == 1 and not counting_line:
@@ -56,3 +58,4 @@ def LHS_dropoff(resistor_color):
                     motor_r.Forward(speed = 0)
                     break
     release() #release grabber
+

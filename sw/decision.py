@@ -1,5 +1,5 @@
-from line_following import detect_junction_type, line_follow_step, detect_junction, turn
-from locations import Location, Direction, Junctions
+
+from locations import Location, Direction, Junctions, Target_Rack, Resistor_Color
 from behaviour import Mode, Turn_Direction, Turn_State, Start_States
 from lowerpurple_upper_orange_R_detect import * #detection for lower purple upper orange
 from upperpurple_lowerorange_R_detect import * #detection for upper purple lower orange
@@ -7,7 +7,7 @@ from LHS_dropoff import LHS_dropoff
 from RHS_dropoff import RHS_dropoff
 from test_motor import Motor
 from utime import sleep
-from main import SR_sensor, turn_v4, Motion
+from main import SR_sensor, turn_v4, Motion, line_follow_step, back_line_follow_step, detect_junction_type, turn_180
 from R_pickup_N_measure import Pgram_tilt, grab, R_measure #variables & functions for R measurement and pickup
 
 location = Location.start
@@ -15,15 +15,176 @@ direction = Direction.cw
 mode = Mode.start
 turn_complete = False
 turn_state = Turn_State.start
+turn_phase = 0
 motion = Motion.follow
 rack_junction_reached = False
+target_rack = Target_Rack.orange_L #placeholder, should be determined by mapping and memory
 
 #shld be defined in main code
 motor_l = Motor(dirPin=4, PWMPin=5)
 motor_r = Motor(dirPin=7, PWMPin=6) 
 
+# Called when load has been dropped in required bay. Ends when turn_complete = True and line following starts again. Bot is now aligned with main loop spine and is oriented in the correct direction of travel.
+main_spine_detected = False
+def handler_blue_bay(main_spine_detected, S1, S2, new_junction, target_rack, motion, turn_state, turn_complete, turn_phase):
+    if new_junction:
+        main_spine_detected = True
 
+    if not main_spine_detected:
+        back_line_follow_step(S1, S2, 60, 20) #reverse until detect main spine again
+    else:
+        motor_l.Forward(speed = 0)
+        motor_r.Forward(speed = 0)
 
+        if target_rack == Target_Rack.purple_L:
+            if new_junction and motion != Motion.turning: 
+                motor_l.Forward(speed = 0)
+                motor_r.Forward(speed = 0)
+                motion = Motion.turning
+                turn_state = Turn_State.start
+            elif motion == Motion.turning:
+                turn_state, turn_complete = turn_v4(Turn_Direction.left, S1, S2, turn_state, motor_l, motor_r) #turn left towards purple L
+                if turn_complete:
+                    motion = Motion.follow
+                    turn_complete = False
+                    turn_state = Turn_State.start
+        else:
+            if new_junction and motion != Motion.turning: 
+                motor_l.Forward(speed = 0)
+                motor_r.Forward(speed = 0)
+                motion = Motion.turning
+                turn_state = Turn_State.start
+            elif motion == Motion.turning:
+                turn_state, turn_complete, turn_phase = turn_180(Turn_Direction.left, S1, S2, turn_state, turn_phase, motor_l, motor_r) #turn 180 towards orange L
+                if turn_complete:
+                    motion = Motion.follow
+                    turn_complete = False
+                    turn_state = Turn_State.start
+
+        if motion == Motion.follow:
+            line_follow_step(S1, S2, 60, 20) 
+        
+    return main_spine_detected, motion, turn_state, turn_complete, turn_phase
+
+def handler_red_bay(main_spine_detected, S1, S2, new_junction, target_rack, motion, turn_state, turn_complete, turn_phase):
+    if new_junction:
+        main_spine_detected = True
+
+    if not main_spine_detected:
+        back_line_follow_step(S1, S2, 60, 20) #reverse until detect main spine again
+    else:
+        motor_l.Forward(speed = 0)
+        motor_r.Forward(speed = 0)
+
+        if target_rack == Target_Rack.orange_L:
+            if new_junction and motion != Motion.turning: 
+                motor_l.Forward(speed = 0)
+                motor_r.Forward(speed = 0)
+                motion = Motion.turning
+                turn_state = Turn_State.start
+            elif motion == Motion.turning:
+                turn_state, turn_complete = turn_v4(Turn_Direction.right, S1, S2, turn_state, motor_l, motor_r) #turn left towards purple L
+                if turn_complete:
+                    motion = Motion.follow
+                    turn_complete = False
+                    turn_state = Turn_State.start
+        else:
+            if new_junction and motion != Motion.turning: 
+                motor_l.Forward(speed = 0)
+                motor_r.Forward(speed = 0)
+                motion = Motion.turning
+                turn_state = Turn_State.start
+            elif motion == Motion.turning:
+                turn_state, turn_complete, turn_phase = turn_180(Turn_Direction.right, S1, S2, turn_state, turn_phase, motor_l, motor_r) #turn 180 towards orange L
+                if turn_complete:
+                    motion = Motion.follow
+                    turn_complete = False
+                    turn_state = Turn_State.start
+
+        if motion == Motion.follow:
+            line_follow_step(S1, S2, 60, 20) 
+        
+    return main_spine_detected, motion, turn_state, turn_complete, turn_phase
+
+def handler_green_bay(main_spine_detected, S1, S2, new_junction, target_rack, motion, turn_state, turn_complete, turn_phase):
+    if new_junction:
+        main_spine_detected = True
+
+    if not main_spine_detected:
+        back_line_follow_step(S1, S2, 60, 20) #reverse until detect main spine again
+    else:
+        motor_l.Forward(speed = 0)
+        motor_r.Forward(speed = 0)
+
+        if target_rack == Target_Rack.purple_L:
+            if new_junction and motion != Motion.turning: 
+                motor_l.Forward(speed = 0)
+                motor_r.Forward(speed = 0)
+                motion = Motion.turning
+                turn_state = Turn_State.start
+            elif motion == Motion.turning:
+                turn_state, turn_complete = turn_v4(Turn_Direction.left, S1, S2, turn_state, motor_l, motor_r) #turn left towards purple L
+                if turn_complete:
+                    motion = Motion.follow
+                    turn_complete = False
+                    turn_state = Turn_State.start
+        else:
+            if new_junction and motion != Motion.turning: 
+                motor_l.Forward(speed = 0)
+                motor_r.Forward(speed = 0)
+                motion = Motion.turning
+                turn_state = Turn_State.start
+            elif motion == Motion.turning:
+                turn_state, turn_complete = turn_v4(Turn_Direction.right, S1, S2, turn_state, motor_l, motor_r) #turn left towards purple L
+                if turn_complete:
+                    motion = Motion.follow
+                    turn_complete = False
+                    turn_state = Turn_State.start
+
+        if motion == Motion.follow:
+            line_follow_step(S1, S2, 60, 20) 
+        
+    return main_spine_detected, motion, turn_state, turn_complete, turn_phase
+
+def handler_green_bay(main_spine_detected, S1, S2, new_junction, target_rack, motion, turn_state, turn_complete, turn_phase):
+    if new_junction:
+        main_spine_detected = True
+
+    if not main_spine_detected:
+        back_line_follow_step(S1, S2, 60, 20) #reverse until detect main spine again
+    else:
+        motor_l.Forward(speed = 0)
+        motor_r.Forward(speed = 0)
+
+        if target_rack == Target_Rack.orange_L:
+            if new_junction and motion != Motion.turning: 
+                motor_l.Forward(speed = 0)
+                motor_r.Forward(speed = 0)
+                motion = Motion.turning
+                turn_state = Turn_State.start
+            elif motion == Motion.turning:
+                turn_state, turn_complete = turn_v4(Turn_Direction.right, S1, S2, turn_state, motor_l, motor_r) #turn left towards purple L
+                if turn_complete:
+                    motion = Motion.follow
+                    turn_complete = False
+                    turn_state = Turn_State.start
+        else:
+            if new_junction and motion != Motion.turning: 
+                motor_l.Forward(speed = 0)
+                motor_r.Forward(speed = 0)
+                motion = Motion.turning
+                turn_state = Turn_State.start
+            elif motion == Motion.turning:
+                turn_state, turn_complete = turn_v4(Turn_Direction.left, S1, S2, turn_state, motor_l, motor_r) #turn left towards purple L
+                if turn_complete:
+                    motion = Motion.follow
+                    turn_complete = False
+                    turn_state = Turn_State.start
+
+        if motion == Motion.follow:
+            line_follow_step(S1, S2, 60, 20) 
+        
+    return main_spine_detected, motion, turn_state, turn_complete, turn_phase
 
 def search_mode(location):
     # I assume that this function is called when the bot should turn on the side sensor, I assume that the bot is already at the rack positions
