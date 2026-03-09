@@ -1,12 +1,14 @@
 
 from locations import Location, Direction, Junctions, Target_Rack, Resistor_Color
-from behaviour import Mode, Turn_Direction, Turn_State, Start_States
+from behaviour import Mode, Turn_Direction, Turn_State, Start_States, Delivery_States
 from lowerpurple_upper_orange_R_detect import * #detection for lower purple upper orange
 from upperpurple_lowerorange_R_detect import * #detection for upper purple lower orange
 from LHS_dropoff import LHS_dropoff
 from RHS_dropoff import RHS_dropoff
 from test_motor import Motor
 from utime import sleep
+from time import ticks_ms, ticks_diff
+from map_state import memory
 from main import SR_sensor, turn_v4, Motion, line_follow_step, back_line_follow_step, detect_junction_type, turn_180
 from R_pickup_N_measure import Pgram_tilt, grab, R_measure #variables & functions for R measurement and pickup
 
@@ -146,7 +148,7 @@ def handler_green_bay(main_spine_detected, S1, S2, new_junction, target_rack, mo
         
     return main_spine_detected, motion, turn_state, turn_complete, turn_phase
 
-def handler_green_bay(main_spine_detected, S1, S2, new_junction, target_rack, motion, turn_state, turn_complete, turn_phase):
+def handler_yellow_bay(main_spine_detected, S1, S2, new_junction, target_rack, motion, turn_state, turn_complete, turn_phase):
     if new_junction:
         main_spine_detected = True
 
@@ -193,15 +195,23 @@ def search_mode(location):
             lowP_upperO_R_detect() #this keeps on running until the rack is cleared
             if R_detected:
                 # INSERT code to swap to delivery mode to pick up resistor and drop off at bay
+                pass
     else:
         if slot_status.count(1) < 6: #number of cleared slots is less than 6
             upperP_lowO_R_detect() #this keeps on running until the rack is cleared
             if R_detected:
                 # INSERT code to swap to delivery mode to pick up resistor and drop off at bay (The else error above will go away once this function is added)
+                pass
 
 def delivery_mode(S1, S2, location, direction, junction_type, new_junction, resistor_color, turn_state, turn_complete):
-    base = 70 # Step 1: Enter delivery mode when laser detects a resistor load while bot is on a branch. 
-    if location == Location.rack_orange_L:
+    pass
+
+deliv_state = Delivery_States.load_detected
+
+def handler_orange_L_delivery(S1, S2, SL, SR, direction, new_junction, resistor_color, turn_state, turn_complete, motion, deliv_state, turn_dir, deliv_start_time):
+    base = 60
+    # Step 1: Enter delivery mode when laser detects a resistor load while bot is on a branch. 
+    if deliv_state == Delivery_States.load_detected:
         if new_junction and motion != Motion.turning:
             motor_l.Forward(speed = 0)
             motor_r.Forward(speed = 0)
@@ -219,57 +229,73 @@ def delivery_mode(S1, S2, location, direction, junction_type, new_junction, resi
                 motion = Motion.follow
                 turn_complete = False
                 turn_state = Turn_State.start
+                deliv_state = Delivery_States.approaching
+                deliv_start_time = ticks_ms() #start timer for how long we have been in delivery mode
         
-        #Step 2: Move forward closer to resistor
-        motor_l.Forward(speed = base)
-        motor_r.Forward(speed = base)
-        sleep(0.5) # might need to adjust time 
-        motor_l.Forward(speed = 0)
-        motor_r.Forward(speed = 0)
+    #Step 2: Move forward closer to resistor
+    elif deliv_state == Delivery_States.approaching:
+        line_follow_step(S1, S2, base, 20) 
+        if ticks_diff(ticks_ms(), deliv_start_time) > 500: #approach for 0.5 seconds, then stop and grab. Time can be adjusted based on testing
+            motor_l.Forward(speed = 0)
+            motor_r.Forward(speed = 0)
+            deliv_state = Delivery_States.reached
 
-        # Step 3: Grab the load. [Insert grabber code here]
+    # Step 3: Grab the load. [Insert grabber code here]
+    elif deliv_state == Delivery_States.reached:
         grab() 
         R_measure(resistor_color) #measure the resistor color and store it as a variable so that the bot knows which bay to drop it off at
+        deliv_state = Delivery_States.retracting
         # Step 4: Reverse until RL junction is detected. Then turn right towards the drop off bay.
 
         #move forward until you grab. After grabbing reverse until reach RL junction, turn 90 deg right (cw)
-        if rack_junction_reached == False:
-            motor_l.Reverse(speed = 60)
-            motor_r.Reverse(speed = 60)
+    elif deliv_state == Delivery_States.retracting:
+        back_line_follow_step(S1, S2, base, 20) #reverse until detect main spine again
 
-        if new_junction and junction_type == Junctions.RL:
-            rack_junction_reached = True
+        if new_junction and (SL == 1 and SR == 1): #detect RL junction
+            deliv_state = Delivery_States.reorienting
             motor_l.Forward(speed = 0)
             motor_r.Forward(speed = 0)
             motion = Motion.turning
             turn_state = Turn_State.start
             turn_dir = Turn_Direction.right
             direction = Direction.acw
-
-            if motion == Motion.turning:
-                if not turn_complete:
-                    turn_v4(Turn_Direction.right, S1, S2, turn_state)
+        
+    elif deliv_state == Delivery_States.reorienting:
+        if motion == Motion.turning:
+            if not turn_complete:
+                turn_state, turn_complete = turn_v4(turn_dir, S1, S2, turn_state)
+            else:
                 motion = Motion.follow
                 turn_complete = False
                 turn_state = Turn_State.start
+            
+        if motion == Motion.follow:
+            line_follow_step(S1, S2, 60, 20) 
         
-        #rack_branches_OL is known
-        while memory["rack_branches_OL"] % 6 != 0:
-            if junction_type == Junctions.L:
+            #rack_branches_OL is known
+            if new_junction and SL == 1:
                 memory["rack_branches_OL"] -= 1
+            if memory["rack_branches_OL"] % 6 == 0:
+                return True, turn_state, turn_complete, direction, deliv_state, motion, turn_dir, deliv_start_time
+        
+    return False, turn_state, turn_complete, direction, deliv_state, motion, turn_dir, deliv_start_time
 
-        LHS_dropoff(resistor_color)
+# Call format: 
+# ready_for_unloading, turn_state, turn_complete, direction, deliv_state, motion = handler_orange_L_delivery(S1, S2, location, direction, junction_type, new_junction, resistor_color, turn_state, turn_complete)
+
+            LHS_dropoff(resistor_color)
+
         #enter unloading bay with blue closest
         # LHS dropoff stops when load has been deposited
-        # reverse until reach RL junction. turning direction depends on where u wanna go next -- handled by search decision?
-        motor_l.Forward(base)
-        motor_r.Forward(base)
-        sleep(0.5)
-        while junction_type != Junctions.RL:
-            # exit this loop when T junction is detected.
-            line_follow_step(S1, S2)
-        #decide to turn left or right depending on which rack it wants to go to.
-    
+        if resistor_color == Resistor_Color.red:
+            main_spine_detected, motion, turn_state, turn_complete, turn_phase = handler_red_bay(main_spine_detected, S1, S2, new_junction, target_rack, motion, turn_state, turn_complete, turn_phase)
+        elif resistor_color == Resistor_Color.yellow:
+            main_spine_detected, motion, turn_state, turn_complete, turn_phase = handler_yellow_bay(main_spine_detected, S1, S2, new_junction, target_rack, motion, turn_state, turn_complete, turn_phase)
+        elif resistor_color == Resistor_Color.green:
+            main_spine_detected, motion, turn_state, turn_complete, turn_phase = handler_green_bay(main_spine_detected, S1, S2, new_junction, target_rack, motion, turn_state, turn_complete, turn_phase)   
+        elif resistor_color == Resistor_Color.blue:
+            main_spine_detected, motion, turn_state, turn_complete, turn_phase = handler_blue_bay(main_spine_detected, S1, S2, new_junction, target_rack, motion, turn_state, turn_complete, turn_phase)
+
     elif location == Location.rack_purple_L:
     #copy and paste later
         pass
