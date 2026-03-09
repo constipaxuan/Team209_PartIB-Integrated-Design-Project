@@ -38,13 +38,17 @@ def search_mode(location):
     if location in [Location.rack_orange_U, Location.rack_purple_L]:
         if slot_status.count(1) < 6: #number of cleared slots is less than 6
             lowP_upperO_R_detect() #this keeps on running until the rack is cleared
-    elif location in [Location.rack_orange_L, Location.rack_purple_U]:
+            if R_detected:
+                # INSERT code to swap to delivery mode to pick up resistor and drop off at bay
+    else:
         if slot_status.count(1) < 6: #number of cleared slots is less than 6
             upperP_lowO_R_detect() #this keeps on running until the rack is cleared
+            if R_detected:
+                # INSERT code to swap to delivery mode to pick up resistor and drop off at bay (The else error above will go away once this function is added)
 
 def delivery_mode(S1, S2, location, direction, junction_type, new_junction, resistor_color, turn_state, turn_complete):
     base = 70
-    # Step 1: Enter delivery mode when laser detects a resistor load while bot is on a branch. (is insidelowerpurple_upperorange_R_detect and upperpurple_lowerorange_R_detect)
+    # Step 1: Enter delivery mode when laser detects a resistor load while bot is on a branch. 
     if location == Location.rack_orange_L:
         if new_junction and motion != Motion.turning:
             motor_l.Forward(speed = 0)
