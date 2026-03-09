@@ -56,3 +56,4 @@ def LHS_dropoff(resistor_color):
                     motor_r.Forward(speed = 0)
                     break
     release() #release grabber
+

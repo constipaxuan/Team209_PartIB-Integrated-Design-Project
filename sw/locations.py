@@ -30,3 +30,9 @@ class Junctions:
     L = 2
     RL = 3
     nil = 4
+
+class Target_Rack:
+    orange_L = 1
+    purple_L = 2
+    orange_U = 3
+    purple_U = 4

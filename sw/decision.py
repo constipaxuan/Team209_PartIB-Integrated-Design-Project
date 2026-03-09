@@ -1,5 +1,5 @@
-from line_following import detect_junction_type, line_follow_step, detect_junction, turn
-from locations import Location, Direction, Junctions
+
+from locations import Location, Direction, Junctions, Target_Rack, Resistor_Color
 from behaviour import Mode, Turn_Direction, Turn_State, Start_States
 from lowerpurple_upper_orange_R_detect import * #detection for lower purple upper orange
 from upperpurple_lowerorange_R_detect import * #detection for upper purple lower orange
@@ -7,7 +7,7 @@ from LHS_dropoff import LHS_dropoff
 from RHS_dropoff import RHS_dropoff
 from test_motor import Motor
 from utime import sleep
-from main import SR_sensor, turn_v4, Motion
+from main import SR_sensor, turn_v4, Motion, line_follow_step, back_line_follow_step, detect_junction_type, detect_junction
 from R_pickup_N_measure import Pgram_tilt, grab, R_measure #variables & functions for R measurement and pickup
 
 location = Location.start
@@ -17,10 +17,27 @@ turn_complete = False
 turn_state = Turn_State.start
 motion = Motion.follow
 rack_junction_reached = False
+target_rack = Target_Rack.orange_L #placeholder, should be determined by mapping and memory
 
 #shld be defined in main code
 motor_l = Motor(dirPin=4, PWMPin=5)
 motor_r = Motor(dirPin=7, PWMPin=6) 
+
+# Called when load has been dropped in required bay
+main_spine_detected = False
+def handler_blue_bay(main_spine_detected, S1, S2, new_junction):
+    if new_junction:
+        main_spine_detected = True
+    if not main_spine_detected:
+        back_line_follow_step(S1, S2, 60, 20) #reverse until detect main spine again
+    else:
+        motor_l.Forward(speed = 0)
+        motor_r.Forward(speed = 0)
+
+        if target_rack == Target_Rack.purple_L:
+            
+
+
 
 
 
