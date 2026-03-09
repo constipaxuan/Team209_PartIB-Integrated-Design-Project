@@ -1,3 +1,4 @@
+
 from RHS_dropoff import RHS_dropoff
 from sw.behaviour import Mode
 from sw.locations import Resistor_Color
@@ -10,8 +11,6 @@ cleared_counter = slot_status.count(1)
 rack_cleared = False
 R_detected = False
 #set up laser sensor
-from email.mime import base
-from turtle import distance
 motor_l = Motor(dirPin=4, PWMPin=5)
 motor_r = Motor(dirPin=7, PWMPin=6) 
 from machine import Pin, I2C
@@ -50,7 +49,6 @@ def lowP_upperO_R_detect():
         if distance < 100: # resistor detected
         # 1. Add code here to turn the car and pick up resistor
             R_detected = True
-            mode = Mode.delivery #swap to delivery mode to pick up resistor and drop off at bay
             print(f"Slot {slot_counter} picked up and cleared.")
         else: # Slot is empty
             slot_status[slot_counter] = 1

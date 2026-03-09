@@ -1,6 +1,11 @@
 #define these variables globally so that we can clear them off and reuse them for other branches
+from sw.behaviour import Mode
+from sw.locations import Resistor_Color
+from sw.new_main import SL
+
+
 slot_status = [0,0,0,0,0,0] #0 means unknown slot status, 1 means cleared
-resistor_color = 0 
+resistor_color = Resistor_Color.none
 slot_counter = 0
 cleared_counter = slot_status.count(1)
 rack_cleared = False
