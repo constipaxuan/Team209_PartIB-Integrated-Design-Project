@@ -3,6 +3,7 @@ from behaviour import *
 from locations import Location
 from test_3wireservo import set_angle
 from test_4wireservo import set_angle_4wire
+from locations import Resistor_Color
 #use the 3 wire servo for the parallelogram because it has no feedback and the parallelogram has no mechanical resistance anyways
 from time import sleep
 from machine import ADC, Pin
@@ -47,7 +48,7 @@ def grab():
 
 def release():
     set_angle_4wire(90) # might need to adjust angle depending on how the servo is mounted and how the claw is designed
-def R_measure(resistor_color):
+def R_measure():
     #pass current through and measure voltage V&I
     voltage = 3.3*sensor.read_u16()/ADC_SOLUTION
     sleep(0.1) # delay to stabilize reading
@@ -59,16 +60,16 @@ def R_measure(resistor_color):
     # Turn on correct led
     if voltage > 3:
         Blue.value(1) #turns LED on to blue
-        resistor_color = 4 # Blue
+        resistor_color = Resistor_Color.blue # Blue
     elif 3 > voltage > 2.5:
         Green.value(1)
-        resistor_color = 3 # Green
+        resistor_color = Resistor_Color.green # Green
     elif 2.5 > voltage > 1:
         Red.value(1)
-        resistor_color = 0 # Red
+        resistor_color = Resistor_Color.red # Red
     elif 1 > voltage > 0.2:
         Yellow.value(1)
-        resistor_color = 1 # Yellow
+        resistor_color = Resistor_Color.yellow # Yellow
     return resistor_color
 
 
