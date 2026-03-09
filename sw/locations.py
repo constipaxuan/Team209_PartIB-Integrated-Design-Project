@@ -14,7 +14,7 @@ class Location:
     rack_purple_U = 6
     elevator_up = 7
 
-class Unloading_States:
+class Color:
     none = 0
     red = 1
     yellow = 2

@@ -4,7 +4,7 @@ from machine import Pin, PWM
 from time import sleep, sleep_ms, ticks_ms, ticks_diff
 #from enum import Enum
 from behaviour import Turn_Direction, Turn_State, Mode, Start_States
-from locations import Junctions
+from locations import Junctions, Location, Direction
 from map_state import mapping, memory
 
 
@@ -67,6 +67,7 @@ junction_type = Junctions.nil
 turn_dir = Turn_Direction.nil
 turn_state = Turn_State.start
 start_state = Start_States.start
+location = Location.start
 
 #centering code
 def line_follow_step(S1, S2, base, corr):
@@ -141,10 +142,29 @@ def turn_v4(turn_dir, S1, S2, turn_state, motor_l, motor_r):
     
     return turn_state, False
     
-    
 
 #turn_state, turn_complete = turn_v4(turn_dir, S1, S2)
-     
+
+turn_complete = False
+#first_done = False -- local variables no need to define
+#second_done = False
+turn_phase = 0 # 0 = first 90, 1 = second 90 for 180 turn
+def turn_180(turn_dir, S1, S2, turn_state, turn_phase, motor_l, motor_r):
+    if turn_phase == 0:
+        turn_state, first_done = turn_v4(turn_dir, S1, S2, turn_state, motor_l, motor_r)
+        if first_done: 
+            turn_state = Turn_State.start
+            turn_phase = 1
+
+    elif turn_phase == 1:
+        turn_state, second_done = turn_v4(turn_dir, S1, S2, turn_state, motor_l, motor_r)
+        if second_done:
+            turn_phase = 0
+            turn_state = Turn_State.start
+            return turn_state, True, turn_phase
+
+    return turn_state, False, turn_phase
+
 def update_start_T_count(SL, SR, start_T_shape_count, new_junction):
     #global start_T_shape_count, counting
     if SL == 1 and SR == 1 and new_junction:

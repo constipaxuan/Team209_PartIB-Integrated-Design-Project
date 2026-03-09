@@ -34,7 +34,7 @@ def rec_dist_laser():
     return laser_distance
     
 
-def upperP_lowO_R_detect():
+def upperP_lowO_R_detect(new_junction):
     global R_detected, rack_cleared, slot_counter, slot_status
     while slot_status.count(1) < 6: #number of cleared slots is less than 6
         if SR == 1:  # Branch detected
@@ -42,7 +42,7 @@ def upperP_lowO_R_detect():
             sleep(0.1) # Short delay to debounce the sensor
             distance = rec_dist_laser()
             
-            if distance < 100: # resistor detected
+            if distance < 100: # resistor detected (arbitrary distance value)
                 R_detected = True
                 # 1. Add code here to turn the car and pick up resistor
                 # 2. Once picked up resistor, mark as cleared

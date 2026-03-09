@@ -9,6 +9,7 @@ class Turn_Direction:
     left = 0
     right = 1
     nil = 2
+    half = 3
 
 class Turn_State:
     start = 0

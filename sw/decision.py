@@ -23,15 +23,7 @@ motor_l = Motor(dirPin=4, PWMPin=5)
 motor_r = Motor(dirPin=7, PWMPin=6) 
 
 
-# For testing purposes: make it turn at every junction (maybe R if RL detected?) Just to make sure our junction detection logic works.
-#def take_a_turn(junction_event):
-#    return junction_event
 
-#def mode_tracker():
-#    pass
-
-#def start_mode():
-#    pass
 
 def search_mode(location):
     # I assume that this function is called when the bot should turn on the side sensor, I assume that the bot is already at the rack positions
