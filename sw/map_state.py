@@ -1,7 +1,7 @@
 #this code is NOT functional. Handling logic right now but eventiually it WILL be pipelined and not stuck in this monstrosity of blocking while loops.
 from line_following import detect_junction_type, line_follow_step, detect_junction
 from locations import Location, Elevator, Direction, Path, Junctions
-from behaviour import Mode
+from behaviour import Mode, Turn_Direction
 from decision import take_a_turn
 from machine import Pin
 
@@ -234,6 +234,15 @@ def handler_rack_purple_U(direction, junction_type):
         if junction_type == Junctions.R:
             return Location.elevator_up
     return Location.rack_purple_U
+
+# Direction tracker - Call when turning. Only call in search mode. Outputs the current direction of the bot (cw or acw).
+def direction_tracker(previous_direction, turn_dir):
+    if turn_dir == Turn_Direction.half:
+        return Direction.cw if previous_direction == Direction.acw else Direction.acw
+    else:
+        return previous_direction
+
+    
 
 """ def mapping(previous_state, mode, direction, junction_type):
     #Only call once per cycle. 
