@@ -1,10 +1,11 @@
 from RHS_dropoff import RHS_dropoff
 from sw.behaviour import Mode
+from sw.locations import Resistor_Color
 #define these variables globally so that we can clear them off and reuse them for other branches
 global slot_status
 slot_status = [0,0,0,0,0,0] #0 means unknown slot status, 1 means cleared
-resistor_color = 0 
 slot_counter = 0
+resistor_color = Resistor_Color.none
 cleared_counter = slot_status.count(1)
 rack_cleared = False
 R_detected = False
@@ -50,7 +51,6 @@ def lowP_upperO_R_detect():
         # 1. Add code here to turn the car and pick up resistor
             R_detected = True
             mode = Mode.delivery #swap to delivery mode to pick up resistor and drop off at bay
-            RHS_dropoff() # Call RHS dropoff to drop off resistor from RH bay
             print(f"Slot {slot_counter} picked up and cleared.")
         else: # Slot is empty
             slot_status[slot_counter] = 1

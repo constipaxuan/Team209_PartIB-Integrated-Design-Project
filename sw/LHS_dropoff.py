@@ -3,7 +3,7 @@
 
 from sw.behaviour import Turn_Direction
 from sw.line_following import line_follow_step
-from sw.locations import Junctions
+from sw.locations import Junctions, Resistor_Color
 from sw.main import S1, S2, SR, detect_junction_type, turn_v4
 from R_pickup_N_measure import release
 
@@ -12,13 +12,13 @@ drop_off_bay = 0
 counting_line = False # This is our "latch"
 
 def LHS_dropoff(resistor_color):
-    if resistor_color == 0: 
+    if resistor_color == Resistor_Color.red: 
         target_bay = 4 # Red, which is the rightmost bay
-    if resistor_color == 1: 
+    if resistor_color == Resistor_Color.yellow: 
         target_bay = 3 # Yellow
-    if resistor_color == 3: 
+    if resistor_color == Resistor_Color.green: 
         target_bay = 1 # Green, skip 1 to skip the starting box
-    if resistor_color == 4: 
+    if resistor_color == Resistor_Color.blue: 
         target_bay = 0 # Blue
 
 
