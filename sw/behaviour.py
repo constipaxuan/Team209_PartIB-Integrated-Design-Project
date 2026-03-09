@@ -23,4 +23,12 @@ class Start_States:
     turn1_done = 3
     turn2_done = 4
 
+class Delivery_States:
+    load_detected = 0
+    approaching = 1
+    reached = 2
+    retracting = 3
+    reorienting = 4
+
+
 
