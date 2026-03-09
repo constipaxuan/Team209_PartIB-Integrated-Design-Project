@@ -5,6 +5,8 @@ from time import sleep, sleep_ms, ticks_ms, ticks_diff
 #from enum import Enum
 from behaviour import Turn_Direction, Turn_State, Mode, Start_States
 from locations import Junctions
+from map_state import mapping, memory
+
 
 # --- CLASSES ---
 
@@ -118,7 +120,7 @@ def detect_junction_type(SL, SR):
 # returns True when turn complete, False otherwise. Call in discrete time steps while in turning mode.
 # change speed of wheel to match position of ideal pivot (lies on 45 degree line from the corner)
 # Prevents original line from being misidentified as the new line by forcing bot to lose the first line before finding the new one.
-def turn_v4(turn_dir, S1, S2, turn_state):
+def turn_v4(turn_dir, S1, S2, turn_state, motor_l, motor_r):
     if turn_state == Turn_State.start:
         if (S1 == 0 or S2 == 0): # Lost the original line
             turn_state = Turn_State.line_lost
@@ -180,7 +182,7 @@ def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, new_junction, turn_compl
     if start_state == Start_States.turn1:
 
         if not turn_complete:
-            turn_state, turn_complete = turn_v4(Turn_Direction.right, S1, S2, turn_state)
+            turn_state, turn_complete = turn_v4(Turn_Direction.right, S1, S2, turn_state, motor_l, motor_r)
         if turn_complete:
             start_state = Start_States.turn1_done
 
@@ -202,7 +204,7 @@ def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, new_junction, turn_compl
 
     if start_state == Start_States.turn2:
         if not turn_complete:
-            turn_state, turn_complete = turn_v4(Turn_Direction.left, S1, S2, turn_state)
+            turn_state, turn_complete = turn_v4(Turn_Direction.left, S1, S2, turn_state, motor_l, motor_r)
         if turn_complete:
             start_state = Start_States.turn2_done
             turn_complete = False
@@ -319,7 +321,7 @@ while True:
 
             if motion == Motion.turning:
                 if not turn_complete:
-                    turn_state, turn_complete = turn_v4(turn_dir, S1, S2, turn_state)
+                    turn_state, turn_complete = turn_v4(turn_dir, S1, S2, turn_state, motor_l, motor_r)
 
                 else:
                     motion = Motion.follow
