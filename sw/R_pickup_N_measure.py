@@ -1,5 +1,3 @@
-from map_state import * 
-from behaviour import *
 from locations import Location
 from test_3wireservo import set_angle
 from test_4wireservo import set_angle_4wire
@@ -7,16 +5,15 @@ from locations import Resistor_Color
 #use the 3 wire servo for the parallelogram because it has no feedback and the parallelogram has no mechanical resistance anyways
 from time import sleep
 from machine import ADC, Pin
-import time
 #Rdetected is already a global variable
 # Constants (same logic as Arduino code)
 ADC_SOLUTION = 65535  # Pico ADC is 16-bit (0–65535)
 
 # LED wiring
-B_led = 21 # pin 27
-G_led = 20 # pin 26
-R_led = 19 # pin 25
-Y_led = 18 # pin 24
+B_led = 19 # pin 19
+G_led = 18 # pin 18
+R_led = 17 # pin 17
+Y_led = 16 # pin 16
 Blue = Pin(B_led, Pin.OUT)
 Green = Pin(G_led, Pin.OUT)
 Red = Pin(R_led, Pin.OUT)
@@ -27,7 +24,7 @@ Green.value(0)
 Red.value(0)
 Yellow.value(0)
 # Sensor connected to ADC0 (GP26)
-sensor = ADC(26)
+sensor = ADC(28)
 
 
 def Pgram_tilt(mode, location): #tilting of parallelogram
@@ -48,6 +45,7 @@ def grab():
 
 def release():
     set_angle_4wire(90) # might need to adjust angle depending on how the servo is mounted and how the claw is designed
+
 def R_measure():
     #pass current through and measure voltage V&I
     voltage = 3.3*sensor.read_u16()/ADC_SOLUTION
