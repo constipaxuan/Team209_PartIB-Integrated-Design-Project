@@ -138,7 +138,7 @@ def detect_junction_type(SL, SR):
 # Prevents original line from being misidentified as the new line by forcing bot to lose the first line before finding the new one.
 def turn_v4(turn_dir, S1, S2, turn_state, motor_l, motor_r):
     if turn_state == Turn_State.start:
-        if (S1 == 0 or S2 == 0): # Lost the original line
+        if (S1 == 0 and S2 == 0): # Lost the original line
             turn_state = Turn_State.line_lost
 
     
