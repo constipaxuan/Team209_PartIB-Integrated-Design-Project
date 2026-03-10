@@ -27,7 +27,7 @@ motor_l = Motor(dirPin=4, PWMPin=5)
 motor_r = Motor(dirPin=7, PWMPin=6) 
 
 
-while True:
+""" while True:
     S1 = S1_sensor.value()
     S2 = S2_sensor.value()
     SL = SL_sensor.value()
@@ -37,6 +37,7 @@ while True:
     new_junction = (not prev_on_junction) and on_junction
 
     if new_junction and not turning:
+        print("seen")
         if (SL == 0 and SR == 0): # move forward until we lose the white line.
             motor_l.Forward(speed = 0)
             motor_r.Forward(speed = 0)
@@ -52,7 +53,7 @@ while True:
     else:
         line_follow_step(S1, S2, 60, 20)
 
-    prev_on_junction = on_junction 
+    prev_on_junction = on_junction  """
 
 """ # Test for 180 deg turn
 while True: 
