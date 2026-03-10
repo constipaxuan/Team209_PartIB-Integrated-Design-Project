@@ -185,7 +185,7 @@ def update_start_T_count(SL, SR, start_T_shape_count, new_junction):
     #global start_T_shape_count, counting
     if SL == 1 and SR == 1 and new_junction:
         start_T_shape_count += 1
-    
+    print(f"T shapes passed: {start_T_shape_count}")
     return start_T_shape_count
 
 
