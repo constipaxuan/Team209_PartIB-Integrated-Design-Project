@@ -5,7 +5,7 @@ from time import sleep, sleep_ms, ticks_ms, ticks_diff
 #from enum import Enum
 from behaviour import Turn_Direction, Turn_State, Mode, Start_States
 from locations import Junctions, Location, Direction
-from map_state import mapping, memory
+#from map_state import mapping, memory
 
 
 # --- CLASSES ---
