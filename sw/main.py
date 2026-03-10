@@ -406,6 +406,10 @@ while True:
 
             if motion == Motion.follow:
                 if tnt_state == TNT_states.TNT:
+                    if not on_junction:
+                        tnt_state = TNT_states.waiting
+                        
+                elif tnt_state == TNT_states.waiting:
                     if new_junction:
                         tnt_state = TNT_states.NT_is_here
                         Red.value(0)

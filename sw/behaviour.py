@@ -43,7 +43,8 @@ class Delivery_States:
 class TNT_states:
     nil = 0
     TNT = 1
-    NT_is_here = 2
+    waiting = 2
+    NT_is_here = 3
 
 
 
