@@ -281,15 +281,18 @@ def test_main_loop(SL, SR, test_corner, take_next_turn, OB_counter, turn_dir, ne
         if new_T:
             take_next_turn = True
             turn_dir = Turn_Direction.left
+            Red.value(1)
     if test_corner == Test_Corners.upper_left:
         if new_junction:
             take_next_turn = True
             turn_dir = Turn_Direction.left
+            Green.value(1)
     if test_corner == Test_Corners.unloading:
         if OB_counter == 6:
             take_next_turn = True
             turn_dir = Turn_Direction.left
             OB_counter = 0
+            Yellow.value(1)
         else:
             if new_T:
                 OB_counter = 0
@@ -419,6 +422,9 @@ while True:
                 else:
                     motion = Motion.follow
                     turn_complete = False
+                    Red.value(0)
+                    Green.value(0)
+                    Yellow.value(0)
                     if corner_idx < len(corners) - 1:
                         corner_idx += 1
                     else:
