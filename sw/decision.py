@@ -246,14 +246,15 @@ def handler_orange_L_delivery(S1, S2, SL, SR, direction, new_junction, resistor_
     # Step 1: Enter delivery mode when laser detects a resistor load while bot is on a branch. 
     if deliv_state == Delivery_Rack_States.load_detected:
         if new_junction and motion != Motion.turning:
-            motor_l.Forward(speed = 0)
-            motor_r.Forward(speed = 0)
-            motion = Motion.turning
-            turn_state = Turn_State.start
-            if direction == Direction.cw:
-                turn_dir = Turn_Direction.right
-            elif direction == Direction.acw:
-                turn_dir = Turn_Direction.left
+            if (SL == 0 and SR == 0): # move forward until we lose the white line.
+                motor_l.Forward(speed = 0)
+                motor_r.Forward(speed = 0)
+                motion = Motion.turning
+                turn_state = Turn_State.start
+                if direction == Direction.cw:
+                    turn_dir = Turn_Direction.right
+                elif direction == Direction.acw:
+                    turn_dir = Turn_Direction.left
         
         if motion == Motion.turning:
             if not turn_complete:
@@ -284,7 +285,7 @@ def handler_orange_L_delivery(S1, S2, SL, SR, direction, new_junction, resistor_
     elif deliv_state == Delivery_Rack_States.retracting:
         back_line_follow_step(S1, S2, base, 20) #reverse until detect main spine again
 
-        if new_junction and (SL == 1 and SR == 1): #detect RL junction
+        if new_junction and (SL == 1 and SR == 1): #detect RL junction. No need to lose the white line bc we are approaching in reverse
             deliv_state = Delivery_Rack_States.reorienting
             motor_l.Forward(speed = 0)
             motor_r.Forward(speed = 0)

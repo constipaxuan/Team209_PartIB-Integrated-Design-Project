@@ -37,9 +37,10 @@ while True:
     new_junction = (not prev_on_junction) and on_junction
 
     if new_junction and not turning:
-        motor_l.Forward(speed = 0)
-        motor_r.Forward(speed = 0)
-        turning = True
+        if (SL == 0 and SR == 0): # move forward until we lose the white line.
+            motor_l.Forward(speed = 0)
+            motor_r.Forward(speed = 0)
+            turning = True
     
     if turning:
         turn_state, turn_complete = turn_v4(turn_dir, S1, S2, turn_state, motor_l, motor_r)
