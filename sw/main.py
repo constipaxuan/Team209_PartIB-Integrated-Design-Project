@@ -404,7 +404,7 @@ while True:
             test_corner, take_next_turn, OB_counter, turn_dir = test_main_loop(SL, SR, test_corner, take_next_turn, OB_counter, turn_dir, new_junction, new_T)
 
             if motion == Motion.follow:
-                if take_next_turn == True and new_junction:
+                if take_next_turn == True and new_junction and not new_T:
                     SL = SL_sensor.value()
                     SR = SR_sensor.value()
                     motor_l.Forward(speed = 0)
@@ -435,7 +435,7 @@ while True:
                     test_corner = corners[corner_idx]
                     take_next_turn = False
     
-        #prev_on_junction = on_junction
+        prev_on_junction = on_junction
         prev_on_T = on_T 
 
 
