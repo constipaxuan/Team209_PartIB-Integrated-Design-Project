@@ -26,10 +26,10 @@ class Motor:
         self.pwm.duty_u16(0)
         
     def Forward(self, speed=100):
-        self.mDir.value(1)                     # forward = 0 reverse = 1 motor
+        self.mDir.value(0)                     # forward = 0 reverse = 1 motor
         self.pwm.duty_u16(int(65535 * speed / 100))  # speed range 0-100 motor
 
-    def Reverse(self, speed=30):
+    def Reverse(self, speed=100):
         self.mDir.value(1)
         self.pwm.duty_u16(int(65535 * speed / 100))
 
@@ -135,10 +135,10 @@ def turn_v4(turn_dir, S1, S2, turn_state, motor_l, motor_r):
         
     if turn_dir == Turn_Direction.left:
         motor_l.Forward(speed = 60)
-        motor_r.Reverse(speed = 10)
+        motor_r.Reverse(speed = 60)
 
     elif turn_dir == Turn_Direction.right:
-        motor_l.Reverse(speed = 10)
+        motor_l.Reverse(speed = 60)
         motor_r.Forward(speed = 60)
     
     return turn_state, False
