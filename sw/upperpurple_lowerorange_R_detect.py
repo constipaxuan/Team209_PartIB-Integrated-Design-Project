@@ -1,7 +1,7 @@
 #define these variables globally so that we can clear them off and reuse them for other branches
-from sw.behaviour import Mode
-from sw.locations import Resistor_Color
-from sw.new_main import SL
+from behaviour import Mode
+from locations import Resistor_Color
+from new_main import SR
 
 
 slot_status = [0,0,0,0,0,0] #0 means unknown slot status, 1 means cleared
@@ -41,29 +41,15 @@ def rec_dist_laser():
 
 def upperP_lowO_R_detect(new_junction):
     global R_detected, rack_cleared, slot_counter, slot_status
-    while slot_status.count(1) < 6: #number of cleared slots is less than 6
-        if SR == 1:  # Branch detected
-
-            sleep(0.1) # Short delay to debounce the sensor
-            distance = rec_dist_laser()
-            
-            if distance < 100: # resistor detected (arbitrary distance value)
-                R_detected = True
-                # 1. Add code here to turn the car and pick up resistor
-                # 2. Once picked up resistor, mark as cleared
-                slot_status[slot_counter] = 1
-                #add code to measure resistor color and store resistor color as a variable
-                # add code to return the resistor and clear out the list
-                print(f"Slot {slot_counter} picked up and cleared.")
-            else: # Slot is empty
-                slot_status[slot_counter] = 1
-                print(f"Slot {slot_counter} was already empty. Marked cleared.")
-            
+    if SR == 1:  # Branch detected
+        distance = rec_dist_laser() #constantly measure distance
+        if distance < 100: # resistor detected
+        # 1. Add code here to turn the car and pick up resistor
+            R_detected = True
+            print(f"Slot {slot_counter} cleared.")
+        else: # Slot is empty
+            slot_status[slot_counter] = 1
+            print(f"Slot {slot_counter} empty.")
+        
+        if new_junction:
             slot_counter += 1 # Move to next slot index for the next branch
-            
-            #add short sleep here 
-            # so it doesn't count the same branch multiple times.
-            while SR == 1:
-                pass 
-
-    rack_cleared = True

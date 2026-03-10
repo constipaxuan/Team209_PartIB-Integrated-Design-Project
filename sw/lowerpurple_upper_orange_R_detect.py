@@ -2,6 +2,7 @@
 from RHS_dropoff import RHS_dropoff
 from sw.behaviour import Mode
 from sw.locations import Resistor_Color
+from sw.map_state import SL
 #define these variables globally so that we can clear them off and reuse them for other branches
 global slot_status
 slot_status = [0,0,0,0,0,0] #0 means unknown slot status, 1 means cleared
@@ -42,22 +43,18 @@ def rec_dist_laser():
 
 def lowP_upperO_R_detect(new_junction):
     global R_detected, rack_cleared, slot_counter, slot_status
-    if new_junction and not R_detected: 
-        if SL == 1:  # Branch detected
-            sleep(0.1) # Short delay to debounce the sensor
-            distance = rec_dist_laser()
-            
-            if distance < 100: # resistor detected
-            # 1. Add code here to turn the car and pick up resistor
-                R_detected = True
-                print(f"Slot {slot_counter} picked up and cleared.")
-            else: # Slot is empty
-                slot_status[slot_counter] = 1
-                print(f"Slot {slot_counter} was already empty. Marked cleared.")
-            
+    if SL == 1:  # Branch detected
+        distance = rec_dist_laser() #constantly measure distance
+        if distance < 100: # resistor detected
+        # 1. Add code here to turn the car and pick up resistor
+            R_detected = True
+            print(f"Slot {slot_counter} picked up and cleared.")
+        else: # Slot is empty
+            slot_status[slot_counter] = 1
+            print(f"Slot {slot_counter} was already empty. Marked cleared.")
+        
+        if new_junction:
             slot_counter += 1 # Move to next slot index for the next branch
-            
-                #while below so it doesn't count the same branch multiple times
 
 
 
