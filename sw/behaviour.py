@@ -13,8 +13,9 @@ class Turn_Direction:
 
 class Turn_State:
     start = 0
-    line_lost = 1
-    done = 2
+    overshot = 1
+    line_lost = 2
+    done = 3
 
 class Start_States:
     start = 0
