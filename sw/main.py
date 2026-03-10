@@ -202,7 +202,7 @@ def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, new_junction, turn_compl
     #if start_T_shape_count < 2:
         if start_T_shape_count == 2:
             if SL == 0 and SR == 0: # Move forward until the SL and SR lose the white line. 
-                #print("turn time!")
+                Blue.value(1)
                 start_state = Start_States.turn1
                 motor_l.Forward(speed = 0)
                 motor_r.Forward(speed = 0)
@@ -210,6 +210,7 @@ def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, new_junction, turn_compl
                 turn_complete = False
 
         else:
+            Blue.value(0)
             line_follow_step(S1, S2, 80, 20)
 
         return start_T_shape_count, start_state, turn_complete, turn_state, mode
@@ -232,6 +233,7 @@ def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, new_junction, turn_compl
                 motor_r.Forward(speed = 0)
                 turn_complete = False
                 turn_state = Turn_State.start
+                Blue.value(1)
 
         else:
             line_follow_step(S1, S2, 80, 20)
@@ -245,6 +247,7 @@ def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, new_junction, turn_compl
             start_state = Start_States.turn2_done
             turn_complete = False
             turn_state = Turn_State.start
+            Blue.value(0)
             
         return start_T_shape_count, start_state, turn_complete, turn_state, mode
     
@@ -370,6 +373,7 @@ while True:
 
     on_junction = (SL == 1 or SR == 1)
     new_junction = (not prev_on_junction) and on_junction
+
 
     # non blocking debouncing. this allows sensors to still be read while button is being debounced, preventing missed junctions.
     if button_now == 1 and prev_button == 0:
