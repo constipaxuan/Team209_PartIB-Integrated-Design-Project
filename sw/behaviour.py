@@ -40,6 +40,11 @@ class Delivery_States:
     unloading = 1
     recover = 2
 
+class TNT_states:
+    nil = 0
+    TNT = 1
+    NT_is_here = 2
+
 
 
 

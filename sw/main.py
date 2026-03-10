@@ -3,7 +3,7 @@
 from machine import Pin, PWM
 from time import sleep, sleep_ms, ticks_ms, ticks_diff
 #from enum import Enum
-from behaviour import Turn_Direction, Turn_State, Mode, Start_States
+from behaviour import Turn_Direction, Turn_State, Mode, Start_States, TNT_states
 from locations import Junctions, Location, Direction
 #from map_state import mapping, memory
 
@@ -274,22 +274,23 @@ take_next_turn = False
 test_corner = Test_Corners.upper_right
 OB_counter = 0
 last_press = 0
+tnt_state = TNT_states.nil
 
 # defines turning sequence in line following test 5 Mar.
 def test_main_loop(SL, SR, test_corner, take_next_turn, OB_counter, turn_dir, new_junction, new_T):
     if test_corner == Test_Corners.upper_right:
         if new_T:
-            take_next_turn = True
+            tnt_state = TNT_states.TNT
             turn_dir = Turn_Direction.left
             Red.value(1)
     if test_corner == Test_Corners.upper_left:
         if new_junction:
-            take_next_turn = True
+            tnt_state = TNT_states.TNT
             turn_dir = Turn_Direction.left
             Green.value(1)
     if test_corner == Test_Corners.unloading:
         if OB_counter == 6:
-            take_next_turn = True
+            tnt_state = TNT_states.TNT
             turn_dir = Turn_Direction.left
             OB_counter = 0
             Yellow.value(1)
@@ -301,7 +302,7 @@ def test_main_loop(SL, SR, test_corner, take_next_turn, OB_counter, turn_dir, ne
             take_next_turn = False
     if test_corner == Test_Corners.back_to_start:
         if new_junction:
-            take_next_turn = True
+            tnt_state = TNT_states.TNT
             turn_dir = Turn_Direction.right
     
     return test_corner, take_next_turn, OB_counter, turn_dir
@@ -404,7 +405,11 @@ while True:
             test_corner, take_next_turn, OB_counter, turn_dir = test_main_loop(SL, SR, test_corner, take_next_turn, OB_counter, turn_dir, new_junction, new_T)
 
             if motion == Motion.follow:
-                if take_next_turn == True and new_junction and not new_T:
+                if tnt_state == TNT_states.TNT:
+                    if new_junction:
+                        tnt_state = TNT_states.NT_is_here
+                
+                if tnt_state == TNT_states.NT_is_here:
                     SL = SL_sensor.value()
                     SR = SR_sensor.value()
                     motor_l.Forward(speed = 0)
@@ -422,6 +427,7 @@ while True:
                 else:
                     motion = Motion.follow
                     turn_complete = False
+                    tnt_state = TNT_states.nil
                     Red.value(0)
                     Green.value(0)
                     Yellow.value(0)
@@ -433,7 +439,7 @@ while True:
                         motor_l.Forward(speed = 0)
                         motor_r.Forward(speed = 0)
                     test_corner = corners[corner_idx]
-                    take_next_turn = False
+                    
     
         prev_on_junction = on_junction
         prev_on_T = on_T 
