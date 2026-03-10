@@ -412,7 +412,7 @@ while True:
                         Green.value(0)
                         Yellow.value(0)
                 
-                if tnt_state == TNT_states.NT_is_here:
+                elif tnt_state == TNT_states.NT_is_here:
                     SL = SL_sensor.value()
                     SR = SR_sensor.value()
                     motor_l.Forward(speed = 0)
