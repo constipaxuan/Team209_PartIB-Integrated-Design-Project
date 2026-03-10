@@ -330,6 +330,7 @@ while True:
         if (SL == 0 and SR == 0): # move forward until we lose the white line.
             motor_l.Forward(speed = 0)
             motor_r.Forward(speed = 0)
+            print("stop")
             turning = True
     
     if turning:
