@@ -72,10 +72,10 @@ location = Location.start
 #centering code
 def line_follow_step(S1, S2, base, corr):
 
-  if (S1 == 0 and S2 == 1): # corrects left veer
+  if (S1 == 1 and S2 == 0): # corrects left veer
     motor_r.Forward(speed = corr) # speed ranges from 0 to 100 as defined
     motor_l.Forward(speed = base)
-  elif (S1 == 1 and S2 == 0): #corrects right veer
+  elif (S1 == 0 and S2 == 1): #corrects right veer
     motor_l.Forward(speed = corr)
     motor_r.Forward(speed = base)
   else: #centered 
