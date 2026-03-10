@@ -408,6 +408,9 @@ while True:
                 if tnt_state == TNT_states.TNT:
                     if new_junction:
                         tnt_state = TNT_states.NT_is_here
+                        Red.value(0)
+                        Green.value(0)
+                        Yellow.value(0)
                 
                 if tnt_state == TNT_states.NT_is_here:
                     SL = SL_sensor.value()
@@ -417,6 +420,7 @@ while True:
                     motion = Motion.turning
                     turn_complete = False
                     turn_state = Turn_State.start
+                    Red.value(1)
                 else:
                     line_follow_step(S1, S2, 80, 20)
 
