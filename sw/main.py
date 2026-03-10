@@ -133,12 +133,12 @@ def turn_v4(turn_dir, S1, S2, turn_state, motor_l, motor_r):
             return Turn_State.done, True
         
     if turn_dir == Turn_Direction.left:
-        motor_l.Reverse(speed = 20)
+        motor_l.Forward(speed = 0)
         motor_r.Forward(speed = 60)
 
     elif turn_dir == Turn_Direction.right:
         motor_l.Forward(speed = 60)
-        motor_r.Reverse(speed = 20)
+        motor_r.Forward(speed = 0)
     
     return turn_state, False
     
