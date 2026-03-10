@@ -1,5 +1,4 @@
 #this code is NOT functional. Handling logic right now but eventiually it WILL be pipelined and not stuck in this monstrosity of blocking while loops.
-from line_following import detect_junction_type, line_follow_step, detect_junction
 from locations import Location, Elevator, Direction, Path, Junctions
 from behaviour import Mode, Turn_Direction
 from decision import take_a_turn
