@@ -5,7 +5,7 @@ from time import sleep, sleep_ms, ticks_ms, ticks_diff
 #from enum import Enum
 from behaviour import Turn_Direction, Turn_State, Mode, Start_States
 from locations import Junctions, Location, Direction
-from map_state import mapping, memory
+#from map_state import mapping, memory
 
 
 # --- CLASSES ---
@@ -29,7 +29,7 @@ class Motor:
         self.mDir.value(0)                     # forward = 0 reverse = 1 motor
         self.pwm.duty_u16(int(65535 * speed / 100))  # speed range 0-100 motor
 
-    def Reverse(self, speed=30):
+    def Reverse(self, speed=100):
         self.mDir.value(1)
         self.pwm.duty_u16(int(65535 * speed / 100))
 
@@ -72,10 +72,10 @@ location = Location.start
 #centering code
 def line_follow_step(S1, S2, base, corr):
 
-  if (S1 == 0 and S2 == 1): # corrects left veer
+  if (S1 == 1 and S2 == 0): # corrects left veer
     motor_r.Forward(speed = corr) # speed ranges from 0 to 100 as defined
     motor_l.Forward(speed = base)
-  elif (S1 == 1 and S2 == 0): #corrects right veer
+  elif (S1 == 0 and S2 == 1): #corrects right veer
     motor_l.Forward(speed = corr)
     motor_r.Forward(speed = base)
   else: #centered 
@@ -125,20 +125,22 @@ def turn_v4(turn_dir, S1, S2, turn_state, motor_l, motor_r):
     if turn_state == Turn_State.start:
         if (S1 == 0 or S2 == 0): # Lost the original line
             turn_state = Turn_State.line_lost
+            print("line lost")
     
     elif turn_state == Turn_State.line_lost:
         if (S1 == 1 and S2 == 1): # Found the new line. 
+            print("found")
             motor_l.Forward(speed = 0)
             motor_r.Forward(speed = 0)
             return Turn_State.done, True
         
     if turn_dir == Turn_Direction.left:
-        motor_l.Reverse(speed = 20)
-        motor_r.Forward(speed = 60)
+        motor_l.Forward(speed = 60)
+        motor_r.Forward(speed = 20)
 
     elif turn_dir == Turn_Direction.right:
-        motor_l.Forward(speed = 60)
-        motor_r.Reverse(speed = 20)
+        motor_l.Forward(speed = 20)
+        motor_r.Forward(speed = 60)
     
     return turn_state, False
     
@@ -294,6 +296,54 @@ corners = [
 ]
 
 corner_idx = 0
+
+prev_on_junction = False
+turn_state = Turn_State.start
+turn_dir = Turn_Direction.left
+turn_complete = False
+turning = False
+turn_phase = 0
+
+S1_pin = 21
+S2_pin = 20
+SL_pin = 26
+SR_pin = 22
+
+S1_sensor = Pin(S1_pin, Pin.IN)
+S2_sensor = Pin(S2_pin, Pin.IN)
+SL_sensor = Pin(SL_pin, Pin.IN)
+SR_sensor = Pin(SR_pin, Pin.IN)
+
+motor_l = Motor(dirPin=4, PWMPin=5)
+motor_r = Motor(dirPin=7, PWMPin=6) 
+
+
+while True:
+    S1 = S1_sensor.value()
+    S2 = S2_sensor.value()
+    SL = SL_sensor.value()
+    SR = SR_sensor.value()
+
+    on_junction = (SL == 1 or SR == 1)
+    new_junction = (not prev_on_junction) and on_junction
+
+    if new_junction and not turning:
+        motor_l.Forward(speed = 0)
+        motor_r.Forward(speed = 0)
+        print("stop")
+        turning = True
+    
+    if turning:
+        turn_state, turn_complete = turn_v4(turn_dir, S1, S2, turn_state, motor_l, motor_r)
+
+        if turn_complete:
+            turning = False
+            turn_complete = False
+            turn_state = Turn_State.start
+    else:
+        line_follow_step(S1, S2, 60, 20)
+
+    prev_on_junction = on_junction  
 
 """ while True:
     S1 = S1_sensor.value()
