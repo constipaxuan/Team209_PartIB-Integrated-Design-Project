@@ -150,10 +150,10 @@ def turn_v4(turn_dir, S1, S2, turn_state, motor_l, motor_r):
         
     if turn_dir == Turn_Direction.left:
         motor_l.Forward(speed = 60)
-        motor_r.Reverse(speed = 30)
+        motor_r.Forward(speed = 20)
 
     elif turn_dir == Turn_Direction.right:
-        motor_l.Reverse(speed = 30)
+        motor_l.Forward(speed = 20)
         motor_r.Forward(speed = 60)
     
     return turn_state, False
@@ -356,7 +356,7 @@ while True:
             turn_state = Turn_State.start
             Blue.value(0)
     else:
-        line_follow_step(S1, S2, 60, 20)
+        line_follow_step(S1, S2, 80, 20)
 
     prev_on_junction = on_junction  
 
