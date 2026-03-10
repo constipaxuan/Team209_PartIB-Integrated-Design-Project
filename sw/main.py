@@ -402,7 +402,7 @@ while True:
         if mode == Mode.start:
             start_T_shape_count, start_state, turn_complete, turn_state, mode = get_out_of_box(S1, S2, SL, SR, start_T_shape_count, new_T, turn_complete, turn_state, start_state, mode)
         else:
-            test_corner, take_next_turn, OB_counter, turn_dir = test_main_loop(SL, SR, test_corner, tnt_state, OB_counter, turn_dir, new_junction, new_T)
+            test_corner, tnt_state, OB_counter, turn_dir = test_main_loop(SL, SR, test_corner, tnt_state, OB_counter, turn_dir, new_junction, new_T)
 
             if motion == Motion.follow:
                 if tnt_state == TNT_states.TNT:
