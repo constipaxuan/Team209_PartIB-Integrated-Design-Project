@@ -129,6 +129,7 @@ def turn_v4(turn_dir, S1, S2, turn_state, motor_l, motor_r):
     
     elif turn_state == Turn_State.line_lost:
         if (S1 == 1 and S2 == 1): # Found the new line. 
+            print("found")
             motor_l.Forward(speed = 0)
             motor_r.Forward(speed = 0)
             return Turn_State.done, True
