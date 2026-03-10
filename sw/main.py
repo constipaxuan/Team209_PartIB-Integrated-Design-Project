@@ -295,7 +295,7 @@ corners = [
 
 corner_idx = 0
 
-while True:
+""" while True:
     S1 = S1_sensor.value()
     S2 = S2_sensor.value()
     SL = SL_sensor.value()
@@ -357,7 +357,7 @@ while True:
                     take_next_turn = False
     
         prev_on_junction = on_junction 
-
+ """
 
 # Assumes that the turning of the car is wide enough such that the front aligns with line before the back
 '''
