@@ -125,6 +125,7 @@ def turn_v4(turn_dir, S1, S2, turn_state, motor_l, motor_r):
     if turn_state == Turn_State.start:
         if (S1 == 0 or S2 == 0): # Lost the original line
             turn_state = Turn_State.line_lost
+            print("line lost")
     
     elif turn_state == Turn_State.line_lost:
         if (S1 == 1 and S2 == 1): # Found the new line. 
