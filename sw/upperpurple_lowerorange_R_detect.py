@@ -10,11 +10,9 @@ slot_counter = 0
 cleared_counter = slot_status.count(1)
 rack_cleared = False
 #set up laser sensor
-from turtle import distance
 
 from machine import Pin, I2C
 from libs.VL53L0X.VL53L0X import VL53L0X
-from utime import sleep
 
 
 # config I2C Bus
@@ -31,7 +29,6 @@ def rec_dist_laser():
     vl53l0.start()
 
     laser_distance = vl53l0.read()
-    print(f"Distance = {laser_distance}mm")  # Check calibration!
         
     # Stop device
     vl53l0.stop()
@@ -53,7 +50,7 @@ def upperP_lowO_R_detect(new_junction):
         distance = rec_dist_laser() 
         
         # 3. Update the CURRENT slot
-        if distance < 100: 
+        if distance < 300: 
             R_detected = True
             print(f"Slot {slot_counter} has a resistor.")
         # then run code to pick up resistor here

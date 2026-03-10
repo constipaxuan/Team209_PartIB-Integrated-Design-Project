@@ -16,7 +16,6 @@ motor_l = Motor(dirPin=4, PWMPin=5)
 motor_r = Motor(dirPin=7, PWMPin=6) 
 from machine import Pin, I2C
 from libs.VL53L0X.VL53L0X import VL53L0X
-from utime import sleep
 
 
 # config I2C Bus
