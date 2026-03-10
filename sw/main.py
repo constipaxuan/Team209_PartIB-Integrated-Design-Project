@@ -69,6 +69,21 @@ turn_state = Turn_State.start
 start_state = Start_States.start
 location = Location.start
 
+# LED wiring
+B_led = 19 # pin 19
+G_led = 18 # pin 18
+R_led = 17 # pin 17
+Y_led = 16 # pin 16
+Blue = Pin(B_led, Pin.OUT)
+Green = Pin(G_led, Pin.OUT)
+Red = Pin(R_led, Pin.OUT)
+Yellow = Pin(Y_led, Pin.OUT)
+#Initialize Blue Red Green Yellow color to off
+Blue.value(0)
+Green.value(0)
+Red.value(0)
+Yellow.value(0) 
+
 #centering code
 def line_follow_step(S1, S2, base, corr):
 
@@ -330,6 +345,7 @@ while True:
         motor_l.Forward(speed = 0)
         motor_r.Forward(speed = 0)
         turning = True
+        Blue.value(1)
     
     if turning:
         turn_state, turn_complete = turn_v4(turn_dir, S1, S2, turn_state, motor_l, motor_r)
@@ -338,6 +354,7 @@ while True:
             turning = False
             turn_complete = False
             turn_state = Turn_State.start
+            Blue.value(0)
     else:
         line_follow_step(S1, S2, 60, 20)
 

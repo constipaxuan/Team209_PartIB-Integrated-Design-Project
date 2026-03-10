@@ -241,7 +241,7 @@ def direction_tracker(previous_direction, turn_dir):
     else:
         return previous_direction
 
-    
+ 
 
 """ def mapping(previous_state, mode, direction, junction_type):
     #Only call once per cycle. 
