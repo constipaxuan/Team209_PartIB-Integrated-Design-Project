@@ -234,7 +234,7 @@ def delivery_mode(S1, S2, SL, SR, location, direction, delivery_state, new_junct
             if turn_complete:
                 line_follow_step(S1, S2, 60, 20) #keep following the line and the bot should be in search mode again, ready to detect the next load.
                 mode = Mode.search
-                
+
     elif location == Location.rack_purple_L:
     #copy and paste later
         pass
@@ -273,7 +273,7 @@ def handler_orange_L_delivery(S1, S2, SL, SR, direction, new_junction, resistor_
             motor_r.Forward(speed = 0)
             deliv_state = Delivery_Rack_States.reached
 
-    # Step 3: Grab the load. [Insert grabber code here]
+    # Step 3: Grab the load. Adjust timing so that the claw can shut before the bot starts reversing.
     elif deliv_state == Delivery_Rack_States.reached:
         grab() 
         resistor_color = R_measure() #measure the resistor color and store it as a variable so that the bot knows which bay to drop it off at
