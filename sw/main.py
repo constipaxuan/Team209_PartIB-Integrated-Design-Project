@@ -69,6 +69,21 @@ turn_state = Turn_State.start
 start_state = Start_States.start
 location = Location.start
 
+# LED wiring
+B_led = 19 # pin 19
+G_led = 18 # pin 18
+R_led = 17 # pin 17
+Y_led = 16 # pin 16
+Blue = Pin(B_led, Pin.OUT)
+Green = Pin(G_led, Pin.OUT)
+Red = Pin(R_led, Pin.OUT)
+Yellow = Pin(Y_led, Pin.OUT)
+#Initialize Blue Red Green Yellow color to off
+Blue.value(0)
+Green.value(0)
+Red.value(0)
+Yellow.value(0) 
+
 #centering code
 def line_follow_step(S1, S2, base, corr):
 
@@ -123,23 +138,22 @@ def detect_junction_type(SL, SR):
 # Prevents original line from being misidentified as the new line by forcing bot to lose the first line before finding the new one.
 def turn_v4(turn_dir, S1, S2, turn_state, motor_l, motor_r):
     if turn_state == Turn_State.start:
-        if (S1 == 0 or S2 == 0): # Lost the original line
+        if (S1 == 0 and S2 == 0): # Lost the original line
             turn_state = Turn_State.line_lost
-            print("line lost")
+
     
     elif turn_state == Turn_State.line_lost:
         if (S1 == 1 and S2 == 1): # Found the new line. 
-            print("found")
             motor_l.Forward(speed = 0)
             motor_r.Forward(speed = 0)
             return Turn_State.done, True
         
     if turn_dir == Turn_Direction.left:
         motor_l.Forward(speed = 60)
-        motor_r.Forward(speed = 20)
+        motor_r.Forward(speed = 0)
 
     elif turn_dir == Turn_Direction.right:
-        motor_l.Forward(speed = 20)
+        motor_l.Forward(speed = 0)
         motor_r.Forward(speed = 60)
     
     return turn_state, False
@@ -188,7 +202,7 @@ def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, new_junction, turn_compl
     #if start_T_shape_count < 2:
         if start_T_shape_count == 2:
             if SL == 0 and SR == 0: # Move forward until the SL and SR lose the white line. 
-                print("turn time!")
+                #print("turn time!")
                 start_state = Start_States.turn1
                 motor_l.Forward(speed = 0)
                 motor_r.Forward(speed = 0)
@@ -196,7 +210,7 @@ def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, new_junction, turn_compl
                 turn_complete = False
 
         else:
-            line_follow_step(S1, S2, 60, 20)
+            line_follow_step(S1, S2, 80, 20)
 
         return start_T_shape_count, start_state, turn_complete, turn_state, mode
 
@@ -220,7 +234,7 @@ def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, new_junction, turn_compl
                 turn_state = Turn_State.start
 
         else:
-            line_follow_step(S1, S2, 60, 20)
+            line_follow_step(S1, S2, 80, 20)
         
         return start_T_shape_count, start_state, turn_complete, turn_state,mode
 
@@ -235,7 +249,7 @@ def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, new_junction, turn_compl
         return start_T_shape_count, start_state, turn_complete, turn_state, mode
     
     if start_state == Start_States.turn2_done:
-        line_follow_step(S1, S2, 60, 20)
+        line_follow_step(S1, S2, 80, 20)
         mode = Mode.search
         return start_T_shape_count, start_state, turn_complete, turn_state, mode
 
@@ -318,7 +332,7 @@ motor_l = Motor(dirPin=4, PWMPin=5)
 motor_r = Motor(dirPin=7, PWMPin=6) 
 
 
-while True:
+""" while True:
     S1 = S1_sensor.value()
     S2 = S2_sensor.value()
     SL = SL_sensor.value()
@@ -330,8 +344,8 @@ while True:
     if new_junction and not turning:
         motor_l.Forward(speed = 0)
         motor_r.Forward(speed = 0)
-        print("stop")
         turning = True
+        Blue.value(1)
     
     if turning:
         turn_state, turn_complete = turn_v4(turn_dir, S1, S2, turn_state, motor_l, motor_r)
@@ -340,12 +354,13 @@ while True:
             turning = False
             turn_complete = False
             turn_state = Turn_State.start
+            Blue.value(0)
     else:
-        line_follow_step(S1, S2, 60, 20)
+        line_follow_step(S1, S2, 80, 20)
 
-    prev_on_junction = on_junction  
+    prev_on_junction = on_junction   """
 
-""" while True:
+while True:
     S1 = S1_sensor.value()
     S2 = S2_sensor.value()
     SL = SL_sensor.value()
@@ -381,13 +396,12 @@ while True:
                 if take_next_turn == True and new_junction:
                     SL = SL_sensor.value()
                     SR = SR_sensor.value()
-                    if SL == 0 and SR == 0: # Move forward until the SL and SR lose the white line. 
-                        motor_l.Forward(speed = 0)
-                        motor_r.Forward(speed = 0)
-                        motion = Motion.turning
-                        turn_complete = False
+                    motor_l.Forward(speed = 0)
+                    motor_r.Forward(speed = 0)
+                    motion = Motion.turning
+                    turn_complete = False
                 else:
-                    line_follow_step(S1, S2, 60, 20)
+                    line_follow_step(S1, S2, 80, 20)
 
             if motion == Motion.turning:
                 if not turn_complete:
@@ -407,7 +421,7 @@ while True:
                     take_next_turn = False
     
         prev_on_junction = on_junction 
- """
+
 
 # Assumes that the turning of the car is wide enough such that the front aligns with line before the back
 '''
