@@ -43,18 +43,27 @@ def rec_dist_laser():
 
 def lowP_upperO_R_detect(new_junction):
     global R_detected, rack_cleared, slot_counter, slot_status
-    if SL == 1:  # Branch detected
-        distance = rec_dist_laser() #constantly measure distance
-        if distance < 100: # resistor detected
-        # 1. Add code here to turn the car and pick up resistor
-            R_detected = True
-            print(f"Slot {slot_counter} picked up and cleared.")
-        else: # Slot is empty
-            slot_status[slot_counter] = 1
-            print(f"Slot {slot_counter} was already empty. Marked cleared.")
+    # ONLY act if this is a BRAND NEW junction detection
+    if new_junction and SL == 1:
+        # 1. Safety check: stop the counter if we run out of slots
+        if slot_counter >= len(slot_status):
+            print("All slots checked. Stopping counter.")
+            return
+
+        # 2. Fire the laser ONCE
+        distance = rec_dist_laser() 
         
-        if new_junction:
-            slot_counter += 1 # Move to next slot index for the next branch
+        # 3. Update the CURRENT slot
+        if distance < 100: 
+            R_detected = True
+            print(f"Slot {slot_counter} has a resistor.")
+        # then run code to pick up resistor here
+        else:
+            slot_status[slot_counter] = 1
+            print(f"Slot {slot_counter} is empty.")
+
+        # 4. NOW move the counter to the next slot for the NEXT branch
+        slot_counter += 1
 
 
 
