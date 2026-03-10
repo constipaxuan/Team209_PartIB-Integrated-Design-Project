@@ -277,7 +277,7 @@ last_press = 0
 tnt_state = TNT_states.nil
 
 # defines turning sequence in line following test 5 Mar.
-def test_main_loop(SL, SR, test_corner, take_next_turn, OB_counter, turn_dir, new_junction, new_T):
+def test_main_loop(SL, SR, test_corner, tnt_state, OB_counter, turn_dir, new_junction, new_T):
     if test_corner == Test_Corners.upper_right:
         if new_T:
             tnt_state = TNT_states.TNT
@@ -299,13 +299,13 @@ def test_main_loop(SL, SR, test_corner, take_next_turn, OB_counter, turn_dir, ne
                 OB_counter = 0
             elif new_junction:
                 OB_counter += 1
-            take_next_turn = False
+            tnt_state = TNT_states.nil
     if test_corner == Test_Corners.back_to_start:
         if new_junction:
             tnt_state = TNT_states.TNT
             turn_dir = Turn_Direction.right
     
-    return test_corner, take_next_turn, OB_counter, turn_dir
+    return test_corner, tnt_state, OB_counter, turn_dir
 
 
 corners = [
@@ -402,7 +402,7 @@ while True:
         if mode == Mode.start:
             start_T_shape_count, start_state, turn_complete, turn_state, mode = get_out_of_box(S1, S2, SL, SR, start_T_shape_count, new_T, turn_complete, turn_state, start_state, mode)
         else:
-            test_corner, take_next_turn, OB_counter, turn_dir = test_main_loop(SL, SR, test_corner, take_next_turn, OB_counter, turn_dir, new_junction, new_T)
+            test_corner, take_next_turn, OB_counter, turn_dir = test_main_loop(SL, SR, test_corner, tnt_state, OB_counter, turn_dir, new_junction, new_T)
 
             if motion == Motion.follow:
                 if tnt_state == TNT_states.TNT:
