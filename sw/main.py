@@ -409,7 +409,6 @@ while True:
 
         if mode == Mode.start:
             start_T_shape_count, start_state, turn_complete, turn_state, mode = get_out_of_box(S1, S2, SL, SR, start_T_shape_count, new_T, turn_complete, turn_state, start_state, mode)
-            print("mode:", mode, "start:", start_state)
         elif mode == Mode.search_init:
             # keep following until fully clear of any startup junction/T
             line_follow_step(S1, S2, 80, 20)
