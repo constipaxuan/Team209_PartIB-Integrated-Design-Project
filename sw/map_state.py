@@ -1,16 +1,7 @@
 #this code is NOT functional. Handling logic right now but eventiually it WILL be pipelined and not stuck in this monstrosity of blocking while loops.
-from locations import Location, Elevator, Direction, Path, Junctions
+from locations import Location, Direction, Junctions
 from behaviour import Mode, Turn_Direction
-from decision import take_a_turn
 from machine import Pin
-
-#initialise - will be moved to main code later. 
-location = Location.start
-direction = Direction.cw
-mode = Mode.start
-
-
-
 
 
 #need to map pins
