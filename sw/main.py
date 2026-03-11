@@ -225,6 +225,7 @@ def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, new_T, turn_complete, tu
             turn_state, turn_complete = turn_v4(Turn_Direction.right, S1, S2, turn_state, motor_l, motor_r)
         if turn_complete:
             start_state = Start_States.turn1_done
+            print("turn 1 done")
 
         return start_T_shape_count, start_state, turn_complete, turn_state,mode
     
@@ -246,6 +247,7 @@ def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, new_T, turn_complete, tu
         if not turn_complete:
             turn_state, turn_complete = turn_v4(Turn_Direction.left, S1, S2, turn_state, motor_l, motor_r)
         if turn_complete:
+            print("turn 2 COMPLETED")
             start_state = Start_States.turn2_done
             #delivery["target_rack"] = Location.rack_purple_L
             turn_complete = False
