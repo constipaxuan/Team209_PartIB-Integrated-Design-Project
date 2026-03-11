@@ -225,7 +225,7 @@ def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, new_T, turn_complete, tu
             turn_state, turn_complete = turn_v4(Turn_Direction.right, S1, S2, turn_state, motor_l, motor_r)
         if turn_complete:
             start_state = Start_States.turn1_done
-            print("turn 1 done")
+            #print("turn 1 done")
 
         return start_T_shape_count, start_state, turn_complete, turn_state,mode
     
@@ -247,7 +247,7 @@ def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, new_T, turn_complete, tu
         if not turn_complete:
             turn_state, turn_complete = turn_v4(Turn_Direction.left, S1, S2, turn_state, motor_l, motor_r)
         if turn_complete:
-            print("turn 2 COMPLETED")
+            #print("turn 2 COMPLETED")
             start_state = Start_States.turn2_done
             #delivery["target_rack"] = Location.rack_purple_L
             turn_complete = False
@@ -260,7 +260,7 @@ def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, new_T, turn_complete, tu
     if start_state == Start_States.turn2_done:
         line_follow_step(S1, S2, 80, 20)
         mode = Mode.search_init
-        print("turn 2 done")
+        #print("turn 2 done")
         return start_T_shape_count, start_state, turn_complete, turn_state, mode
 
 ''' upper right refers to the one above purple rack, 
@@ -289,16 +289,19 @@ def test_main_loop(test_corner, tnt_state, OB_counter, turn_dir, new_junction, n
     if test_corner == Test_Corners.upper_right:
         if new_T:
             tnt_state = TNT_states.TNT
+            print("TNT")
             turn_dir = Turn_Direction.left
             Red.value(1)
     if test_corner == Test_Corners.upper_left:
         if new_junction:
             tnt_state = TNT_states.TNT
+            print("TNT")
             turn_dir = Turn_Direction.left
             Green.value(1)
     if test_corner == Test_Corners.unloading:
         if OB_counter == 6:
             tnt_state = TNT_states.TNT
+            print("TNT")
             turn_dir = Turn_Direction.left
             OB_counter = 0
             Yellow.value(1)
@@ -431,12 +434,14 @@ while True:
                 if tnt_state == TNT_states.TNT:
                     if not on_junction:
                         tnt_state = TNT_states.waiting
+                        print("waiting")
                     line_follow_step(S1, S2, 80, 20)
 
 
                 elif tnt_state == TNT_states.waiting:
                     if new_junction:
                         tnt_state = TNT_states.NT_is_here
+                        print("NT")
                         Red.value(0)
                         Green.value(0)
                         Yellow.value(0)
