@@ -543,7 +543,7 @@ motor_r = Motor(dirPin=7, PWMPin=6)  """
 
 #Resistor detection test
 
-from upperpurple_lowerorange_R_detect import upperP_lowO_R_detect(), init_laser
+from upperpurple_lowerorange_R_detect import upperP_lowO_R_detect, init_laser
 init_laser()
 
 
@@ -562,7 +562,7 @@ SR = SR_sensor.value()
 while True:
     # pretend we just crossed a junction (update events before calling)
     # call detector using globals; pass previous laser_distance or None
-    laser_distance = detector.upperP_lowO_R_detect(events, laser_distance)
+    laser_distance = upperP_lowO_R_detect(events, laser_distance)
     # print distance sample and state for debugging
     print(f"Distance reading: {laser_distance}mm")
     print(f"Counter: {delivery['search_slot_counter']}")

@@ -2,7 +2,6 @@
 from behaviour import Mode, Delivery_States, Delivery_Rack_States
 from locations import Resistor_Color, Junctions, Direction
 from map_state import memory
-from decision import events
 from machine import Pin, I2C
 from locations import Junctions
 from libs.VL53L0X.VL53L0X import VL53L0X
