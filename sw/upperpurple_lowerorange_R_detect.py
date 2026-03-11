@@ -96,7 +96,7 @@ def upperP_lowO_R_detect(events, laser_distance, delivery, robot):
                 delivery["slot_status"][delivery["search_slot_counter"]] = 1
                 delivery["search_slot_counter"] += 1
                 #mark the slot as cleared
-            return laser_distance, delivery["slot_status"], delivery["search_slot_counter"] #will remove later
+            return laser_distance
 
 
         """
