@@ -49,6 +49,7 @@ events = {
 
 robot = {
     "motion": Motion.follow,
+    "start_state" : Start_States.start,
     "turn_state": Turn_State.start,
     "turn_dir": Turn_Direction.nil,
     "turn_complete": False,
@@ -74,7 +75,8 @@ delivery = {
     "deliv_start_time": 0,
     "R_detected": R_detected,
     "search_slot_counter": 0,
-    "slot_status": [0,0,0,0,0,0]
+    "slot_status": [0,0,0,0,0,0],
+    "rack_switching_bcount" : 0
 }
 
 target_racks = [Location.rack_purple_L, Location.rack_orange_L, Location.rack_purple_U, Location.rack_orange_U]
@@ -394,14 +396,34 @@ def search_mode(sensors, events, robot, delivery):
                 robot["mode"] = Mode.delivery
                 delivery["R_detected"] = False
                 return
-    else:
+    elif robot["location"] in [Location.rack_orange_L, Location.rack_purple_U]:
         if slot_status.count(1) < 6: #number of cleared slots is less than 6
             upperP_lowO_R_detect() #this keeps on running until the rack is cleared
             if R_detected:
                 # INSERT code to swap to delivery mode to pick up resistor and drop off at bay (The else error above will go away once this function is added)
                 pass
     
-    line_follow_step(sensors["S1"], sensors["S2"], 80, 20)
+    # After one (lower floor) rack is cleared -- Switching racks. This is just for FIRST COMPETITION. Only enter elevator_low if lower rack is cleared.
+    elif robot["location"] == Location.elevator_low:
+        if delivery["target_rack"] == Location.rack_orange_L:
+            if events["new_junction"]:
+                delivery["rack_switching_bcount"] += 1
+            if delivery["rack_switching_bcount"] == 3 and robot["motion"] != Motion.turning:
+                robot["motion"] = Motion.turning
+                robot["turn_complete"] = False
+                robot["turn_state"] = Turn_State.start
+                delivery["rack_switching_bcount"] = 0
+                robot["turn_dir"] = Turn_Direction.left
+    
+    # --- MOTION HANDLERS ---
+    if robot["motion"] == Motion.turning:
+        robot["turn_state"], robot["turn_complete"] = turn_v4(robot["turn_dir"], sensors["S1"], sensors["S2"], robot["turn_state"], motor_l, motor_r) 
+        if robot["turn_complete"]:
+            robot["motion"] = Motion.follow
+            robot["turn_complete"] = False
+            robot["turn_state"] = Turn_State.start
+    if robot["motion"] == Motion.follow:
+        line_follow_step(sensors["S1"], sensors["S2"], 80, 20)
 
 
 

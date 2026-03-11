@@ -5,6 +5,7 @@ from time import sleep, sleep_ms, ticks_ms, ticks_diff
 #from enum import Enum
 from behaviour import Turn_Direction, Turn_State, Mode, Start_States, TNT_states
 from locations import Junctions, Location, Direction
+from decision import sensors, robot, events, delivery
 #from map_state import mapping, memory
 
 
@@ -246,6 +247,7 @@ def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, new_T, turn_complete, tu
             turn_state, turn_complete = turn_v4(Turn_Direction.left, S1, S2, turn_state, motor_l, motor_r)
         if turn_complete:
             start_state = Start_States.turn2_done
+            delivery["target_rack"] = Location.rack_purple_L
             turn_complete = False
             turn_state = Turn_State.start
             Blue.value(0)
@@ -474,6 +476,7 @@ while True:
         prev_on_junction = on_junction
         prev_on_T = on_T 
 
+# --- MAPPING TEST ---
 
 # Assumes that the turning of the car is wide enough such that the front aligns with line before the back
 '''
