@@ -498,7 +498,7 @@ while True:
     else:
         events["junction_type"] = Junctions.nil
     
-    robot["location"] = mapping(events["previous_state"], robot["mode"], robot["direction"], events["junction_type"])
+    robot["location"] = mapping(robot["location"], robot["mode"], robot["direction"], events["junction_type"])
 
 
     # non blocking debouncing. this allows sensors to still be read while button is being debounced, preventing missed junctions.
