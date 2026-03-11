@@ -12,19 +12,6 @@ from map_state import memory
 from main import SR_sensor, turn_v4, Motion, line_follow_step, back_line_follow_step, detect_junction_type, turn_180, TNT_states
 from R_pickup_N_measure import Pgram_tilt, grab, R_measure #variables & functions for R measurement and pickup
 
-location = Location.start
-direction = Direction.cw
-mode = Mode.start
-turn_complete = False
-turn_state = Turn_State.start
-turn_phase = 0
-motion = Motion.follow
-rack_junction_reached = False
-target_rack = Target_Rack.orange_L #placeholder, should be determined by mapping and memory
-main_spine_detected = False
-ready_for_unloading == False
-delivery_state = Delivery_States.pickup
-deliv_state = Delivery_Rack_States.load_detected
 
 #shld be defined in main code
 motor_l = Motor(dirPin=4, PWMPin=5)
@@ -352,13 +339,14 @@ def search_mode(sensors, events, robot, delivery):
                 delivery["R_detected"] = False
                 return
     elif robot["location"] in [Location.rack_orange_L, Location.rack_purple_U]:
-        if delivery["slot_status"].count(1) < 6: #number of cleared slots is less than 6
-            upperP_lowO_R_detect(sensors, events, robot, delivery) #this keeps on running until the rack is cleared
-            if delivery["R_detected"]:
+        #if delivery["slot_status"].count(1) < 6: #number of cleared slots is less than 6
+            #upperP_lowO_R_detect(sensors, events, robot, delivery) #this keeps on running until the rack is cleared
+            #if delivery["R_detected"]:
                 # INSERT code to swap to delivery mode to pick up resistor and drop off at bay (The else error above will go away once this function is added)
-                robot["mode"] = Mode.delivery
-                delivery["R_detected"] = False
-                return
+                #robot["mode"] = Mode.delivery
+                #delivery["R_detected"] = False
+                #return
+        pass
     
     # After one (lower floor) rack is cleared -- Switching racks. This is just for FIRST COMPETITION. Only enter elevator_low if lower rack is cleared.
     elif robot["location"] == Location.elevator_low:
