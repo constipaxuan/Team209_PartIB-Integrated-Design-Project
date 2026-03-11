@@ -9,7 +9,7 @@ from test_motor import Motor
 from utime import sleep
 from time import ticks_ms, ticks_diff
 from map_state import memory
-from main import SR_sensor, turn_v4, Motion, line_follow_step, back_line_follow_step, detect_junction_type, turn_180
+from main import SR_sensor, turn_v4, Motion, line_follow_step, back_line_follow_step, detect_junction_type, turn_180, TNT_states
 from R_pickup_N_measure import Pgram_tilt, grab, R_measure #variables & functions for R measurement and pickup
 
 location = Location.start
@@ -44,7 +44,10 @@ events = {
     "new_T": False,
     "on_junction": False,
     "on_T": False,
-    "junction_type": Junctions.nil
+    "junction_type": Junctions.nil,
+    "start_T_shape_count": 0,
+    "prev_on_junction" : False,
+    "prev_on_T": False
 }
 
 robot = {
@@ -58,7 +61,8 @@ robot = {
     "mode": Mode.start,
     "timed_turn_started": False,
     "timed_turn_start": 0,
-    "target_rack_idx": 0
+    "target_rack_idx": 0,
+    "tnt_state": TNT_states.nil
 }
 
 delivery = {
