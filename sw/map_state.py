@@ -57,6 +57,15 @@ def init_memory():
     #AT the end of the loop. Memory stored for next cycle. 
 #    prev_on_junction = (SL == 1 or SR == 1)
 
+def detect_junction_type(SL, SR):
+    if (SL == 1 and SR == 0): 
+        return Junctions.L
+    elif (SL == 0 and SR == 1):
+        return Junctions.R
+    elif (SL == 1 and SR == 1):
+        return Junctions.RL
+    return Junctions.nil
+
 #include in main while loop 
 on_junction = (SL == 1 or SR == 1)
 new_junction = (not memory["prev_on_junction"] and on_junction)
@@ -66,6 +75,7 @@ if new_junction:
 else:
     junction_type = Junctions.nil
 # end
+
 
 #replace take_a_turn with take_next_turn
 def mapping(previous_state, mode, direction, junction_type):
@@ -93,7 +103,7 @@ SEARCH_TRANSITIONS = {
     
     #unloading 
     (Mode.search, Location.unloading, Direction.cw, Junctions.RL): lambda :Location.rack_orange_L,
-    (Mode.search, Location.unloading, Direction.acw, Junctions.RL): Location.rack_purple_L,
+    (Mode.search, Location.unloading, Direction.acw, Junctions.RL): lambda: Location.rack_purple_L,
 
     #rack_orange_L
     (Mode.search, Location.rack_orange_L, Direction.cw, Junctions.RL): lambda : handler_rack_orange_L(Direction.cw, Junctions.RL),

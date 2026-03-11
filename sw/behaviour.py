@@ -26,19 +26,26 @@ class Start_States:
 
 class Delivery_Rack_States:
     load_detected = 0
-    approaching = 1
-    reached = 2
-    retracting = 3
-    reorienting = 4
+    reached = 1
+    reorienting = 2
+    reoriented = 3
 
 class Unloading_States:
     finding_bay = 0
-    found_bay = 1
+    counting_bays = 1
+    found_bay = 2
+    done = 3
 
 class Delivery_States:
     pickup = 0
     unloading = 1
     recover = 2
+
+class TNT_states:
+    nil = 0
+    TNT = 1
+    waiting = 2
+    NT_is_here = 3
 
 
 
