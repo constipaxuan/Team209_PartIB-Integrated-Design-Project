@@ -571,7 +571,7 @@ while True:
         
     elif getout_state == Test_GetOut.UB:
         if motion == Motion.follow:
-            if new_T:
+            if on_T:
                 motor_l.Forward(speed = 0)
                 motor_r.Forward(speed = 0)
                 print("reached green bay")
@@ -690,9 +690,12 @@ while True:
                         corner_idx += 1
                     else:
                         corner_idx = 0
-                        sleep_ms(500)
-                        motor_l.Forward(speed = 0)
-                        motor_r.Forward(speed = 0)
+                        if events["on_T"]:
+                            motor_l.Forward(speed = 0)
+                            motor_r.Forward(speed = 0)
+                        else:
+                            line_follow_step(sensors["S1"], sensors["S2"], 80, 20)
+                    
                     test_corner = corners[corner_idx]
                     
     
