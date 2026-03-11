@@ -253,7 +253,7 @@ def get_out_of_box(sensors, events, robot, delivery):
 
     # To prevent double counting: Only can update count while NOT in turning mode.
     if robot["start_state"] == Start_States.start or robot["start_state"] == Start_States.turn1_done:
-        events["start_T_shape_count"] = update_start_T_count(sensors["SL"], sensors["SR"], events["start_T_shape_count"], events["new_T"])
+        events["start_T_shape_count"] = update_start_T_count(events["start_T_shape_count"], events["new_T"])
 
     if robot["start_state"] == Start_States.start:   
     # State 1: Drive out of the box, drive straight
