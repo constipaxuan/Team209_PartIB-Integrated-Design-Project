@@ -251,6 +251,7 @@ def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, new_T, turn_complete, tu
             turn_complete = False
             turn_state = Turn_State.start
             Blue.value(0)
+            line_follow_step(S1, S2, 80, 20)
             
         return start_T_shape_count, start_state, turn_complete, turn_state, mode
     
@@ -408,7 +409,7 @@ while True:
 
         if mode == Mode.start:
             start_T_shape_count, start_state, turn_complete, turn_state, mode = get_out_of_box(S1, S2, SL, SR, start_T_shape_count, new_T, turn_complete, turn_state, start_state, mode)
-        
+            print("after GOB:", mode, start_state)
         elif mode == Mode.search_init:
             # keep following until fully clear of any startup junction/T
             line_follow_step(S1, S2, 80, 20)
@@ -422,6 +423,7 @@ while True:
                 prev_on_T = False
                 mode = Mode.search
                 Red.value(0)
+
         else:
             test_corner, tnt_state, OB_counter, turn_dir = test_main_loop(test_corner, tnt_state, OB_counter, turn_dir, new_junction, new_T)
 
