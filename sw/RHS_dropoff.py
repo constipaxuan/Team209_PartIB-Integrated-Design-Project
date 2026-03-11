@@ -1,8 +1,7 @@
 
-from sw.behaviour import Turn_Direction
-from sw.line_following import line_follow_step
-from sw.locations import Junctions, Resistor_Color
-from sw.main import S1, S2, SR, detect_junction_type, turn_v4
+from behaviour import Turn_Direction
+from locations import Junctions, Resistor_Color
+from main import S1, S2, SR, detect_junction_type, turn_v4
 from R_pickup_N_measure import release
 
 target_bay = 0 

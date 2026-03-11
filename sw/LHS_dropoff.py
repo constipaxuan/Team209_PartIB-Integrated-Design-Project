@@ -1,9 +1,9 @@
 # Coming from the LHS main spine back down to loading bays
 # Red = 0, Yellow = 1, SKIP the starting box = 2, Green = 3, Blue = 4
 
-from sw.behaviour import Turn_Direction, Turn_State, Unloading_States
-from sw.locations import Junctions, Resistor_Color
-from sw.main import S1, S2, SR, detect_junction_type, turn_v4, line_follow_step, Motion, motor_l, motor_r
+from behaviour import Turn_Direction, Turn_State, Unloading_States
+from locations import Junctions, Resistor_Color
+from main import S1, S2, SR, detect_junction_type, turn_v4, line_follow_step, Motion, motor_l, motor_r
 from R_pickup_N_measure import release
 from decision import sensors, robot, events, delivery
 

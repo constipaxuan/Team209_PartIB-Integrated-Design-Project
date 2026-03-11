@@ -2,7 +2,7 @@
 from locations import Location, Direction, Junctions, Target_Rack, Resistor_Color
 from behaviour import Mode, Turn_Direction, Turn_State, Start_States, Delivery_Rack_States, Delivery_States, Unloading_States
 from lowerpurple_upper_orange_R_detect import * #detection for lower purple upper orange
-from upperpurple_lowerorange_R_detect import * #detection for upper purple lower orange
+#from upperpurple_lowerorange_R_detect import * #detection for upper purple lower orange
 from LHS_dropoff import LHS_dropoff
 from RHS_dropoff import RHS_dropoff
 from test_motor import Motor
