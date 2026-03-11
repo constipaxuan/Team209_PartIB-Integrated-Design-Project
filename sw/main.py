@@ -432,6 +432,7 @@ while True:
                     turn_complete = False
                     turn_state = Turn_State.start
                     Red.value(1)
+                    
                 else:
                     line_follow_step(S1, S2, 80, 20)
 
