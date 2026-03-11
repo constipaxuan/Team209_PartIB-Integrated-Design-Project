@@ -428,7 +428,8 @@ while True:
                 mode = Mode.search
 
         else:
-            test_corner, tnt_state, OB_counter, turn_dir = test_main_loop(test_corner, tnt_state, OB_counter, turn_dir, new_junction, new_T)
+            if tnt_state == TNT_states.nil:
+                test_corner, tnt_state, OB_counter, turn_dir = test_main_loop(test_corner, tnt_state, OB_counter, turn_dir, new_junction, new_T)
 
             if motion == Motion.follow:
                 if tnt_state == TNT_states.TNT:
