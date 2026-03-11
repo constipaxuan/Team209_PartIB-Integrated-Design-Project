@@ -441,7 +441,7 @@ motor_r = Motor(dirPin=7, PWMPin=6)  """
     events["new_T"] = (not events["prev_on_T"]) and events["on_T"]
 
     if events["new_junction"]:
-        events["junction_type"] = detect_junction_type(memory["prev_on_junction"], sensors["SL"], sensors["SR"])
+        events["junction_type"] = detect_junction_type(sensors["SL"], sensors["SR"])
     else:
         events["junction_type"] = Junctions.nil
     
@@ -481,6 +481,7 @@ motor_r = Motor(dirPin=7, PWMPin=6)  """
                 events["prev_on_T"] = False
                 robot["mode"] = Mode.search
 
+        
         else:
             if robot["tnt_state"] == TNT_states.nil:
                 test_corner, OB_counter = test_main_loop(robot, events, test_corner, OB_counter)
@@ -560,6 +561,10 @@ SR = SR_sensor.value()
 
 
 while True:
+    if events["new_junction"]:
+        events["junction_type"] = detect_junction_type(sensors["SL"], sensors["SR"])
+    else:
+        events["junction_type"] = Junctions.nil
     # pretend we just crossed a junction (update events before calling)
     # call detector using globals; pass previous laser_distance or None
     laser_distance = detector.upperP_lowO_R_detect(events, laser_distance)
