@@ -7,7 +7,6 @@ from behaviour import Turn_Direction, Turn_State, Mode, Start_States, TNT_states
 from locations import Junctions, Location, Direction, Resistor_Color
 from map_state import mapping
 
-
 # --- CLASSES ---
 
 
@@ -544,9 +543,9 @@ motor_r = Motor(dirPin=7, PWMPin=6)  """
 
 #Resistor detection test
 
-import upperpurple_lowerorange_R_detect as detector
+from upperpurple_lowerorange_R_detect import upperP_lowO_R_detect(), init_laser
+init_laser()
 
-detector.init_laser()
 
 S1_pin = 21
 S2_pin = 20
@@ -563,7 +562,7 @@ SR = SR_sensor.value()
 while True:
     # pretend we just crossed a junction (update events before calling)
     # call detector using globals; pass previous laser_distance or None
-    laser_distance, slot_status, slot_counter = detector.upperP_lowO_R_detect(events, laser_distance)
+    laser_distance, slot_status, slot_counter = upperP_lowO_R_detect(events, laser_distance)
     # print distance sample and state for debugging
     print(f"Distance reading: {laser_distance}mm")
     print(f"Counter: {delivery['search_slot_counter']}")
