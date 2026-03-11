@@ -566,7 +566,7 @@ def rec_dist_laser():
 def upperP_lowO_R_detect(events, laser_distance, delivery, robot):
     
     # ONLY act if this is a BRAND NEW junction detection
-    if events["new_junction"] == True and not events["new_T"]:
+    if events["on_junction"] == True and not events["on_T"]:
         # decide which distance sensor to use based on direction of travel
         # 1. Safety check: stop the counter if we run out of slots (All slots have been cleared for a particular rack)
         if delivery["search_slot_counter"] >= 6: # 6 slots
@@ -602,7 +602,7 @@ while True:
 
     events["on_T"] = (sensors["SL"] == 1 and sensors["SR"] == 1)            # specifically T-shape / both side sensors active
     events["new_T"] = (not events["prev_on_T"]) and events["on_T"]
-    
+
     # pretend we just crossed a junction (update events before calling)
     # call detector using globals; pass previous laser_distance or None
     laser_distance = upperP_lowO_R_detect(events, laser_distance, delivery, robot)
