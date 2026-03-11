@@ -254,7 +254,7 @@ def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, new_T, turn_complete, tu
     
     if start_state == Start_States.turn2_done:
         line_follow_step(S1, S2, 80, 20)
-        mode = Mode.search
+        mode = Mode.search_init
         return start_T_shape_count, start_state, turn_complete, turn_state, mode
 
 ''' upper right refers to the one above purple rack, 
@@ -369,6 +369,7 @@ motor_r = Motor(dirPin=7, PWMPin=6)  """
     prev_on_junction = on_junction   """
 
 prev_on_T = False
+prev_on_junction = False
 
 while True:
     S1 = S1_sensor.value()
@@ -404,6 +405,19 @@ while True:
 
         if mode == Mode.start:
             start_T_shape_count, start_state, turn_complete, turn_state, mode = get_out_of_box(S1, S2, SL, SR, start_T_shape_count, new_T, turn_complete, turn_state, start_state, mode)
+        
+        elif mode == Mode.search_init:
+            # keep following until fully clear of any startup junction/T
+            line_follow_step(S1, S2, 80, 20)
+
+            if not on_junction and not on_T:
+                motion = Motion.follow
+                tnt_state = TNT_states.nil
+                turn_complete = False
+                turn_state = Turn_State.start
+                prev_on_junction = False
+                prev_on_T = False
+                mode = Mode.search
         else:
             test_corner, tnt_state, OB_counter, turn_dir = test_main_loop(test_corner, tnt_state, OB_counter, turn_dir, new_junction, new_T)
 
@@ -432,7 +446,7 @@ while True:
                     turn_complete = False
                     turn_state = Turn_State.start
                     Red.value(1)
-                    
+
                 else:
                     line_follow_step(S1, S2, 80, 20)
 

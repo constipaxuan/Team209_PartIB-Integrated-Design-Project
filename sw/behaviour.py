@@ -2,8 +2,9 @@
 
 class Mode:
     start = 0
-    search = 1
-    delivery = 2
+    search_init = 1
+    search = 2
+    delivery = 3
 
 class Turn_Direction:
     left = 0
