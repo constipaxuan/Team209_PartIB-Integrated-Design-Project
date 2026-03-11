@@ -277,7 +277,7 @@ last_press = 0
 tnt_state = TNT_states.nil
 
 # defines turning sequence in line following test 5 Mar.
-def test_main_loop(SL, SR, test_corner, tnt_state, OB_counter, turn_dir, new_junction, new_T):
+def test_main_loop(test_corner, tnt_state, OB_counter, turn_dir, new_junction, new_T):
     if test_corner == Test_Corners.upper_right:
         if new_T:
             tnt_state = TNT_states.TNT
@@ -395,6 +395,7 @@ while True:
         motor_l.Forward(speed = 0)
         motor_r.Forward(speed = 0)
         prev_on_junction = on_junction
+        prev_on_T = on_T
         continue
         
     elif ON:
@@ -402,19 +403,23 @@ while True:
         if mode == Mode.start:
             start_T_shape_count, start_state, turn_complete, turn_state, mode = get_out_of_box(S1, S2, SL, SR, start_T_shape_count, new_T, turn_complete, turn_state, start_state, mode)
         else:
-            test_corner, tnt_state, OB_counter, turn_dir = test_main_loop(SL, SR, test_corner, tnt_state, OB_counter, turn_dir, new_junction, new_T)
+            test_corner, tnt_state, OB_counter, turn_dir = test_main_loop(test_corner, tnt_state, OB_counter, turn_dir, new_junction, new_T)
 
             if motion == Motion.follow:
                 if tnt_state == TNT_states.TNT:
                     if not on_junction:
                         tnt_state = TNT_states.waiting
-                        
+                    line_follow_step(S1, S2, 80, 20)
+
+
                 elif tnt_state == TNT_states.waiting:
                     if new_junction:
                         tnt_state = TNT_states.NT_is_here
                         Red.value(0)
                         Green.value(0)
                         Yellow.value(0)
+                    line_follow_step(S1, S2, 80, 20)
+
                 
                 elif tnt_state == TNT_states.NT_is_here:
                     SL = SL_sensor.value()

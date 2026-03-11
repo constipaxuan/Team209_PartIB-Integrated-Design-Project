@@ -33,7 +33,9 @@ class Delivery_Rack_States:
 
 class Unloading_States:
     finding_bay = 0
-    found_bay = 1
+    counting_bays = 1
+    found_bay = 2
+    done = 3
 
 class Delivery_States:
     pickup = 0

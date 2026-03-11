@@ -1,6 +1,6 @@
 
 from locations import Location, Direction, Junctions, Target_Rack, Resistor_Color
-from behaviour import Mode, Turn_Direction, Turn_State, Start_States, Delivery_Rack_States, Delivery_States
+from behaviour import Mode, Turn_Direction, Turn_State, Start_States, Delivery_Rack_States, Delivery_States, Unloading_States
 from lowerpurple_upper_orange_R_detect import * #detection for lower purple upper orange
 from upperpurple_lowerorange_R_detect import * #detection for upper purple lower orange
 from LHS_dropoff import LHS_dropoff
@@ -21,172 +21,320 @@ turn_phase = 0
 motion = Motion.follow
 rack_junction_reached = False
 target_rack = Target_Rack.orange_L #placeholder, should be determined by mapping and memory
+main_spine_detected = False
+ready_for_unloading == False
+delivery_state = Delivery_States.pickup
+deliv_state = Delivery_Rack_States.load_detected
 
 #shld be defined in main code
 motor_l = Motor(dirPin=4, PWMPin=5)
 motor_r = Motor(dirPin=7, PWMPin=6) 
 
+# Required transitions: ready for unloading (local rack handler --> dropoff). unloading_state == done (dropoff --> local bay handler)
+# re-read every iteration.
+sensors = {
+    "S1": S1,
+    "S2": S2,
+    "SL": SL,
+    "SR": SR
+}
+
+events = {
+    "new_junction": new_junction,
+    "new_T": new_T,
+    "on_junction": on_junction,
+    "on_T": on_T
+}
+
+robot = {
+    "motion": motion,
+    "turn_state": turn_state,
+    "turn_dir": turn_dir,
+    "turn_complete": turn_complete,
+    "direction": direction,
+    "location": location,
+    "mode": mode
+}
+
+delivery = {
+    "delivery_state": delivery_state,
+    "rack_state": rack_state,
+    "ready_for_unloading": ready_for_unloading,
+    "resistor_color": resistor_color,
+    "drop_off_bay": drop_off_bay,
+    "bay_latch": bay_latch,
+    "unloading_state": unloading_state,
+    "main_spine_detected": main_spine_detected,
+    "turn_phase": turn_phase,
+    "target_rack": target_rack,
+    "deliv_start_time": deliv_start_time
+}
+
+# --- LOCAL BAY HANDLERS ---
 # Called when load has been dropped in required bay. Ends when turn_complete = True and line following starts again. Bot is now aligned with main loop spine and is oriented in the correct direction of travel.
-main_spine_detected = False
-def handler_blue_bay(main_spine_detected, S1, S2, new_junction, target_rack, motion, turn_state, turn_complete, turn_phase):
-    if new_junction:
-        main_spine_detected = True
+# I am assuming that new_junction will not trigger on the one the bot is already sitting on. 
+def handler_blue_bay(sensors, events, robot, delivery):
+    
+    if events["new_junction"]:
+        delivery["main_spine_detected"] = True
 
-    if not main_spine_detected:
-        back_line_follow_step(S1, S2, 60, 20) #reverse until detect main spine again
+    if not delivery["main_spine_detected"] :
+        back_line_follow_step(sensors["S1"], sensors["S2"], 80, 20) #reverse until detect main spine again
+    
     else:
-        motor_l.Forward(speed = 0)
-        motor_r.Forward(speed = 0)
-
-        if target_rack == Target_Rack.purple_L:
-            if new_junction and motion != Motion.turning: 
+        if delivery["target_rack"] == Target_Rack.purple_L:
+            if events["new_junction"] and robot["motion"] != Motion.turning: 
                 motor_l.Forward(speed = 0)
                 motor_r.Forward(speed = 0)
-                motion = Motion.turning
-                turn_state = Turn_State.start
-            elif motion == Motion.turning:
-                turn_state, turn_complete = turn_v4(Turn_Direction.left, S1, S2, turn_state, motor_l, motor_r) #turn left towards purple L
-                if turn_complete:
-                    motion = Motion.follow
-                    turn_complete = False
-                    turn_state = Turn_State.start
+                robot["motion"] = Motion.turning
+                robot["turn_state"] = Turn_State.start
+            elif robot["motion"] == Motion.turning:
+                robot["turn_state"], robot["turn_complete"] = turn_v4(Turn_Direction.left, sensors["S1"], sensors["S2"], robot["turn_state"], motor_l, motor_r) #turn left towards purple L
+                if robot["turn_complete"]:
+                    robot["motion"] = Motion.follow
+                    robot["turn_complete"] = False
+                    robot["turn_state"] = Turn_State.start
         else:
-            if new_junction and motion != Motion.turning: 
+            if events["new_junction"] and robot["motion"] != Motion.turning: 
                 motor_l.Forward(speed = 0)
                 motor_r.Forward(speed = 0)
-                motion = Motion.turning
-                turn_state = Turn_State.start
-            elif motion == Motion.turning:
-                turn_state, turn_complete, turn_phase = turn_180(Turn_Direction.left, S1, S2, turn_state, turn_phase, motor_l, motor_r) #turn 180 towards orange L
-                if turn_complete:
-                    motion = Motion.follow
-                    turn_complete = False
-                    turn_state = Turn_State.start
+                robot["motion"] = Motion.turning
+                robot["turn_state"] = Turn_State.start
+            elif robot["motion"] == Motion.turning:
+                robot["turn_state"], robot["turn_complete"], delivery["turn_phase"] = turn_180(Turn_Direction.left, sensors["S1"], sensors["S2"], robot["turn_state"], delivery["turn_phase"], motor_l, motor_r) #turn 180 towards orange L
+                if robot["turn_complete"]:
+                    robot["motion"] = Motion.follow
+                    robot["turn_complete"] = False
+                    robot["turn_state"] = Turn_State.start
 
-        if motion == Motion.follow:
-            line_follow_step(S1, S2, 60, 20) 
-        
-    return main_spine_detected, motion, turn_state, turn_complete, turn_phase
+        if robot["motion"] == Motion.follow:
+            line_follow_step(sensors["S1"], sensors["S2"], 80, 20) 
 
-def handler_red_bay(main_spine_detected, S1, S2, new_junction, target_rack, motion, turn_state, turn_complete, turn_phase):
-    if new_junction:
-        main_spine_detected = True
+def handler_red_bay(sensors, events, robot, delivery):
+    
+    if events["new_junction"]:
+        delivery["main_spine_detected"] = True
 
-    if not main_spine_detected:
-        back_line_follow_step(S1, S2, 60, 20) #reverse until detect main spine again
+    if not delivery["main_spine_detected"] :
+        back_line_follow_step(sensors["S1"], sensors["S2"], 80, 20) #reverse until detect main spine again
+    
     else:
-        motor_l.Forward(speed = 0)
-        motor_r.Forward(speed = 0)
-
-        if target_rack == Target_Rack.orange_L:
-            if new_junction and motion != Motion.turning: 
+        if delivery["target_rack"] == Target_Rack.orange_L:
+            if events["new_junction"] and robot["motion"] != Motion.turning: 
                 motor_l.Forward(speed = 0)
                 motor_r.Forward(speed = 0)
-                motion = Motion.turning
-                turn_state = Turn_State.start
-            elif motion == Motion.turning:
-                turn_state, turn_complete = turn_v4(Turn_Direction.right, S1, S2, turn_state, motor_l, motor_r) #turn left towards purple L
-                if turn_complete:
-                    motion = Motion.follow
-                    turn_complete = False
-                    turn_state = Turn_State.start
+                robot["motion"] = Motion.turning
+                robot["turn_state"] = Turn_State.start
+            elif robot["motion"] == Motion.turning:
+                robot["turn_state"], robot["turn_complete"] = turn_v4(Turn_Direction.right, sensors["S1"], sensors["S2"], robot["turn_state"], motor_l, motor_r) #turn left towards purple L
+                if robot["turn_complete"]:
+                    robot["motion"] = Motion.follow
+                    robot["turn_complete"] = False
+                    robot["turn_state"] = Turn_State.start
         else:
-            if new_junction and motion != Motion.turning: 
+            if events["new_junction"] and robot["motion"] != Motion.turning: 
                 motor_l.Forward(speed = 0)
                 motor_r.Forward(speed = 0)
-                motion = Motion.turning
-                turn_state = Turn_State.start
-            elif motion == Motion.turning:
-                turn_state, turn_complete, turn_phase = turn_180(Turn_Direction.right, S1, S2, turn_state, turn_phase, motor_l, motor_r) #turn 180 towards orange L
-                if turn_complete:
-                    motion = Motion.follow
-                    turn_complete = False
-                    turn_state = Turn_State.start
+                robot["motion"] = Motion.turning
+                robot["turn_state"] = Turn_State.start
+            elif robot["motion"] == Motion.turning:
+                robot["turn_state"], robot["turn_complete"], delivery["turn_phase"] = turn_180(Turn_Direction.right, sensors["S1"], sensors["S2"], robot["turn_state"], delivery["turn_phase"], motor_l, motor_r) #turn 180 towards orange L
+                if robot["turn_complete"]:
+                    robot["motion"] = Motion.follow
+                    robot["turn_complete"] = False
+                    robot["turn_state"] = Turn_State.start
 
-        if motion == Motion.follow:
-            line_follow_step(S1, S2, 60, 20) 
-        
-    return main_spine_detected, motion, turn_state, turn_complete, turn_phase
+        if robot["motion"] == Motion.follow:
+            line_follow_step(sensors["S1"], sensors["S2"], 80, 20) 
 
-def handler_green_bay(main_spine_detected, S1, S2, new_junction, target_rack, motion, turn_state, turn_complete, turn_phase):
-    if new_junction:
-        main_spine_detected = True
+def handler_green_bay(sensors, events, robot, delivery):
+    
+    if events["new_junction"]:
+        delivery["main_spine_detected"] = True
 
-    if not main_spine_detected:
-        back_line_follow_step(S1, S2, 60, 20) #reverse until detect main spine again
+    if not delivery["main_spine_detected"] :
+        back_line_follow_step(sensors["S1"], sensors["S2"], 80, 20) #reverse until detect main spine again
+    
     else:
-        motor_l.Forward(speed = 0)
-        motor_r.Forward(speed = 0)
-
-        if target_rack == Target_Rack.purple_L:
-            if new_junction and motion != Motion.turning: 
+        if delivery["target_rack"] == Target_Rack.purple_L:
+            if events["new_junction"] and robot["motion"] != Motion.turning: 
                 motor_l.Forward(speed = 0)
                 motor_r.Forward(speed = 0)
-                motion = Motion.turning
-                turn_state = Turn_State.start
-            elif motion == Motion.turning:
-                turn_state, turn_complete = turn_v4(Turn_Direction.left, S1, S2, turn_state, motor_l, motor_r) #turn left towards purple L
-                if turn_complete:
-                    motion = Motion.follow
-                    turn_complete = False
-                    turn_state = Turn_State.start
+                robot["motion"] = Motion.turning
+                robot["turn_state"] = Turn_State.start
+            elif robot["motion"] == Motion.turning:
+                robot["turn_state"], robot["turn_complete"] = turn_v4(Turn_Direction.left, sensors["S1"], sensors["S2"], robot["turn_state"], motor_l, motor_r) #turn left towards purple L
+                if robot["turn_complete"]:
+                    robot["motion"] = Motion.follow
+                    robot["turn_complete"] = False
+                    robot["turn_state"] = Turn_State.start
         else:
-            if new_junction and motion != Motion.turning: 
+            if events["new_junction"] and robot["motion"] != Motion.turning: 
                 motor_l.Forward(speed = 0)
                 motor_r.Forward(speed = 0)
-                motion = Motion.turning
-                turn_state = Turn_State.start
-            elif motion == Motion.turning:
-                turn_state, turn_complete = turn_v4(Turn_Direction.right, S1, S2, turn_state, motor_l, motor_r) #turn left towards purple L
-                if turn_complete:
-                    motion = Motion.follow
-                    turn_complete = False
-                    turn_state = Turn_State.start
+                robot["motion"] = Motion.turning
+                robot["turn_state"] = Turn_State.start
+            elif robot["motion"] == Motion.turning:
+                robot["turn_state"], robot["turn_complete"] = turn_v4(Turn_Direction.right, sensors["S1"], sensors["S2"], robot["turn_state"], motor_l, motor_r) #turn 180 towards orange L
+                if robot["turn_complete"]:
+                    robot["motion"] = Motion.follow
+                    robot["turn_complete"] = False
+                    robot["turn_state"] = Turn_State.start
 
-        if motion == Motion.follow:
-            line_follow_step(S1, S2, 60, 20) 
-        
-    return main_spine_detected, motion, turn_state, turn_complete, turn_phase
+        if robot["motion"] == Motion.follow:
+            line_follow_step(sensors["S1"], sensors["S2"], 80, 20) 
 
-def handler_yellow_bay(main_spine_detected, S1, S2, new_junction, target_rack, motion, turn_state, turn_complete, turn_phase):
-    if new_junction:
-        main_spine_detected = True
+def handler_yellow_bay(sensors, events, robot, delivery):
+    
+    if events["new_junction"]:
+        delivery["main_spine_detected"] = True
 
-    if not main_spine_detected:
-        back_line_follow_step(S1, S2, 60, 20) #reverse until detect main spine again
+    if not delivery["main_spine_detected"] :
+        back_line_follow_step(sensors["S1"], sensors["S2"], 80, 20) #reverse until detect main spine again
+    
     else:
-        motor_l.Forward(speed = 0)
-        motor_r.Forward(speed = 0)
-
-        if target_rack == Target_Rack.orange_L:
-            if new_junction and motion != Motion.turning: 
+        if delivery["target_rack"] == Target_Rack.purple_L:
+            if events["new_junction"] and robot["motion"] != Motion.turning: 
                 motor_l.Forward(speed = 0)
                 motor_r.Forward(speed = 0)
-                motion = Motion.turning
-                turn_state = Turn_State.start
-            elif motion == Motion.turning:
-                turn_state, turn_complete = turn_v4(Turn_Direction.right, S1, S2, turn_state, motor_l, motor_r) #turn left towards purple L
-                if turn_complete:
-                    motion = Motion.follow
-                    turn_complete = False
-                    turn_state = Turn_State.start
+                robot["motion"] = Motion.turning
+                robot["turn_state"] = Turn_State.start
+            elif robot["motion"] == Motion.turning:
+                robot["turn_state"], robot["turn_complete"] = turn_v4(Turn_Direction.right, sensors["S1"], sensors["S2"], robot["turn_state"], motor_l, motor_r) #turn left towards purple L
+                if robot["turn_complete"]:
+                    robot["motion"] = Motion.follow
+                    robot["turn_complete"] = False
+                    robot["turn_state"] = Turn_State.start
         else:
-            if new_junction and motion != Motion.turning: 
+            if events["new_junction"] and robot["motion"] != Motion.turning: 
                 motor_l.Forward(speed = 0)
                 motor_r.Forward(speed = 0)
-                motion = Motion.turning
-                turn_state = Turn_State.start
-            elif motion == Motion.turning:
-                turn_state, turn_complete = turn_v4(Turn_Direction.left, S1, S2, turn_state, motor_l, motor_r) #turn left towards purple L
-                if turn_complete:
-                    motion = Motion.follow
-                    turn_complete = False
-                    turn_state = Turn_State.start
+                robot["motion"] = Motion.turning
+                robot["turn_state"] = Turn_State.start
+            elif robot["motion"] == Motion.turning:
+                robot["turn_state"], robot["turn_complete"] = turn_v4(Turn_Direction.left, sensors["S1"], sensors["S2"], robot["turn_state"], motor_l, motor_r) #turn 180 towards orange L
+                if robot["turn_complete"]:
+                    robot["motion"] = Motion.follow
+                    robot["turn_complete"] = False
+                    robot["turn_state"] = Turn_State.start
 
-        if motion == Motion.follow:
-            line_follow_step(S1, S2, 60, 20) 
+        if robot["motion"] == Motion.follow:
+            line_follow_step(sensors["S1"], sensors["S2"], 80, 20) 
+
+# --- OVERALL DELIVERY MODE FROM EACH RACK ---
+def delivery_from_orange_L(sensors, events, robot, delivery):
+    if delivery["delivery_state"] == Delivery_States.pickup:
+        if delivery["ready_for_unloading"] == False:
+            handler_orange_L_delivery(sensors, events, robot, delivery)
+        elif delivery["ready_for_unloading"] == True:
+            delivery["ready_for_unloading"] = False #reset for next load
+            delivery["delivery_state"] = Delivery_States.unloading
         
-    return main_spine_detected, motion, turn_state, turn_complete, turn_phase
+    elif delivery["delivery_state"] == Delivery_States.unloading:
+        LHS_dropoff(sensors, events, robot, delivery) 
+        # Successful dropoff should output a signal and we can let delivery_state change to recover
+        if delivery["unloading_state"] == Unloading_States.done:
+            delivery["delivery_state"] = Delivery_States.recover
+            delivery["unloading_state"] = Unloading_States.finding_bay #reset unloading state for next time
+        
+    elif delivery["delivery_state"] == Delivery_States.recover:
+    #enter unloading bay with blue closest
+    # LHS dropoff stops when load has been deposited
+        if delivery["resistor_color"] == Resistor_Color.red:
+            handler_red_bay(sensors, events, robot, delivery)
+        elif delivery["resistor_color"] == Resistor_Color.yellow:
+            handler_yellow_bay(sensors, events, robot, delivery)
+        elif delivery["resistor_color"] == Resistor_Color.green:
+            handler_green_bay(sensors, events, robot, delivery)   
+        elif delivery["resistor_color"] == Resistor_Color.blue:
+            handler_blue_bay(sensors, events, robot, delivery)
+
+        if robot["turn_complete"]:
+            line_follow_step(sensors["S1"], sensors["S2"], 80, 20) #keep following the line and the bot should be in search mode again, ready to detect the next load.
+            robot["mode"] = Mode.search
+            delivery["main_spine_detected"] = False
+            robot["turn_complete"] = False #reset
+            delivery["delivery_state"] = Delivery_States.pickup
+
+# --- LOCAL RACK HANDLERS  
+def handler_orange_L_delivery(sensors, events, robot, delivery):
+    base = 80
+    # Step 1: Enter delivery mode when laser detects a resistor load while bot is on a branch. 
+    if delivery["rack_state"] == Delivery_Rack_States.load_detected:
+        if events["new_junction"] and robot["motion"] != Motion.turning:
+            motor_l.Forward(speed = 0)
+            motor_r.Forward(speed = 0)
+            robot["motion"] = Motion.turning
+            robot["turn_state"] = Turn_State.start
+            if robot["direction"] == Direction.cw:
+                robot["turn_dir"] = Turn_Direction.right
+            elif robot["direction"] == Direction.acw:
+                robot["turn_dir"] = Turn_Direction.left
+        
+        if robot["motion"] == Motion.turning:
+            robot["turn_state"], robot["turn_complete"] = turn_v4(robot["turn_dir"], sensors["S1"], sensors["S2"], robot["turn_state"], motor_l, motor_r) 
+            if robot["turn_complete"]:
+                robot["motion"] = Motion.follow
+                robot["turn_complete"] = False
+                robot["turn_state"] = Turn_State.start
+                delivery["rack_state"] = Delivery_Rack_States.reached
+                motor_l.Forward(speed = 0)
+                motor_r.Forward(speed = 0)
+                
+
+    # Step 3: Grab the load. Adjust timing so that the claw can shut before the bot starts reversing.
+    elif delivery["rack_state"] == Delivery_Rack_States.reached:
+        grab() 
+        delivery["resistor_color"] = R_measure() #measure the resistor color and store it as a variable so that the bot knows which bay to drop it off at
+        delivery["rack_state"] = Delivery_Rack_States.retracting
+        # Step 4: Reverse until RL junction is detected. Then turn right towards the drop off bay.
+
+        #move forward until you grab. After grabbing reverse until reach RL junction, turn 90 deg right (cw)
+    elif delivery["rack_state"] == Delivery_Rack_States.retracting:
+        back_line_follow_step(sensors["S1"], sensors["S2"], base, 20) #reverse until detect main spine again
+
+        if events["new_T"]: #detect RL junction. No need to lose the white line bc we are approaching in reverse
+            delivery["rack_state"] = Delivery_Rack_States.reorienting
+            motor_l.Forward(speed = 0)
+            motor_r.Forward(speed = 0)
+            robot["motion"] = Motion.turning
+            robot["turn_state"] = Turn_State.start
+            robot["turn_dir"] = Turn_Direction.right
+            robot["direction"] = Direction.acw
+        
+    elif delivery["rack_state"] == Delivery_Rack_States.reorienting:
+        if robot["motion"] == Motion.turning:
+            if not robot["turn_complete"]:
+                robot["turn_state"], robot["turn_complete"] = turn_v4(robot["turn_dir"], sensors["S1"], sensors["S2"], robot["turn_state"], motor_l, motor_r)
+            else:
+                robot["motion"] = Motion.follow
+                robot["turn_complete"] = False
+                robot["turn_state"] = Turn_State.start
+            
+        if robot["motion"] == Motion.follow:
+            line_follow_step(sensors["S1"], sensors["S2"], 80, 20) 
+        
+            #rack_branches_OL is known
+            if events["new_junction"]: # Detect SL HIGHs. No other junctions to be confused with so this is fine.
+                memory["rack_branches_OL"] -= 1
+                if memory["rack_branches_OL"] % 6 == 0:
+                    delivery["rack_state"] = Delivery_Rack_States.load_detected #reset to search for next load after passing each branch, since each bay has 6 branches.
+                    delivery["ready_for_unloading"] = True 
+    
+                    
+
+# Call format: 
+# ready_for_unloading, turn_state, turn_complete, direction, deliv_state, motion, turn_dir, deliv_start_time, resistor_color = handler_orange_L_delivery(S1, S2, location, direction, junction_type, new_junction, resistor_color, turn_state, turn_complete)
+
+    # I DON'T THINK THE BOT NEEDS TO MOVE ANYMORE. IT IS CLOSE ENOUGH AS IT IS. MIGHT EVEN NEED TO MOVE BACK.
+    """ elif delivery["rack_state"] == Delivery_Rack_States.approaching:
+        line_follow_step(sensors["S1"], sensors["S2"], base, 20) 
+        if ticks_diff(ticks_ms(), delivery["deliv_start_time"]) > 500: #approach for 0.5 seconds, then stop and grab. Time can be adjusted based on testing
+            motor_l.Forward(speed = 0)
+            motor_r.Forward(speed = 0)
+            delivery["rack_state"] = Delivery_Rack_States.reached """
+
+
 
 def search_mode(location):
     # I assume that this function is called when the bot should turn on the side sensor, I assume that the bot is already at the rack positions
@@ -203,120 +351,13 @@ def search_mode(location):
                 # INSERT code to swap to delivery mode to pick up resistor and drop off at bay (The else error above will go away once this function is added)
                 pass
 
-delivery_state = Delivery_States.pickup
-ready_for_unloading = False 
+
+
 # This function is called when the bot detects a load. It handles the entire pickup process up until the bot is back on the main loop spine ready to search for a new load.
-def delivery_mode(S1, S2, SL, SR, location, direction, delivery_state, new_junction, resistor_color, turn_state, turn_complete):
-    if location == Location.rack_orange_L:
-        if delivery_state == Delivery_States.pickup:
-            if ready_for_unloading == False:
-                ready_for_unloading, turn_state, turn_complete, direction, deliv_state, motion, turn_dir, deliv_start_time, resistor_color = handler_orange_L_delivery(S1, S2, location, direction, junction_type, new_junction, resistor_color, turn_state, turn_complete)
-            elif ready_for_unloading == True:
-                ready_for_unloading = False #reset for next load
-                delivery_state = Delivery_States.unloading
-        
-        if delivery_state == Delivery_States.unloading:
-            LHS_dropoff(resistor_color)
-            # Successful dropoff should output a signal and we can let delivery_state change to recover
-        
-        if delivery_state == Delivery_States.recover:
-        #enter unloading bay with blue closest
-        # LHS dropoff stops when load has been deposited
-            if resistor_color == Resistor_Color.red:
-                main_spine_detected, motion, turn_state, turn_complete, turn_phase = handler_red_bay(main_spine_detected, S1, S2, new_junction, target_rack, motion, turn_state, turn_complete, turn_phase)
-            elif resistor_color == Resistor_Color.yellow:
-                main_spine_detected, motion, turn_state, turn_complete, turn_phase = handler_yellow_bay(main_spine_detected, S1, S2, new_junction, target_rack, motion, turn_state, turn_complete, turn_phase)
-            elif resistor_color == Resistor_Color.green:
-                main_spine_detected, motion, turn_state, turn_complete, turn_phase = handler_green_bay(main_spine_detected, S1, S2, new_junction, target_rack, motion, turn_state, turn_complete, turn_phase)   
-            elif resistor_color == Resistor_Color.blue:
-                main_spine_detected, motion, turn_state, turn_complete, turn_phase = handler_blue_bay(main_spine_detected, S1, S2, new_junction, target_rack, motion, turn_state, turn_complete, turn_phase)
+def delivery_mode(sensors, events, robot, delivery):
+    if robot["location"] == Location.rack_orange_L:
+        delivery_from_orange_L(sensors, events, robot, delivery)
 
-            if turn_complete:
-                line_follow_step(S1, S2, 60, 20) #keep following the line and the bot should be in search mode again, ready to detect the next load.
-                mode = Mode.search
-
-    elif location == Location.rack_purple_L:
-    #copy and paste later
+    elif robot["location"] == Location.rack_purple_L:
         pass
-
-deliv_state = Delivery_Rack_States.load_detected
-
-def handler_orange_L_delivery(S1, S2, SL, SR, direction, new_junction, resistor_color, turn_state, turn_complete, motion, deliv_state, turn_dir, deliv_start_time):
-    base = 60
-    # Step 1: Enter delivery mode when laser detects a resistor load while bot is on a branch. 
-    if deliv_state == Delivery_Rack_States.load_detected:
-        if new_junction and motion != Motion.turning:
-            if (SL == 0 and SR == 0): # move forward until we lose the white line.
-                motor_l.Forward(speed = 0)
-                motor_r.Forward(speed = 0)
-                motion = Motion.turning
-                turn_state = Turn_State.start
-                if direction == Direction.cw:
-                    turn_dir = Turn_Direction.right
-                elif direction == Direction.acw:
-                    turn_dir = Turn_Direction.left
-        
-        if motion == Motion.turning:
-            if not turn_complete:
-                turn_state, turn_complete = turn_v4(turn_dir, S1, S2, turn_state)
-            else:
-                motion = Motion.follow
-                turn_complete = False
-                turn_state = Turn_State.start
-                deliv_state = Delivery_Rack_States.approaching
-                deliv_start_time = ticks_ms() #start timer for how long we have been in delivery mode
-        
-    #Step 2: Move forward closer to resistor
-    elif deliv_state == Delivery_Rack_States.approaching:
-        line_follow_step(S1, S2, base, 20) 
-        if ticks_diff(ticks_ms(), deliv_start_time) > 500: #approach for 0.5 seconds, then stop and grab. Time can be adjusted based on testing
-            motor_l.Forward(speed = 0)
-            motor_r.Forward(speed = 0)
-            deliv_state = Delivery_Rack_States.reached
-
-    # Step 3: Grab the load. Adjust timing so that the claw can shut before the bot starts reversing.
-    elif deliv_state == Delivery_Rack_States.reached:
-        grab() 
-        resistor_color = R_measure() #measure the resistor color and store it as a variable so that the bot knows which bay to drop it off at
-        deliv_state = Delivery_Rack_States.retracting
-        # Step 4: Reverse until RL junction is detected. Then turn right towards the drop off bay.
-
-        #move forward until you grab. After grabbing reverse until reach RL junction, turn 90 deg right (cw)
-    elif deliv_state == Delivery_Rack_States.retracting:
-        back_line_follow_step(S1, S2, base, 20) #reverse until detect main spine again
-
-        if new_junction and (SL == 1 and SR == 1): #detect RL junction. No need to lose the white line bc we are approaching in reverse
-            deliv_state = Delivery_Rack_States.reorienting
-            motor_l.Forward(speed = 0)
-            motor_r.Forward(speed = 0)
-            motion = Motion.turning
-            turn_state = Turn_State.start
-            turn_dir = Turn_Direction.right
-            direction = Direction.acw
-        
-    elif deliv_state == Delivery_Rack_States.reorienting:
-        if motion == Motion.turning:
-            if not turn_complete:
-                turn_state, turn_complete = turn_v4(turn_dir, S1, S2, turn_state)
-            else:
-                motion = Motion.follow
-                turn_complete = False
-                turn_state = Turn_State.start
-            
-        if motion == Motion.follow:
-            line_follow_step(S1, S2, 60, 20) 
-        
-            #rack_branches_OL is known
-            if new_junction and SL == 1:
-                memory["rack_branches_OL"] -= 1
-                if memory["rack_branches_OL"] % 6 == 0:
-                    deliv_state = Delivery_Rack_States.load_detected #reset to search for next load after passing each branch, since each bay has 6 branches. 
-                    return True, turn_state, turn_complete, direction, deliv_state, motion, turn_dir, deliv_start_time, resistor_color
-        
-    return False, turn_state, turn_complete, direction, deliv_state, motion, turn_dir, deliv_start_time, resistor_color
-
-# Call format: 
-# ready_for_unloading, turn_state, turn_complete, direction, deliv_state, motion, turn_dir, deliv_start_time, resistor_color = handler_orange_L_delivery(S1, S2, location, direction, junction_type, new_junction, resistor_color, turn_state, turn_complete)
-
-
 
