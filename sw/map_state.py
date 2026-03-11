@@ -57,7 +57,7 @@ def detect_junction_type(SL, SR):
         return Junctions.RL
     return Junctions.nil
 
-#include in main while loop 
+""" #include in main while loop 
 on_junction = (SL == 1 or SR == 1)
 new_junction = (not memory["prev_on_junction"] and on_junction)
 
@@ -65,7 +65,7 @@ if new_junction:
     junction_type = detect_junction_type(memory["prev_on_junction"], SL_sensor, SR_sensor)
 else:
     junction_type = Junctions.nil
-# end
+# end """
 
 
 #replace take_a_turn with take_next_turn
