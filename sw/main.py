@@ -5,7 +5,7 @@ from time import sleep, sleep_ms, ticks_ms, ticks_diff
 #from enum import Enum
 from behaviour import Turn_Direction, Turn_State, Mode, Start_States, TNT_states
 from locations import Junctions, Location, Direction
-from decision import sensors, robot, events, delivery
+#from decision import sensors, robot, events, delivery
 #from map_state import mapping, memory
 
 
@@ -247,7 +247,7 @@ def get_out_of_box(S1, S2, SL, SR, start_T_shape_count, new_T, turn_complete, tu
             turn_state, turn_complete = turn_v4(Turn_Direction.left, S1, S2, turn_state, motor_l, motor_r)
         if turn_complete:
             start_state = Start_States.turn2_done
-            delivery["target_rack"] = Location.rack_purple_L
+            #delivery["target_rack"] = Location.rack_purple_L
             turn_complete = False
             turn_state = Turn_State.start
             Blue.value(0)

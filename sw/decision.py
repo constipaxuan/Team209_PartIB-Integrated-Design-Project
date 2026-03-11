@@ -397,11 +397,13 @@ def search_mode(sensors, events, robot, delivery):
                 delivery["R_detected"] = False
                 return
     elif robot["location"] in [Location.rack_orange_L, Location.rack_purple_U]:
-        if slot_status.count(1) < 6: #number of cleared slots is less than 6
-            upperP_lowO_R_detect() #this keeps on running until the rack is cleared
-            if R_detected:
+        if delivery["slot_status"].count(1) < 6: #number of cleared slots is less than 6
+            upperP_lowO_R_detect(sensors, events, robot, delivery) #this keeps on running until the rack is cleared
+            if delivery["R_detected"]:
                 # INSERT code to swap to delivery mode to pick up resistor and drop off at bay (The else error above will go away once this function is added)
-                pass
+                robot["mode"] = Mode.delivery
+                delivery["R_detected"] = False
+                return
     
     # After one (lower floor) rack is cleared -- Switching racks. This is just for FIRST COMPETITION. Only enter elevator_low if lower rack is cleared.
     elif robot["location"] == Location.elevator_low:
@@ -415,6 +417,10 @@ def search_mode(sensors, events, robot, delivery):
                 delivery["rack_switching_bcount"] = 0
                 robot["turn_dir"] = Turn_Direction.left
     
+    # Reset each time in unloading bay --- Takes slightly longer but simplifies logic significantly
+    elif robot["location"] == Location.unloading:
+        delivery["slot_status"] = [0,0,0,0,0,0]
+
     # --- MOTION HANDLERS ---
     if robot["motion"] == Motion.turning:
         robot["turn_state"], robot["turn_complete"] = turn_v4(robot["turn_dir"], sensors["S1"], sensors["S2"], robot["turn_state"], motor_l, motor_r) 
