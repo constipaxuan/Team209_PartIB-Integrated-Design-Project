@@ -327,7 +327,6 @@ def handler_orange_L_delivery(sensors, events, robot, delivery):
 # Target rack remains the same until ALL slots are cleared. 
 def search_mode(sensors, events, robot, delivery):
     # I assume that this function is called when the bot should turn on the side sensor, I assume that the bot is already at the rack positions
-    # waddafuq bruh this is the WHOLE decision algorithm bitch
     delivery["target_rack"] = target_racks[robot["target_rack_idx"]]
 
     if robot["location"] in [Location.rack_orange_U, Location.rack_purple_L]:
