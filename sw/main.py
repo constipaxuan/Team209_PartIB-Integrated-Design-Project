@@ -181,6 +181,8 @@ def turn_180(turn_dir, S1, S2, turn_state, turn_phase, motor_l, motor_r):
 
     return turn_state, False, turn_phase
 
+
+
 def update_start_T_count(SL, SR, start_T_shape_count, new_T):
     #global start_T_shape_count, counting
     if new_T:
