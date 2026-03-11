@@ -344,7 +344,7 @@ SR_sensor = Pin(SR_pin, Pin.IN)
 motor_l = Motor(dirPin=4, PWMPin=5)
 motor_r = Motor(dirPin=7, PWMPin=6)  """
 
-
+# --- TURN TEST ---
 """ while True:
     S1 = S1_sensor.value()
     S2 = S2_sensor.value()
@@ -373,8 +373,8 @@ motor_r = Motor(dirPin=7, PWMPin=6)  """
 
     prev_on_junction = on_junction   """
 
-
-while True:
+# -- LOOP + MAPPING TEST ---
+""" while True:
     sensors["S1"] = S1_sensor.value()
     sensors["S2"] = S2_sensor.value()
     sensors["SL"] = SL_sensor.value()
@@ -488,9 +488,9 @@ while True:
                     
     
         events["prev_on_junction"] = events["on_junction"]
-        events["prev_on_T"] = events["on_T"] 
+        events["prev_on_T"] = events["on_T"]  """
 
-# --- MAPPING TEST ---
+
 
 # Assumes that the turning of the car is wide enough such that the front aligns with line before the back
 '''
