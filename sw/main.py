@@ -1,6 +1,7 @@
 #import utime
 
-from machine import Pin, PWM
+from machine import Pin, PWM, I2C
+from libs.VL53L0X.VL53L0X import VL53L0X
 from time import sleep, sleep_ms, ticks_ms, ticks_diff
 #from enum import Enum
 from behaviour import Turn_Direction, Turn_State, Mode, Start_States, TNT_states, Delivery_States, Delivery_Rack_States 
@@ -46,7 +47,7 @@ S1_sensor = Pin(S1_pin, Pin.IN)
 S2_sensor = Pin(S2_pin, Pin.IN)
 SL_sensor = Pin(SL_pin, Pin.IN)
 SR_sensor = Pin(SR_pin, Pin.IN)
-
+laser_distance = 0 #initialize laser distance
 button = Pin(14, Pin.IN) # button is a PULL_DOWN so it reads 0 when not pressed and 1 when pressed.
 
 # STOP IMMEDIATELY AFTER RESET
@@ -542,24 +543,61 @@ motor_r = Motor(dirPin=7, PWMPin=6)  """
         events["prev_on_junction"] = events["on_junction"]
         events["prev_on_T"] = events["on_T"]  """
 
-#Resistor detection test
+#Resistor detection TEST
 
-from upperpurple_lowerorange_R_detect import upperP_lowO_R_detect, init_laser
-init_laser()
+def init_laser():
+    # config I2C Bus
+    i2c_bus = I2C(id=1, sda=Pin(10), scl=Pin(11)) # I2C0 on GP8 & GP9
+    # print(i2c_bus.scan())  # Get the address (nb 41=0x29, 82=0x52)
+        
+    # Setup vl53l0 object
+    global vl53l0
+    vl53l0 = VL53L0X(i2c_bus)
+    vl53l0.set_Vcsel_pulse_period(vl53l0.vcsel_period_type[0], 18)
+    vl53l0.set_Vcsel_pulse_period(vl53l0.vcsel_period_type[1], 14)
+
+def rec_dist_laser():
+    # Start device
+    vl53l0.start()
+    # Read one sample
+    laser_distance = vl53l0.read()
+    # Stop device
+    vl53l0.stop()
+    return laser_distance
 
 
-S1_pin = 21
-S2_pin = 20
-SL_pin = 26 
-SR_pin = 22
+def upperP_lowO_R_detect(events, laser_distance, delivery, robot):
+    
+    # ONLY act if this is a BRAND NEW junction detection
+    if events["junction_type"] == Junctions.R:
+        # 1. Safety check: stop the counter if we run out of slots (All slots have been cleared for a particular rack)
+        if delivery["search_slot_counter"] >= 6: # 6 slots
+            robot["target_rack_idx"] += 1
+            print("hello")
+            delivery["search_slot_counter"] = 0
+            delivery["slot_status"] = [0,0,0,0,0,0]
+            return
 
-S1_sensor = Pin(S1_pin, Pin.IN)
-S2_sensor = Pin(S2_pin, Pin.IN)
-SL_sensor = Pin(SL_pin, Pin.IN)
-SR_sensor = Pin(SR_pin, Pin.IN)
-SR = SR_sensor.value()
+        else:
+            motor_l.Forward(speed = 0)
+            motor_r.Forward(speed = 0)
+            # 2. Fire the laser ONCE
+            laser_distance = rec_dist_laser() 
+            print(f"Laser distance: {laser_distance}mm")
+            # 3. Update the CURRENT slot
+            if laser_distance < 100: 
+                delivery["R_detected"] = True
+                delivery["delivery_state"] = Delivery_States.pickup
+                delivery["ready_for_unloading"] = False
+                delivery["rack_state"] = Delivery_Rack_States.load_detected
+                delivery["search_slot_counter"] += 1
+            else:
+                delivery["slot_status"][delivery["search_slot_counter"]] = 1
+                delivery["search_slot_counter"] += 1
+                #mark the slot as cleared
+            return laser_distance
 
-
+init_laser() #initialize laser
 while True:
     if events["new_junction"]:
         events["junction_type"] = detect_junction_type(sensors["SL"], sensors["SR"])
@@ -567,9 +605,9 @@ while True:
         events["junction_type"] = Junctions.nil
     # pretend we just crossed a junction (update events before calling)
     # call detector using globals; pass previous laser_distance or None
-    laser_distance = upperP_lowO_R_detect(events, laser_distance)
+    laser_distance = upperP_lowO_R_detect(events, laser_distance, delivery, robot)
     # print distance sample and state for debugging
-    print(f"Distance reading: {laser_distance}mm")
+    #print(f"Distance reading: {laser_distance}mm")
     print(f"Counter: {delivery['search_slot_counter']}")
     print(f"Slot status: {delivery['slot_status']}")
 
