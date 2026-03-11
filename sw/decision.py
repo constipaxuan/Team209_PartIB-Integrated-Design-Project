@@ -32,56 +32,7 @@ motor_r = Motor(dirPin=7, PWMPin=6)
 
 # Required transitions: ready for unloading (local rack handler --> dropoff). unloading_state == done (dropoff --> local bay handler)
 # re-read every iteration.
-sensors = {
-    "S1": 0,
-    "S2": 0,
-    "SL": 0,
-    "SR": 0
-}
 
-events = {
-    "new_junction": False,
-    "new_T": False,
-    "on_junction": False,
-    "on_T": False,
-    "junction_type": Junctions.nil,
-    "start_T_shape_count": 0,
-    "prev_on_junction" : False,
-    "prev_on_T": False
-}
-
-robot = {
-    "motion": Motion.follow,
-    "start_state" : Start_States.start,
-    "turn_state": Turn_State.start,
-    "turn_dir": Turn_Direction.nil,
-    "turn_complete": False,
-    "direction": Direction.acw,
-    "location": Location.start,
-    "mode": Mode.start,
-    "timed_turn_started": False,
-    "timed_turn_start": 0,
-    "target_rack_idx": 0,
-    "tnt_state": TNT_states.nil
-}
-
-delivery = {
-    "delivery_state": Delivery_States.pickup,
-    "rack_state": Delivery_Rack_States.load_detected,
-    "ready_for_unloading": False,
-    "resistor_color": Resistor_Color.none,
-    "drop_off_bay": 0,
-    "bay_latch": False,
-    "unloading_state": False,
-    "main_spine_detected": False,
-    "turn_phase": 0,
-    "target_rack": Location.rack_purple_L,
-    "deliv_start_time": 0,
-    "R_detected": R_detected,
-    "search_slot_counter": 0,
-    "slot_status": [0,0,0,0,0,0],
-    "rack_switching_bcount" : 0
-}
 
 target_racks = [Location.rack_purple_L, Location.rack_orange_L, Location.rack_purple_U, Location.rack_orange_U]
 target_rack_idx = 0

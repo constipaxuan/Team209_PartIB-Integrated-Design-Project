@@ -3,9 +3,9 @@
 from machine import Pin, PWM
 from time import sleep, sleep_ms, ticks_ms, ticks_diff
 #from enum import Enum
-from behaviour import Turn_Direction, Turn_State, Mode, Start_States, TNT_states
-from locations import Junctions, Location, Direction
-from decision import sensors, robot, events, delivery
+from behaviour import Turn_Direction, Turn_State, Mode, Start_States, TNT_states, Delivery_States, Delivery_Rack_States 
+from locations import Junctions, Location, Direction, Resistor_Color
+from decision import R_detected
 from map_state import mapping, memory
 
 
@@ -58,18 +58,71 @@ motor_r.Forward(0)
 ON = False
 prev_button = 0
 
-prev_on_junction = False
-new_junction = False
-motion = Motion.follow
-mode = Mode.start
+# --- DICTIONARIES (MUTABLE - DO NOT NEED TO RETURN. HOLDS VALUES ACROSS ITERATIONS) ---
+sensors = {
+    "S1": 0,
+    "S2": 0,
+    "SL": 0,
+    "SR": 0
+}
+
+events = {
+    "new_junction": False,
+    "new_T": False,
+    "on_junction": False,
+    "on_T": False,
+    "junction_type": Junctions.nil,
+    "start_T_shape_count": 0,
+    "prev_on_junction" : False,
+    "prev_on_T": False
+}
+
+robot = {
+    "motion": Motion.follow,
+    "start_state" : Start_States.start,
+    "turn_state": Turn_State.start,
+    "turn_dir": Turn_Direction.nil,
+    "turn_complete": False,
+    "direction": Direction.acw,
+    "location": Location.start,
+    "mode": Mode.start,
+    "timed_turn_started": False,
+    "timed_turn_start": 0,
+    "target_rack_idx": 0,
+    "tnt_state": TNT_states.nil
+}
+
+delivery = {
+    "delivery_state": Delivery_States.pickup,
+    "rack_state": Delivery_Rack_States.load_detected,
+    "ready_for_unloading": False,
+    "resistor_color": Resistor_Color.none,
+    "drop_off_bay": 0,
+    "bay_latch": False,
+    "unloading_state": False,
+    "main_spine_detected": False,
+    "turn_phase": 0,
+    "target_rack": Location.rack_purple_L,
+    "deliv_start_time": 0,
+    "R_detected": False,
+    "search_slot_counter": 0,
+    "slot_status": [0,0,0,0,0,0],
+    "rack_switching_bcount" : 0
+}
+
+memory = {
+    "prev_on_junction" : False,
+    "rack_branches_OL" : 0,
+    "rack_branches_PL" : 0,
+    "rack_branches_OH" : 0,
+    "rack_branches_PH" : 0,
+    "elevator_low_branches" : 0,
+    "elevator_high_branches" : 0,
+}
+
+
 counting = True
-start_T_shape_count = 0
-junction_type = Junctions.nil
-turn_dir = Turn_Direction.nil
-turn_state = Turn_State.start
-start_state = Start_States.start
-location = Location.start
-direction = Direction.acw
+
 
 # LED wiring
 B_led = 19 # pin 19
@@ -498,71 +551,6 @@ motor_r = Motor(dirPin=7, PWMPin=6)  """
     turn_cross: Has seen line, sensor that seen line has yet to unsee. When S1 unsees line the bot is in a safe geometry to start line following
     done: S1 has unseen the line. Start line following. End when fully aligned.
 '''
-'''
-def turn_v3(turn_dir, S1, S2, turn_state):
-    if turn_state == Turn_State.turn_search:
-        #Stop when S1 and S2 straddle the line.
-        if turn_dir == Turn_Direction.left:
-            if (S1 == 0 and S2 == 1):
-                turn_state = Turn_State.turn_cross
-                motor_l.Forward(speed = 0) # stops when it has seen the line.
-                motor_r.Forward(speed = 0)
-            else:
-                motor_l.Forward(speed = 60)
-                motor_r.Forward(speed = 0)
-        elif turn_dir == Turn_Direction.right:
-            if (S1 == 1 and S2 == 0):
-                turn_state = Turn_State.turn_cross
-                motor_l.Forward(speed = 0)
-                motor_r.Forward(speed = 0)
-            else:
-                motor_l.Forward(speed = 0)
-                motor_r.Forward(speed = 60)
-        
-        return False, turn_state
 
-    
-    # Want outer sensor to lose the line again -- this is half_done state.
-    if turn_state == Turn_State.turn_cross:
-        if turn_dir == Turn_Direction.left:
-            if S2 == 0:
-                turn_state = Turn_State.half_done
-            else:
-                motor_l.Forward(speed = 60)
-                motor_r.Forward(speed = 0)
-        elif turn_dir == Turn_Direction.right:
-            if S1 == 0:
-                turn_state = Turn_State.half_done
-            else:
-                motor_l.Forward(speed = 0)
-                motor_r.Forward(speed = 60)
-        
-        return False, turn_state
-    
-    # Stop when outer sensor reacquires the line -- transition to done state
-    if turn_state == Turn_State.half_done:
-        if turn_dir == Turn_Direction.left:
-            if S2 == 1:
-                turn_state = Turn_State.done
-                motor_l.Forward(speed = 0)
-                motor_r.Forward(speed = 0)
-            else:
-                motor_l.Forward(speed = 60)
-                motor_r.Forward(speed = 0)
-        elif turn_dir == Turn_Direction.right:
-            if S1 == 1:
-                turn_state = Turn_State.done
-                motor_l.Forward(speed = 0)
-                motor_r.Forward(speed = 0)
-            else:
-                motor_l.Forward(speed = 0)
-                motor_r.Forward(speed = 60)
-        
-        return False, turn_state
-    
-    if turn_state == Turn_State.done:
-        if not (S1 == 0 and S2 == 0):
-            line_follow_step(S1, S2, 60, 20)
-            return False, turn_state
-        if (S1 == 0 and S2 == 0):
-            return True, Turn_State.turn_search '''
+
+
