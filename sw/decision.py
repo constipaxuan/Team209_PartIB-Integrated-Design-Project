@@ -2,7 +2,7 @@
 from locations import Location, Direction, Junctions, Target_Rack, Resistor_Color
 from behaviour import Mode, Turn_Direction, Turn_State, Start_States, Delivery_Rack_States, Delivery_States, Unloading_States
 from lowerpurple_upper_orange_R_detect import * #detection for lower purple upper orange
-#from upperpurple_lowerorange_R_detect import * #detection for upper purple lower orange
+from upperpurple_lowerorange_R_detect import * #detection for upper purple lower orange
 from LHS_dropoff import LHS_dropoff
 from RHS_dropoff import RHS_dropoff
 from test_motor import Motor
@@ -256,7 +256,30 @@ def handler_orange_L_delivery(sensors, events, robot, delivery):
                 delivery["rack_state"] = Delivery_Rack_States.reached
                 motor_l.Forward(speed = 0)
                 motor_r.Forward(speed = 0)
-                
+    
+
+def handler_purple_L_delivery(sensors, events, robot, delivery):
+    # Step 1: Enter delivery mode when laser detects a resistor load while bot is on a branch. 
+    if delivery["rack_state"] == Delivery_Rack_States.load_detected:
+        if events["new_junction"] and robot["motion"] != Motion.turning:
+            motor_l.Forward(speed = 0)
+            motor_r.Forward(speed = 0)
+            robot["motion"] = Motion.turning
+            robot["turn_state"] = Turn_State.start
+            if robot["direction"] == Direction.cw:
+                robot["turn_dir"] = Turn_Direction.right
+            elif robot["direction"] == Direction.acw:
+                robot["turn_dir"] = Turn_Direction.left
+        
+        if robot["motion"] == Motion.turning:
+            robot["turn_state"], robot["turn_complete"] = turn_v4(robot["turn_dir"], sensors["S1"], sensors["S2"], robot["turn_state"], motor_l, motor_r) 
+            if robot["turn_complete"]:
+                robot["motion"] = Motion.follow
+                robot["turn_complete"] = False
+                robot["turn_state"] = Turn_State.start
+                delivery["rack_state"] = Delivery_Rack_States.reached
+                motor_l.Forward(speed = 0)
+                motor_r.Forward(speed = 0)
 
     # Step 3: Grab the load. Adjust timing in R_measure so that the claw can shut before the bot starts reversing. atp IDGAF is this part is blocking.
     elif delivery["rack_state"] == Delivery_Rack_States.reached:
@@ -264,7 +287,7 @@ def handler_orange_L_delivery(sensors, events, robot, delivery):
         delivery["resistor_color"] = R_measure() #measure the resistor color and store it as a variable so that the bot knows which bay to drop it off at
         delivery["rack_state"] = Delivery_Rack_States.reorienting
         robot["motion"] = Motion.turning
-        robot["turn_dir"] = Turn_Direction.right # Face the unloading bay.
+        robot["turn_dir"] = Turn_Direction.left # Face the unloading bay.
         robot["timed_turn_started"] = False
     
     # Step 4: No need to reverse. No space.
@@ -283,12 +306,12 @@ def handler_orange_L_delivery(sensors, events, robot, delivery):
                 delivery["rack_state"] = Delivery_Rack_States.reoriented
                 motor_l.Forward(speed = 0)
                 motor_r.Forward(speed = 0)
-                memory["rack_branches_OL"] = 0
+                memory["rack_branches_PL"] = 0
     
     elif delivery["rack_state"] == Delivery_Rack_States.reoriented:
         if events["new_junction"]: # Detect SL HIGHs. No other junctions to be confused with so this is fine.
-            memory["rack_branches_OL"] += 1
-            if memory["rack_branches_OL"] == 6:
+            memory["rack_branches_PL"] += 1
+            if memory["rack_branches_PL"] == 6:
                 delivery["rack_state"] = Delivery_Rack_States.load_detected #reset to search for next load after passing each branch, since each bay has 6 branches.
                 delivery["ready_for_unloading"] = True 
         line_follow_step(sensors["S1"], sensors["S2"], 80, 20)
@@ -338,18 +361,19 @@ def search_mode(sensors, events, robot, delivery):
                 delivery["R_detected"] = False
                 return
     elif robot["location"] in [Location.rack_orange_L, Location.rack_purple_U]:
-        #if delivery["slot_status"].count(1) < 6: #number of cleared slots is less than 6
-            #upperP_lowO_R_detect(sensors, events, robot, delivery) #this keeps on running until the rack is cleared
-            #if delivery["R_detected"]:
+        if delivery["slot_status"].count(1) < 6: #number of cleared slots is less than 6
+            upperP_lowO_R_detect(sensors, events, robot, delivery) #this keeps on running until the rack is cleared
+            if delivery["R_detected"]:
                 # INSERT code to swap to delivery mode to pick up resistor and drop off at bay (The else error above will go away once this function is added)
-                #robot["mode"] = Mode.delivery
-                #delivery["R_detected"] = False
-                #return
-        pass
+                robot["mode"] = Mode.delivery
+                delivery["R_detected"] = False
+                return
+        
     
     # After one (lower floor) rack is cleared -- Switching racks. This is just for FIRST COMPETITION. Only enter elevator_low if lower rack is cleared.
     elif robot["location"] == Location.elevator_low:
         if delivery["target_rack"] == Location.rack_orange_L:
+            robot["direction"] = Direction.acw
             if events["new_junction"]:
                 delivery["rack_switching_bcount"] += 1
             if delivery["rack_switching_bcount"] == 3 and robot["motion"] != Motion.turning:
