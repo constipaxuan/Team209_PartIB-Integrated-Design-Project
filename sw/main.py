@@ -428,12 +428,13 @@ def upperP_lowO_R_detect(events, laser_distance, delivery, robot):
 
 init_laser() #initialize laser
 
-""" prev_on_junction = False
+prev_on_junction = False
 turn_state = Turn_State.start
 turn_dir = Turn_Direction.left
 turn_complete = False
 turning = False
 turn_phase = 0
+motion = Motion.follow
 
 S1_pin = 21
 S2_pin = 20
@@ -446,10 +447,34 @@ SL_sensor = Pin(SL_pin, Pin.IN)
 SR_sensor = Pin(SR_pin, Pin.IN)
 
 motor_l = Motor(dirPin=4, PWMPin=5)
-motor_r = Motor(dirPin=7, PWMPin=6)  """
+motor_r = Motor(dirPin=7, PWMPin=6)  
+
+timed_turn_started = False
+timed_turn_start = 0
+
+def timed_turn_step(timed_turn_started, timed_turn_start, turn_dir, motion):
+    if not timed_turn_started:
+        timed_turn_started = True
+        timed_turn_start = ticks_ms()
+
+    if turn_dir == Turn_Direction.left:
+        motor_l.Forward(speed=60)
+        motor_r.Forward(speed=20)
+    elif turn_dir == Turn_Direction.right:
+        motor_l.Forward(speed=20)
+        motor_r.Forward(speed=60)
+
+    if ticks_diff(ticks_ms(), robot["timed_turn_start"]) > 300:   # modify according to needs.
+        motor_l.Forward(speed=0)
+        motor_r.Forward(speed=0)
+        motion = Motion.follow
+        timed_turn_started = False
+        return True, timed_turn_started, timed_turn_start, turn_dir, motion
+
+    return False, timed_turn_started, timed_turn_start, turn_dir, motion
 
 # --- TURN TEST ---
-""" while True:
+while True:
     S1 = S1_sensor.value()
     S2 = S2_sensor.value()
     SL = SL_sensor.value()
@@ -465,20 +490,22 @@ motor_r = Motor(dirPin=7, PWMPin=6)  """
         Blue.value(1)
     
     if turning:
-        turn_state, turn_complete = turn_v4(turn_dir, S1, S2, turn_state, motor_l, motor_r)
+        turn_complete, timed_turn_started, timed_turn_start, turn_dir, motion = timed_turn_step(timed_turn_started, timed_turn_start, turn_dir, motion))
 
         if turn_complete:
             turning = False
             turn_complete = False
             turn_state = Turn_State.start
             Blue.value(0)
+            motor_l.Forward(speed = 0)
+            motor_r.Forward(speed = 0)
     else:
         line_follow_step(S1, S2, 80, 20)
 
-    prev_on_junction = on_junction   """
+    prev_on_junction = on_junction   
 
 # -- LOOP + MAPPING TEST ---
-while True:
+""" while True:
     sensors["S1"] = S1_sensor.value()
     sensors["S2"] = S2_sensor.value()
     sensors["SL"] = SL_sensor.value()
@@ -593,7 +620,7 @@ while True:
                     
     
         events["prev_on_junction"] = events["on_junction"]
-        events["prev_on_T"] = events["on_T"]
+        events["prev_on_T"] = events["on_T"] """
 
 #Resistor detection TEST
 
