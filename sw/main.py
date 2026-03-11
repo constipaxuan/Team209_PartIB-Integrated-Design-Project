@@ -256,7 +256,7 @@ def get_out_of_box(sensors, events, robot, delivery):
     elif robot["start_state"] == Start_States.turn2_done:
         line_follow_step(sensors["S1"], sensors["S2"], 80, 20)
         robot["mode"] = Mode.search_init
-        robot["location"] = mapping(robot["location"], robot["mode"], robot["direction"], events["junction_type"])
+        robot["location"] = Location.rack_purple_L
         #print("turn 2 done")
 
 ''' upper right refers to the one above purple rack, 
@@ -389,6 +389,13 @@ while True:
     events["on_T"] = (sensors["SL"] == 1 and sensors["SR"] == 1)            # specifically T-shape / both side sensors active
     events["new_T"] = (not events["prev_on_T"]) and events["on_T"]
 
+    if events["new_junction"]:
+        events["junction_type"] = detect_junction_type(memory["prev_on_junction"], sensors["SL"], sensors["SR"])
+    else:
+        events["junction_type"] = Junctions.nil
+    
+    robot["location"] = mapping(events["previous_state"], robot["mode"], robot["direction"], events["junction_type"])
+
 
     # non blocking debouncing. this allows sensors to still be read while button is being debounced, preventing missed junctions.
     if button_now == 1 and prev_button == 0:
@@ -466,6 +473,7 @@ while True:
                     robot["motion"] = Motion.follow
                     robot["turn_complete"] = False
                     robot["tnt_state"] = TNT_states.nil
+                    print(f"location:", robot["location"])
                     Red.value(0)
                     Green.value(0)
                     Yellow.value(0)
