@@ -70,10 +70,13 @@ else:
 def upperP_lowO_R_detect(events, laser_distance, delivery, robot):
     
     # ONLY act if this is a BRAND NEW junction detection
-    if events["junction_type"] == Junctions.R:
+    if events["new_junction"] == True and not events["new_T"]:
         # 1. Safety check: stop the counter if we run out of slots (All slots have been cleared for a particular rack)
         if delivery["search_slot_counter"] >= 6: # 6 slots
-            robot["target_rack_idx"] += 1
+            if robot["target_rack_idx"] < 3:
+                robot["target_rack_idx"] += 1
+            else:
+                robot["target_rack_idx"] = 0
             delivery["search_slot_counter"] = 0
             delivery["slot_status"] = [0,0,0,0,0,0]
             return

@@ -322,14 +322,11 @@ class Test_Corners:
     unloading = 3
     back_to_start = 4
 
-turn_complete = False
-turn_state = Turn_State.start
-take_next_turn = False
 # test_corner is the next corner to be turned.
 test_corner = Test_Corners.upper_right
 OB_counter = 0
 last_press = 0
-tnt_state = TNT_states.nil
+
 
 # defines turning sequence in line following test 5 Mar.
 def test_main_loop(robot, events, test_corner, OB_counter):
