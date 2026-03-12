@@ -1,6 +1,6 @@
 #import utime
 
-from machine import Pin, PWM, I2C
+from machine import Pin, PWM, I2C, ADC
 from libs.VL53L0X.VL53L0X import VL53L0X
 from time import sleep, sleep_ms, ticks_ms, ticks_diff
 #from enum import Enum
@@ -49,7 +49,7 @@ SL_sensor = Pin(SL_pin, Pin.IN)
 SR_sensor = Pin(SR_pin, Pin.IN)
 laser_distance = 0 #initialize laser distance
 button = Pin(14, Pin.IN) # button is a PULL_DOWN so it reads 0 when not pressed and 1 when pressed.
-
+ADC_SOLUTION = 65535  # Pico ADC is 16-bit (0–65535) FOR LEDs
 # STOP IMMEDIATELY AFTER RESET
 motor_l.Forward(0)
 motor_r.Forward(0)
@@ -137,6 +137,8 @@ Blue.value(0)
 Green.value(0)
 Red.value(0)
 Yellow.value(0) 
+# Sensor connected to ADC0 (GP26)
+sensor = ADC(28) #FOR LEDs
 
 #centering code
 def line_follow_step(S1, S2, base, corr):
@@ -373,9 +375,10 @@ corners = [
 
 corner_idx = 0
 
-def init_laser():
+#This is the code for initializing laser, need to run everytime we want to use the laser on the right (for lower orange upper purple)
+def init_laser_R():
     # config I2C Bus
-    i2c_bus = I2C(id=1, sda=Pin(10), scl=Pin(11)) # I2C0 on GP8 & GP9
+    i2c_bus = I2C(id=1, sda=Pin(10), scl=Pin(11)) # I2C1 on GP10 & GP11
     # print(i2c_bus.scan())  # Get the address (nb 41=0x29, 82=0x52)
         
     # Setup vl53l0 object
@@ -384,6 +387,20 @@ def init_laser():
     vl53l0.set_Vcsel_pulse_period(vl53l0.vcsel_period_type[0], 18)
     vl53l0.set_Vcsel_pulse_period(vl53l0.vcsel_period_type[1], 14)
 
+#This is the code for initializing laser on the left (for lower purple upper orange)
+def init_laser_L():
+    # config I2C Bus
+    i2c_bus = I2C(id=0, sda=Pin(8), scl=Pin(9)) # I2C0 on GP8 & GP9
+    # print(i2c_bus.scan())  # Get the address (nb 41=0x29, 82=0x52)
+        
+    # Setup vl53l0 object
+    global vl53l0
+    vl53l0 = VL53L0X(i2c_bus)
+    vl53l0.set_Vcsel_pulse_period(vl53l0.vcsel_period_type[0], 18)
+    vl53l0.set_Vcsel_pulse_period(vl53l0.vcsel_period_type[1], 14)
+
+
+#Code for reading distance from laser. detect functons call this.
 def rec_dist_laser():
     # Start device
     vl53l0.start()
@@ -394,25 +411,26 @@ def rec_dist_laser():
     return laser_distance
 
 
-def upperP_lowO_R_detect(events, laser_distance, delivery, robot):
-    
+#Code for detecting whether there is a resistor or not for each slot
+def R_detect(events, laser_distance, delivery, robot):
+#QN: after I detect a resistor, how do I connect the turning function after this? Turning left or right to collect a resistor depends on the rack
     # ONLY act if this is a BRAND NEW junction detection
     if events["on_junction"] == True and not events["on_T"]:
         # decide which distance sensor to use based on direction of travel
         # 1. Safety check: stop the counter if we run out of slots (All slots have been cleared for a particular rack)
         if delivery["search_slot_counter"] >= 6: # 6 slots
             robot["target_rack_idx"] += 1
-            print("hello")
             delivery["search_slot_counter"] = 0
-            delivery["slot_status"] = [0,0,0,0,0,0]
+            delivery["slot_status"] = [0,0,0,0,0,0] #still need to integrate this into wider system so that it also marks the rack as cleared
             return
 
         else:
+            sleep(0.2) #delay to ensure bot is in position before reading laser
             motor_l.Forward(speed = 0)
             motor_r.Forward(speed = 0)
-            # 2. Fire the laser ONCE
-            laser_distance = rec_dist_laser() 
-            print(f"Laser distance: {laser_distance}mm")
+            # 2. Find laser distance, fire once
+            laser_distance = rec_dist_laser()
+             
             # 3. Update the CURRENT slot
             if laser_distance < 100: 
                 delivery["R_detected"] = True
@@ -426,7 +444,56 @@ def upperP_lowO_R_detect(events, laser_distance, delivery, robot):
                 #mark the slot as cleared
             return laser_distance
 
-init_laser() #initialize laser
+
+# FUNCTION FOR OPENING AND CLOSING THE 3 WIRE CLAW SERVO
+#initialize the servo with 3 wires
+servo = PWM(Pin(15))
+servo.freq(50) # Standard 50Hz frequency
+
+def claw(angle):
+    # Map 0-270 degrees to 500-2500 microseconds
+    # Pico PWM duty is 0-65535. 
+    # 50Hz period is 20ms. 500us = 2.5% duty. 2500us = 12.5% duty.
+    pulse_width = 500 + (angle / 270) * 2000
+    duty = int((pulse_width / 20000) * 65535)
+    servo.duty_u16(duty)
+
+
+
+# FUNCTION FOR TURNING THE PLATFORM THAT HOLDS THE CLAW, 4 wire servo
+# Initialize the servo with 4 wires
+servo = PWM(Pin(15)) #QN: is this pin correct? It shares the same pin as the 3 wire servo
+servo.freq(50)
+feedback = ADC(Pin(26)) #this is where the white wire goes
+
+def turn_claw(angle):
+    pulse_width = 500 + (angle / 270) * 2000
+    duty = int((pulse_width / 20000) * 65535)
+    servo.duty_u16(duty)
+
+#FUNCTION FOR MEASURING THE RESISTANCE ONCE GRABBED AND LIGHTS APPROPRITE LED UP
+def R_measure():
+    #pass current through and measure voltage V&I
+    voltage = 3.3*sensor.read_u16()/ADC_SOLUTION
+    sleep(0.1) # delay to stabilize reading
+    voltage = 3.3*sensor.read_u16()/ADC_SOLUTION
+    sleep(0.1) # delay to stabilize reading
+    voltage = 3.3*sensor.read_u16()/ADC_SOLUTION 
+    #this is the final voltage reading
+
+    if voltage > 3:
+        Blue.value(1) #turns LED on to blue
+        resistor_color = Resistor_Color.blue # Blue
+    elif 2.5 < voltage <= 3:
+        Green.value(1)
+        resistor_color = Resistor_Color.green # Green
+    elif 1 < voltage <= 2.5:
+        Red.value(1)
+        resistor_color = Resistor_Color.red # Red
+    elif 0.2 < voltage <= 1:
+        Yellow.value(1)
+        resistor_color = Resistor_Color.yellow # Yellow
+    return resistor_color
 
 # ---   get out of rack branch test - ends when we turn into green unloading bay. stop at RL. ---
 prev_on_junction = False
@@ -741,7 +808,9 @@ while True:
 
 #Resistor detection TEST
 
-""" while True:
+init_laser()
+
+ while True:
     events["on_junction"] = (sensors["SL"] == 1 or sensors["SR"] == 1)
     events["new_junction"] = (not events["prev_on_junction"]) and events["on_junction"]
 
