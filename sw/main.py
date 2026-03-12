@@ -465,6 +465,8 @@ def rack_search(sensors, events, robot, delivery):
         if ticks_diff(ticks_ms(), robot["scan_start"]) >= 300: # edit
             laser_distance = rec_dist_laser()
             print("NEW distance:", laser_distance)
+            print("slot counter:", delivery["search_slot_counter"])
+            print("slot status:", delivery["slot_status"])
 
             if laser_distance < 100:
                 delivery["R_detected"] = True
@@ -843,7 +845,7 @@ while True:
 #Resistor detection TEST (Now with line following)
 
 laser_distance = None
-init_laser_R()
+init_laser_L()
 
 while True:
 
