@@ -497,7 +497,7 @@ while True:
 
     if getout_state == Test_GetOut.Exiting_Branch:
 
-        if new_junction and motion != Motion.turning:
+        if motion != Motion.turning:
             motor_l.Forward(speed = 0)
             motor_r.Forward(speed = 0)
             motion = Motion.turning
@@ -724,12 +724,8 @@ while True:
 
 
 
-# Assumes that the turning of the car is wide enough such that the front aligns with line before the back
-'''
-    turn_search: Has yet to see line. If turning left: When S1 = 1, line is crossed, turn_state = turn_cross
-    turn_cross: Has seen line, sensor that seen line has yet to unsee. When S1 unsees line the bot is in a safe geometry to start line following
-    done: S1 has unseen the line. Start line following. End when fully aligned.
-'''
+
+
 
 
 
