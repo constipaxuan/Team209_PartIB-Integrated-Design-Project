@@ -437,6 +437,8 @@ def R_detect(events, laser_distance, delivery, robot):
                 delivery["ready_for_unloading"] = False
                 delivery["rack_state"] = Delivery_Rack_States.load_detected
                 delivery["search_slot_counter"] += 1
+                robot["mode"] = Mode.delivery
+                return
             else:
                 delivery["slot_status"][delivery["search_slot_counter"]] = 1
                 delivery["search_slot_counter"] += 1
@@ -466,6 +468,7 @@ def rack_search(sensors, events, robot, delivery):
 
             if laser_distance < 100:
                 delivery["R_detected"] = True
+                robot["motion"] = Motion.follow
                 return
             else:
                 delivery["slot_status"][delivery["search_slot_counter"]] = 1
@@ -474,6 +477,7 @@ def rack_search(sensors, events, robot, delivery):
                 delivery["search_slot_counter"] += 1
             else:
                 delivery["search_slot_counter"] = 0
+                robot["motion"] = Motion.follow
                 return
 
             robot["motion"] = Motion.follow
@@ -872,7 +876,7 @@ while True:
         continue
 
     elif ON:
-        
+
         rack_search(sensors, events, robot, delivery)
 
         events["prev_on_junction"] = events["on_junction"]
