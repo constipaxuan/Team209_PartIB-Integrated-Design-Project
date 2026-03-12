@@ -472,7 +472,7 @@ def rack_search(sensors, events, robot, delivery):
         motor_l.Forward(speed=0)
         motor_r.Forward(speed=0)
 
-        if ticks_diff(ticks_ms(), robot["scan_start"]) >= 300: # edit
+        if ticks_diff(ticks_ms(), robot["scan_start"]) >= 100: # edit
             laser_distance = rec_dist_laser()
             print("NEW distance:", laser_distance)
             print("slot counter:", delivery["search_slot_counter"])
@@ -484,6 +484,12 @@ def rack_search(sensors, events, robot, delivery):
                 delivery["ready_for_unloading"] = False
                 delivery["rack_state"] = Delivery_Rack_States.load_detected
                 delivery["search_slot_counter"] += 1
+
+                motor_l.Reverse(speed=40)
+                motor_r.Reverse(speed=40)
+                sleep_ms(80)
+                motor_l.Forward(speed=0)
+                motor_r.Forward(speed=0)
 
                 robot["mode"] = Mode.delivery
                 robot["motion"] = Motion.turning
