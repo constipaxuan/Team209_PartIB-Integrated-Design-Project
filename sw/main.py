@@ -525,11 +525,12 @@ while True:
                 motor_l.Reverse(speed=80)
                 motor_r.Reverse(speed=80)
 
-            if ticks_diff(ticks_ms(), timed_turn_start) > 1000:   # modify according to needs.
+            if ticks_diff(ticks_ms(), timed_rev_start) > 1000:   # modify according to needs.
                 motor_l.Forward(speed=0)
                 motor_r.Forward(speed=0)
                 motion = Motion.follow
                 timed_rev_started = False
+                getout_state = Test_GetOut.Exiting_Branch
 
         elif getout_state == Test_GetOut.Exiting_Branch:
 
