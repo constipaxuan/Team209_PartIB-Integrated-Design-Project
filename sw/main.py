@@ -475,7 +475,7 @@ def timed_turn_step(timed_turn_started, timed_turn_start, turn_dir, motion):
         motor_l.Forward(speed=20)
         motor_r.Forward(speed=60)
 
-    if ticks_diff(ticks_ms(), timed_turn_start) > 2000:   # modify according to needs.
+    if ticks_diff(ticks_ms(), timed_turn_start) > 2400:   # modify according to needs.
         motor_l.Forward(speed=0)
         motor_r.Forward(speed=0)
         motion = Motion.follow
@@ -510,7 +510,7 @@ while True:
         events["prev_on_junction"] = events["on_junction"]
         events["prev_on_T"] = events["on_T"]
         continue
-    
+
     elif ON:
 
         if getout_state == Test_GetOut.Exiting_Branch:
