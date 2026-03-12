@@ -522,12 +522,13 @@ timed_turn_start = 0
 timed_rev_start = 0
 timed_rev_started = False
 GO_test_bcount = 0
+last_branch_time = 0
 
 class Test_GetOut:
     Rev_Branch = 0
     Exiting_Branch = 1
-    Reversing = 2
-    Found_T = 3
+    RackZone = 2
+    AwaitingTurn = 3
     Unloading = 4
     UB = 5
 
@@ -616,23 +617,20 @@ while True:
                     Blue.value(0)
                     motor_l.Forward(speed = 0)
                     motor_r.Forward(speed = 0)
-                    getout_state = Test_GetOut.Reversing
+                    getout_state = Test_GetOut.RackZone
                     print("timed turn finished")
+                    last_branch_time = ticks_ms()
 
-        elif getout_state == Test_GetOut.Reversing:
-            if motion == Motion.follow:
-                if on_T:
-                    motor_l.Forward(speed = 0)
-                    motor_r.Forward(speed = 0)
-                    getout_state = Test_GetOut.Found_T
-                    GO_test_bcount = 0
-                    motion = Motion.follow
-                    print("reached landmark T")
-                else:
-                    back_line_follow_step(S1, S2)
+        elif getout_state == Test_GetOut.RackZone:
+            if new_junction:
+                last_branch_time = ticks_ms()
+
+            if ticks_diff(ticks_ms(), last_branch_time) > 1000:
+                print("out of rack zone")
+                getout_state = Test_GetOut.AwaitingTurn
                     
 
-        elif getout_state == Test_GetOut.Found_T:
+        elif getout_state == Test_GetOut.AwaitingTurn:
             
             if motion == Motion.turning:
                 turn_state, turn_complete = turn_v4(turn_dir, S1, S2, turn_state, motor_l, motor_r)
@@ -645,14 +643,11 @@ while True:
 
             if motion == Motion.follow:
                 line_follow_step(S1, S2, 80, 20)
-                if GO_test_bcount == 6 and new_junction:
+                if new_junction:
                     turn_dir = Turn_Direction.left
                     turn_complete = False
                     turn_state = Turn_State.start
                     motion = Motion.turning
-                else:
-                    if new_junction:
-                        GO_test_bcount += 1
                     
         
         elif getout_state == Test_GetOut.Unloading:
