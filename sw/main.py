@@ -425,9 +425,6 @@ def R_detect(events, laser_distance, delivery, robot):
             return
 
         else:
-            sleep(0.2) #delay to ensure bot is in position before reading laser
-            motor_l.Forward(speed = 0)
-            motor_r.Forward(speed = 0) #Stop and measure
             # 2. Find laser distance, fire once
             laser_distance = rec_dist_laser()
              
