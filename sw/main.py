@@ -443,6 +443,9 @@ def R_detect(events, laser_distance, delivery, robot):
                 delivery["search_slot_counter"] += 1
                 #mark the slot as cleared
             return laser_distance
+    
+    else:
+        return None
 
 
 # FUNCTION FOR OPENING AND CLOSING THE 3 WIRE CLAW SERVO
@@ -846,11 +849,10 @@ while True:
 
         if new_distance is not None:
             laser_distance = new_distance
-
-        # print distance sample and state for debugging
-        print(f"Distance reading: {laser_distance}mm")
-        print(f"Counter: {delivery['search_slot_counter']}")
-        print(f"Slot status: {delivery['slot_status']}")
+            # print distance sample and state for debugging
+            print(f"Distance reading: {laser_distance}mm")
+            print(f"Counter: {delivery['search_slot_counter']}")
+            print(f"Slot status: {delivery['slot_status']}")
 
        
 
