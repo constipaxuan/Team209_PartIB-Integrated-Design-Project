@@ -525,7 +525,7 @@ def timed_turn_step(robot):
         motor_l.Forward(speed=20)
         motor_r.Forward(speed=60)
 
-    if ticks_diff(ticks_ms(), robot["timed_turn_start"]) > 1500:   # modify according to needs.
+    if ticks_diff(ticks_ms(), robot["timed_turn_start"]) > 2000:   # modify according to needs.
         motor_l.Forward(speed=0)
         motor_r.Forward(speed=0)
         robot["motion"] = Motion.follow
@@ -541,10 +541,25 @@ def handler_orange_L_delivery(sensors, events, robot, delivery):
         if robot["motion"] == Motion.turning:
             robot["turn_complete"] = timed_turn_step(robot)
             if robot["turn_complete"]:
-                delivery["rack_state"] = Delivery_Rack_States.reached
+                delivery["rack_state"] = Delivery_Rack_States.approaching
                 motor_l.Forward(speed = 0)
                 motor_l.Forward(speed = 0)
+                robot["motion"] = Motion.follow
                 robot["turn_complete"] = False
+        
+    elif delivery["rack_state"] == Delivery_Rack_States.approaching:
+        if not delivery["timed_rev_started"]:
+                delivery["timed_rev_started"] = True
+                delivery["timed_rev_start"] = ticks_ms()
+
+        else:
+            line_follow_step(sensors["S1"], sensors["S2"], 80, 20)
+
+            if ticks_diff(ticks_ms(), delivery["timed_rev_start"]) > 1100:   # modify according to needs.
+                motor_l.Forward(speed=0)
+                motor_r.Forward(speed=0)
+                delivery["timed_rev_started"] = False
+                delivery["rack_state"] = Delivery_Rack_States.reached
           
     
     # MODIFIED FOR TESTING
@@ -557,7 +572,7 @@ def handler_orange_L_delivery(sensors, events, robot, delivery):
         robot["turn_dir"] = Turn_Direction.right # Face the unloading bay.
         robot["timed_turn_started"] = False
     
-    # Step 4: No need to reverse. No space.
+    # Step 4: Reverse and turn towards unloading.
 
     elif delivery["rack_state"] == Delivery_Rack_States.reorienting:
         if delivery["getout_state"] == Get_Out_of_branch.Rev_Branch:
@@ -596,6 +611,7 @@ def handler_orange_L_delivery(sensors, events, robot, delivery):
                     print("timed turn finished")
                     delivery["last_branch_time"] = ticks_ms()
 
+        # On the straight, need to get out of rack zone.
         elif delivery["getout_state"] == Get_Out_of_branch.RackZone:
             if events["new_junction"]:
                 delivery["last_branch_time"] = ticks_ms()
