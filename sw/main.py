@@ -164,8 +164,8 @@ def detect_junction_type(SL, SR):
    
 #This one need to test, its going backwards so idk if the the logic will be reversed.
 def back_line_follow_step(S1, S2):
-  base = 70
-  corr = 40
+  base = 80
+  corr = 20
   
   if (S1 == 0 and S2 == 1): # corrects left veer
     motor_r.Reverse(speed = corr) # speed ranges from 0 to 100 as defined
@@ -519,16 +519,19 @@ motor_r = Motor(dirPin=7, PWMPin=6)
 
 timed_turn_started = False
 timed_turn_start = 0
+timed_rev_start = 0
+timed_rev_started = False
 GO_test_bcount = 0
 
 class Test_GetOut:
-    Exiting_Branch = 0
-    Reversing = 1
-    Found_T = 2
-    Unloading = 3
-    UB = 4
+    Rev_Branch = 0
+    Exiting_Branch = 1
+    Reversing = 2
+    Found_T = 3
+    Unloading = 4
+    UB = 5
 
-getout_state = Test_GetOut.Exiting_Branch
+getout_state = Test_GetOut.Rev_Branch
 
 def timed_turn_step(timed_turn_started, timed_turn_start, turn_dir, motion):
     if not timed_turn_started:
@@ -536,13 +539,13 @@ def timed_turn_step(timed_turn_started, timed_turn_start, turn_dir, motion):
         timed_turn_start = ticks_ms()
 
     if turn_dir == Turn_Direction.left:
-        motor_l.Forward(speed=60)
-        motor_r.Forward(speed=20)
+        motor_l.Forward(speed=80)
+        motor_r.Reverse(speed=30)
     elif turn_dir == Turn_Direction.right:
-        motor_l.Forward(speed=20)
-        motor_r.Forward(speed=60)
+        motor_l.Reverse(speed=30)
+        motor_r.Forward(speed=80)
 
-    if ticks_diff(ticks_ms(), timed_turn_start) > 300:   # modify according to needs.
+    if ticks_diff(ticks_ms(), timed_turn_start) > 1100:   # modify according to needs.
         motor_l.Forward(speed=0)
         motor_r.Forward(speed=0)
         motion = Motion.follow
@@ -557,96 +560,130 @@ while True:
     SL = SL_sensor.value()
     SR = SR_sensor.value()
 
+    button_now = button.value()
+
     on_junction = (SL == 1 or SR == 1)
     new_junction = (not prev_on_junction) and on_junction
     on_T = (SL  == 1 and SR == 1)
     new_T = (not prev_on_T) and on_T
 
-    if getout_state == Test_GetOut.Exiting_Branch:
-
-        if new_junction and motion != Motion.turning:
-            motor_l.Forward(speed = 0)
-            motor_r.Forward(speed = 0)
-            motion = Motion.turning
-            Blue.value(1)
-            print("start timed turn!")
-        
-        if motion == Motion.turning:
-            turn_complete, timed_turn_started, timed_turn_start, turn_dir, motion = timed_turn_step(timed_turn_started, timed_turn_start, turn_dir, motion)
-            if turn_complete:
-                turn_complete = False
-                turn_state = Turn_State.start
-                Blue.value(0)
-                motor_l.Forward(speed = 0)
-                motor_r.Forward(speed = 0)
-                getout_state = Test_GetOut.Reversing
-                print("timed turn finished")
-
-    elif getout_state == Test_GetOut.Reversing:
-        if motion == Motion.follow:
-            if on_T:
-                motor_l.Forward(speed = 0)
-                motor_r.Forward(speed = 0)
-                getout_state = Test_GetOut.Found_T
-                GO_test_bcount = 0
-                motion = Motion.follow
-                print("reached landmark T")
-            else:
-                back_line_follow_step(S1, S2, 80, 20)
-                
-
-    elif getout_state == Test_GetOut.Found_T:
-        
-        if motion == Motion.turning:
-            turn_state, turn_complete = turn_v4(turn_dir, S1, S2, turn_state, motor_l, motor_r)
-            if turn_complete:
-                motion = Motion.follow
-                turn_complete = False
-                turn_state = Turn_State.start
-                getout_state = Test_GetOut.Unloading
-                print("in unloading now")
-
-        if motion == Motion.follow:
-            line_follow_step(S1, S2, 80, 20)
-            if GO_test_bcount == 6 and new_junction:
-                turn_dir = Turn_Direction.left
-                turn_complete = False
-                turn_state = Turn_State.start
-                motion = Motion.turning
-            else:
-                if new_junction:
-                    GO_test_bcount += 1
-                
+    if button_now == 1 and prev_button == 0:
+        if ticks_diff(ticks_ms(), last_press) > 200:
+            ON = not ON
+            last_press = ticks_ms()
     
-    elif getout_state == Test_GetOut.Unloading:
-        
-        if motion == Motion.turning:
-            turn_state, turn_complete = turn_v4(turn_dir, S1, S2, turn_state, motor_l, motor_r)
-            if turn_complete:
-                motion = Motion.follow
-                turn_complete = False
-                turn_state = Turn_State.start
-                getout_state = Test_GetOut.UB
-        
-        if motion == Motion.follow:
-            line_follow_step(S1, S2, 80, 20)
-            if new_junction and motion != Motion.turning:
-                motion = Motion.turning 
-                turn_dir = Turn_Direction.right
-                turn_complete = False
-                turn_state = Turn_State.start
-        
-    elif getout_state == Test_GetOut.UB:
-        if motion == Motion.follow:
-            if on_T:
-                motor_l.Forward(speed = 0)
-                motor_r.Forward(speed = 0)
-                print("reached green bay")
-            else:
-                line_follow_step(S1, S2, 80, 20)
+    prev_button = button_now 
 
-    prev_on_junction = on_junction   
-    prev_on_T = on_T
+    if not ON:
+        motor_l.Forward(speed = 0)
+        motor_r.Forward(speed = 0)
+        events["prev_on_junction"] = events["on_junction"]
+        events["prev_on_T"] = events["on_T"]
+        continue
+
+    elif ON:
+        
+        if getout_state == Test_GetOut.Rev_Branch:
+            if not timed_rev_started:
+                timed_rev_started = True
+                timed_rev_start = ticks_ms()
+
+            else:
+                motor_l.Reverse(speed=80)
+                motor_r.Reverse(speed=80)
+
+            if ticks_diff(ticks_ms(), timed_rev_start) > 1000:   # modify according to needs.
+                motor_l.Forward(speed=0)
+                motor_r.Forward(speed=0)
+                motion = Motion.follow
+                timed_rev_started = False
+                getout_state = Test_GetOut.Exiting_Branch
+
+        elif getout_state == Test_GetOut.Exiting_Branch:
+
+            if motion != Motion.turning:
+                #motor_l.Forward(speed = 0)
+                #motor_r.Forward(speed = 0)
+                motion = Motion.turning
+                Blue.value(1)
+                print("start timed turn!")
+            
+            if motion == Motion.turning:
+                turn_complete, timed_turn_started, timed_turn_start, turn_dir, motion = timed_turn_step(timed_turn_started, timed_turn_start, turn_dir, motion)
+                if turn_complete:
+                    turn_complete = False
+                    turn_state = Turn_State.start
+                    Blue.value(0)
+                    motor_l.Forward(speed = 0)
+                    motor_r.Forward(speed = 0)
+                    getout_state = Test_GetOut.Reversing
+                    print("timed turn finished")
+
+        elif getout_state == Test_GetOut.Reversing:
+            if motion == Motion.follow:
+                if on_T:
+                    motor_l.Forward(speed = 0)
+                    motor_r.Forward(speed = 0)
+                    getout_state = Test_GetOut.Found_T
+                    GO_test_bcount = 0
+                    motion = Motion.follow
+                    print("reached landmark T")
+                else:
+                    back_line_follow_step(S1, S2)
+                    
+
+        elif getout_state == Test_GetOut.Found_T:
+            
+            if motion == Motion.turning:
+                turn_state, turn_complete = turn_v4(turn_dir, S1, S2, turn_state, motor_l, motor_r)
+                if turn_complete:
+                    motion = Motion.follow
+                    turn_complete = False
+                    turn_state = Turn_State.start
+                    getout_state = Test_GetOut.Unloading
+                    print("in unloading now")
+
+            if motion == Motion.follow:
+                line_follow_step(S1, S2, 80, 20)
+                if GO_test_bcount == 6 and new_junction:
+                    turn_dir = Turn_Direction.left
+                    turn_complete = False
+                    turn_state = Turn_State.start
+                    motion = Motion.turning
+                else:
+                    if new_junction:
+                        GO_test_bcount += 1
+                    
+        
+        elif getout_state == Test_GetOut.Unloading:
+            
+            if motion == Motion.turning:
+                turn_state, turn_complete = turn_v4(turn_dir, S1, S2, turn_state, motor_l, motor_r)
+                if turn_complete:
+                    motion = Motion.follow
+                    turn_complete = False
+                    turn_state = Turn_State.start
+                    getout_state = Test_GetOut.UB
+            
+            if motion == Motion.follow:
+                line_follow_step(S1, S2, 80, 20)
+                if new_junction and motion != Motion.turning:
+                    motion = Motion.turning 
+                    turn_dir = Turn_Direction.right
+                    turn_complete = False
+                    turn_state = Turn_State.start
+            
+        elif getout_state == Test_GetOut.UB:
+            if motion == Motion.follow:
+                if on_T:
+                    motor_l.Forward(speed = 0)
+                    motor_r.Forward(speed = 0)
+                    print("reached green bay")
+                else:
+                    line_follow_step(S1, S2, 80, 20)
+
+        prev_on_junction = on_junction   
+        prev_on_T = on_T
 
 # -- LOOP + MAPPING TEST ---
 """ while True:
@@ -793,12 +830,8 @@ init_laser()
 
 
 
-# Assumes that the turning of the car is wide enough such that the front aligns with line before the back
-"""
-    turn_search: Has yet to see line. If turning left: When S1 = 1, line is crossed, turn_state = turn_cross
-    turn_cross: Has seen line, sensor that seen line has yet to unsee. When S1 unsees line the bot is in a safe geometry to start line following
-    done: S1 has unseen the line. Start line following. End when fully aligned.
-"""
+
+
 
 
 
