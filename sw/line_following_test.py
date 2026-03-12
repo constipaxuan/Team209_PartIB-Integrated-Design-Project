@@ -50,8 +50,8 @@ def line_follow_step(S1, S2, base, corr):
     motor_l.Forward(speed = base)
 
 def back_line_follow_step(S1, S2):
-  base = 70
-  corr = 20
+  base = 50
+  corr = 10
   
   if (S1 == 1 and S2 == 0): # corrects left veer
     motor_r.Reverse(speed = corr) # speed ranges from 0 to 100 as defined
