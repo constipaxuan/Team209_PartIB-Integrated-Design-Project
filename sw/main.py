@@ -415,7 +415,7 @@ def rec_dist_laser():
 def R_detect(events, laser_distance, delivery, robot):
 #QN: after I detect a resistor, how do I connect the turning function after this? Turning left or right to collect a resistor depends on the rack
     # ONLY act if this is a BRAND NEW junction detection (Does the new junction work here?)
-    if events["on_junction"] == True and not events["on_T"] and events["new_junction"] == True:
+    if events["new_junction"] and not events["new_T"]:
         # decide which distance sensor to use based on direction of travel
         # 1. Safety check: stop the counter if we run out of slots (All slots have been cleared for a particular rack)
         if delivery["search_slot_counter"] >= 6: # 6 slots
@@ -805,26 +805,54 @@ while True:
 
 #Resistor detection TEST (Now with line following)
 
+laser_distance = None
 init_laser_R()
 
 while True:
+
+    sensors["S1"] = S1_sensor.value()
+    sensors["S2"] = S2_sensor.value()
+    sensors["SL"] = SL_sensor.value()
+    sensors["SR"] = SR_sensor.value()
+
+    button_now = button.value()
+
+    if button_now == 1 and prev_button == 0:
+        if ticks_diff(ticks_ms(), last_press) > 200:
+            ON = not ON
+            last_press = ticks_ms()
+    
+    prev_button = button_now 
+
+
     events["on_junction"] = (sensors["SL"] == 1 or sensors["SR"] == 1)
     events["new_junction"] = (not events["prev_on_junction"]) and events["on_junction"]
 
     events["on_T"] = (sensors["SL"] == 1 and sensors["SR"] == 1)            # specifically T-shape / both side sensors active
     events["new_T"] = (not events["prev_on_T"]) and events["on_T"]
-    line_follow_step(sensors["S1"], sensors["S2"], 80, 20)
-    # pretend we just crossed a junction (update events before calling)
-    # call detector using globals; pass previous laser_distance or None
-    laser_distance = R_detect(events, laser_distance, delivery, robot)
 
-    # print distance sample and state for debugging
-    print(f"Distance reading: {laser_distance}mm")
-    print(f"Counter: {delivery['search_slot_counter']}")
-    print(f"Slot status: {delivery['slot_status']}")
+    if not ON:
+        motor_l.Forward(speed = 0)
+        motor_r.Forward(speed = 0)
+        events["prev_on_junction"] = events["on_junction"]
+        events["prev_on_T"] = events["on_T"]
+        continue
 
-    sleep(2)
-    # loop continues indefinitely; break manually when done 
+    elif ON:
+        line_follow_step(sensors["S1"], sensors["S2"], 80, 20)
+        # pretend we just crossed a junction (update events before calling)
+        # call detector using globals; pass previous laser_distance or None
+        new_distance = R_detect(events, laser_distance, delivery, robot)
+
+        if new_distance is not None:
+            laser_distance = new_distance
+
+        # print distance sample and state for debugging
+        print(f"Distance reading: {laser_distance}mm")
+        print(f"Counter: {delivery['search_slot_counter']}")
+        print(f"Slot status: {delivery['slot_status']}")
+
+       
 
 
 
