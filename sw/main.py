@@ -486,7 +486,17 @@ def rack_search(sensors, events, robot, delivery):
                 delivery["ready_for_unloading"] = False
                 delivery["rack_state"] = Delivery_Rack_States.load_detected
                 delivery["search_slot_counter"] += 1
+
                 robot["mode"] = Mode.delivery
+                robot["motion"] = Motion.turning
+                robot["turn_state"] = Turn_State.start
+                robot["turn_complete"] = False
+
+                if robot["direction"] == Direction.cw:
+                    robot["turn_dir"] = Turn_Direction.right
+                elif robot["direction"] == Direction.acw:
+                    robot["turn_dir"] = Turn_Direction.left
+
                 return
             else:
                 delivery["slot_status"][delivery["search_slot_counter"]] = 1
@@ -527,16 +537,7 @@ def timed_turn_step(robot):
 def handler_orange_L_delivery(sensors, events, robot, delivery):
     # Step 1: Enter delivery mode when laser detects a resistor load while bot is on a branch. 
     if delivery["rack_state"] == Delivery_Rack_States.load_detected:
-        if events["new_junction"] and robot["motion"] != Motion.turning:
-            motor_l.Forward(speed = 0)
-            motor_r.Forward(speed = 0)
-            robot["motion"] = Motion.turning
-            robot["turn_state"] = Turn_State.start
-            if robot["direction"] == Direction.cw:
-                robot["turn_dir"] = Turn_Direction.right
-            elif robot["direction"] == Direction.acw:
-                robot["turn_dir"] = Turn_Direction.left
-        
+ 
         if robot["motion"] == Motion.turning:
             robot["turn_state"], robot["turn_complete"] = turn_v4(robot["turn_dir"], sensors["S1"], sensors["S2"], robot["turn_state"], motor_l, motor_r) 
             if robot["turn_complete"]:
