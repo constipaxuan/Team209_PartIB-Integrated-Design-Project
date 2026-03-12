@@ -485,6 +485,7 @@ def rack_search(sensors, events, robot, delivery):
                 delivery["rack_state"] = Delivery_Rack_States.load_detected
                 delivery["search_slot_counter"] += 1
 
+                print("REVERSE")
                 motor_l.Reverse(speed=40)
                 motor_r.Reverse(speed=40)
                 sleep_ms(80)
@@ -594,7 +595,7 @@ def handler_orange_L_delivery(sensors, events, robot, delivery):
                 motor_l.Reverse(speed=80)
                 motor_r.Reverse(speed=80)
 
-            if ticks_diff(ticks_ms(), delivery["timed_rev_start"]) > 900:   # modify according to needs.
+            if ticks_diff(ticks_ms(), delivery["timed_rev_start"]) > 1200:   # modify according to needs.
                 motor_l.Forward(speed=0)
                 motor_r.Forward(speed=0)
                 robot["motion"] = Motion.follow
