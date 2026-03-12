@@ -525,7 +525,7 @@ def timed_turn_step(robot):
         motor_l.Forward(speed=20)
         motor_r.Forward(speed=60)
 
-    if ticks_diff(ticks_ms(), robot["timed_turn_start"]) > 1100:   # modify according to needs.
+    if ticks_diff(ticks_ms(), robot["timed_turn_start"]) > 1500:   # modify according to needs.
         motor_l.Forward(speed=0)
         motor_r.Forward(speed=0)
         robot["motion"] = Motion.follow
@@ -569,7 +569,7 @@ def handler_orange_L_delivery(sensors, events, robot, delivery):
                 motor_l.Reverse(speed=80)
                 motor_r.Reverse(speed=80)
 
-            if ticks_diff(ticks_ms(), delivery["timed_rev_start"]) > 1000:   # modify according to needs.
+            if ticks_diff(ticks_ms(), delivery["timed_rev_start"]) > 1100:   # modify according to needs.
                 motor_l.Forward(speed=0)
                 motor_r.Forward(speed=0)
                 robot["motion"] = Motion.follow
