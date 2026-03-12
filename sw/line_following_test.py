@@ -49,8 +49,21 @@ def line_follow_step(S1, S2, base, corr):
     motor_r.Forward(speed = base)
     motor_l.Forward(speed = base)
 
+def back_line_follow_step(S1, S2):
+  base = 60
+  corr = 20
+  
+  if (S1 == 0 and S2 == 1): # corrects left veer
+    motor_r.Reverse(speed = corr) # speed ranges from 0 to 100 as defined
+    motor_l.Reverse(speed = base)
+  elif (S1 == 1 and S2 == 0): #corrects right veer
+    motor_l.Reverse(speed = corr)
+    motor_r.Reverse(speed = base)
+  else: #centered 
+    motor_r.Reverse(speed = base)
+    motor_l.Reverse(speed = base)
 
-""" while True:
+while True:
     S1 = S1_sensor.value()
     S2 = S2_sensor.value()
-    line_follow_step(S1, S2, 70, 20)   """
+    back_line_follow_step(S1, S2)   

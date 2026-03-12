@@ -496,7 +496,7 @@ def R_measure():
     return resistor_color
 
 # ---   get out of rack branch test - ends when we turn into green unloading bay. stop at RL. ---
-prev_on_junction = False
+""" prev_on_junction = False
 prev_on_T = False
 turn_state = Turn_State.start
 turn_dir = Turn_Direction.right # assuming starting in orange L
@@ -522,12 +522,13 @@ timed_turn_start = 0
 timed_rev_start = 0
 timed_rev_started = False
 GO_test_bcount = 0
+last_branch_time = 0
 
 class Test_GetOut:
     Rev_Branch = 0
     Exiting_Branch = 1
-    Reversing = 2
-    Found_T = 3
+    RackZone = 2
+    AwaitingTurn = 3
     Unloading = 4
     UB = 5
 
@@ -616,23 +617,22 @@ while True:
                     Blue.value(0)
                     motor_l.Forward(speed = 0)
                     motor_r.Forward(speed = 0)
-                    getout_state = Test_GetOut.Reversing
+                    getout_state = Test_GetOut.RackZone
                     print("timed turn finished")
+                    last_branch_time = ticks_ms()
 
-        elif getout_state == Test_GetOut.Reversing:
-            if motion == Motion.follow:
-                if on_T:
-                    motor_l.Forward(speed = 0)
-                    motor_r.Forward(speed = 0)
-                    getout_state = Test_GetOut.Found_T
-                    GO_test_bcount = 0
-                    motion = Motion.follow
-                    print("reached landmark T")
-                else:
-                    back_line_follow_step(S1, S2)
+        elif getout_state == Test_GetOut.RackZone:
+            if new_junction:
+                last_branch_time = ticks_ms()
+
+            if ticks_diff(ticks_ms(), last_branch_time) > 2500:
+                print("out of rack zone")
+                getout_state = Test_GetOut.AwaitingTurn
+            
+            line_follow_step(S1, S2, 80, 20)
                     
 
-        elif getout_state == Test_GetOut.Found_T:
+        elif getout_state == Test_GetOut.AwaitingTurn:
             
             if motion == Motion.turning:
                 turn_state, turn_complete = turn_v4(turn_dir, S1, S2, turn_state, motor_l, motor_r)
@@ -645,14 +645,11 @@ while True:
 
             if motion == Motion.follow:
                 line_follow_step(S1, S2, 80, 20)
-                if GO_test_bcount == 6 and new_junction:
+                if new_junction:
                     turn_dir = Turn_Direction.left
                     turn_complete = False
                     turn_state = Turn_State.start
                     motion = Motion.turning
-                else:
-                    if new_junction:
-                        GO_test_bcount += 1
                     
         
         elif getout_state == Test_GetOut.Unloading:
@@ -683,10 +680,10 @@ while True:
                     line_follow_step(S1, S2, 80, 20)
 
         prev_on_junction = on_junction   
-        prev_on_T = on_T
+        prev_on_T = on_T """
 
 # -- LOOP + MAPPING TEST ---
-""" while True:
+while True:
     sensors["S1"] = S1_sensor.value()
     sensors["S2"] = S2_sensor.value()
     sensors["SL"] = SL_sensor.value()
@@ -804,13 +801,13 @@ while True:
                     
     
         events["prev_on_junction"] = events["on_junction"]
-        events["prev_on_T"] = events["on_T"] """
+        events["prev_on_T"] = events["on_T"]
 
 #Resistor detection TEST (Now with line following)
 
 init_laser_R()
 
-while True:
+''' while True:
     events["on_junction"] = (sensors["SL"] == 1 or sensors["SR"] == 1)
     events["new_junction"] = (not events["prev_on_junction"]) and events["on_junction"]
 
@@ -825,8 +822,9 @@ while True:
     print(f"Counter: {delivery['search_slot_counter']}")
     print(f"Slot status: {delivery['slot_status']}")
 
-    sleep(1)
-    # loop continues indefinitely; break manually when done """
+    sleep(2)
+    # loop continues indefinitely; break manually when done 
+    '''
 
 
 
