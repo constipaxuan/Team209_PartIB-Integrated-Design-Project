@@ -14,6 +14,7 @@ from map_state import mapping
 class Motion:
     follow = 1
     turning = 2
+    stopped_for_scan = 3
 
 class Motor:
     def __init__(self, dirPin, PWMPin):
@@ -88,7 +89,8 @@ robot = {
     "timed_turn_started": False,
     "timed_turn_start": 0,
     "target_rack_idx": 0,
-    "tnt_state": TNT_states.nil
+    "tnt_state": TNT_states.nil,
+    "scan_start": 0
 }
 
 delivery = {
@@ -839,8 +841,41 @@ while True:
         continue
 
     elif ON:
-        line_follow_step(sensors["S1"], sensors["S2"], 80, 20)
-        # pretend we just crossed a junction (update events before calling)
+        if robot["motion"] == Motion.follow:
+            if events["new_junction"] and not events["new_T"]:
+                motor_l.Forward(speed=0)
+                motor_r.Forward(speed=0)
+                robot["motion"] = Motion.stopped_for_scan
+                robot["scan_start"] = ticks_ms()
+            else:
+                line_follow_step(sensors["S1"], sensors["S2"], 80, 20)
+        
+        elif robot["motion"] == Motion.stopped_for_scan:
+            motor_l.Forward(speed=0)
+            motor_r.Forward(speed=0)
+
+            if ticks_diff(ticks_ms(), robot["scan_start"]) >= 300: # edit
+                laser_distance = rec_dist_laser()
+                print("NEW distance:", laser_distance)
+
+                if delivery["search_slot_counter"] < 6:
+                    if laser_distance < 100:
+                        delivery["R_detected"] = True
+                    else:
+                        delivery["slot_status"][delivery["search_slot_counter"]] = 1
+
+                    delivery["search_slot_counter"] += 1
+
+                robot["motion"] = Motion.follow
+
+        events["prev_on_junction"] = events["on_junction"]
+        events["prev_on_T"] = events["on_T"]
+
+        sleep_ms(10)
+
+
+
+""" # pretend we just crossed a junction (update events before calling)
         # call detector using globals; pass previous laser_distance or None
         new_distance = R_detect(events, laser_distance, delivery, robot)
 
@@ -849,7 +884,7 @@ while True:
             # print distance sample and state for debugging
             print(f"Distance reading: {laser_distance}mm")
             print(f"Counter: {delivery['search_slot_counter']}")
-            print(f"Slot status: {delivery['slot_status']}")
+            print(f"Slot status: {delivery['slot_status']}") """
 
        
 
