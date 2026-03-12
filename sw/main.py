@@ -446,6 +446,37 @@ def R_detect(events, laser_distance, delivery, robot):
     else:
         return None
 
+def rack_search(sensors, events, robot, delivery):
+    if robot["motion"] == Motion.follow:
+            if events["new_junction"] and not events["new_T"]:
+                motor_l.Forward(speed=0)
+                motor_r.Forward(speed=0)
+                robot["motion"] = Motion.stopped_for_scan
+                robot["scan_start"] = ticks_ms()
+            else:
+                line_follow_step(sensors["S1"], sensors["S2"], 80, 20)
+        
+    elif robot["motion"] == Motion.stopped_for_scan:
+        motor_l.Forward(speed=0)
+        motor_r.Forward(speed=0)
+
+        if ticks_diff(ticks_ms(), robot["scan_start"]) >= 300: # edit
+            laser_distance = rec_dist_laser()
+            print("NEW distance:", laser_distance)
+
+            if laser_distance < 100:
+                delivery["R_detected"] = True
+                return
+            else:
+                delivery["slot_status"][delivery["search_slot_counter"]] = 1
+
+            if delivery["search_slot_counter"] < 6:
+                delivery["search_slot_counter"] += 1
+            else:
+                delivery["search_slot_counter"] = 0
+                return
+
+            robot["motion"] = Motion.follow
 
 # FUNCTION FOR OPENING AND CLOSING THE 3 WIRE CLAW SERVO
 #initialize the servo with 3 wires
@@ -841,32 +872,8 @@ while True:
         continue
 
     elif ON:
-        if robot["motion"] == Motion.follow:
-            if events["new_junction"] and not events["new_T"]:
-                motor_l.Forward(speed=0)
-                motor_r.Forward(speed=0)
-                robot["motion"] = Motion.stopped_for_scan
-                robot["scan_start"] = ticks_ms()
-            else:
-                line_follow_step(sensors["S1"], sensors["S2"], 80, 20)
         
-        elif robot["motion"] == Motion.stopped_for_scan:
-            motor_l.Forward(speed=0)
-            motor_r.Forward(speed=0)
-
-            if ticks_diff(ticks_ms(), robot["scan_start"]) >= 300: # edit
-                laser_distance = rec_dist_laser()
-                print("NEW distance:", laser_distance)
-
-                if delivery["search_slot_counter"] < 6:
-                    if laser_distance < 100:
-                        delivery["R_detected"] = True
-                    else:
-                        delivery["slot_status"][delivery["search_slot_counter"]] = 1
-
-                    delivery["search_slot_counter"] += 1
-
-                robot["motion"] = Motion.follow
+        rack_search(sensors, events, robot, delivery)
 
         events["prev_on_junction"] = events["on_junction"]
         events["prev_on_T"] = events["on_T"]
