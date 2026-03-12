@@ -539,14 +539,9 @@ def handler_orange_L_delivery(sensors, events, robot, delivery):
     if delivery["rack_state"] == Delivery_Rack_States.load_detected:
  
         if robot["motion"] == Motion.turning:
-            robot["turn_state"], robot["turn_complete"] = turn_v4(robot["turn_dir"], sensors["S1"], sensors["S2"], robot["turn_state"], motor_l, motor_r) 
-            if robot["turn_complete"]:
-                robot["motion"] = Motion.follow
-                robot["turn_complete"] = False
-                robot["turn_state"] = Turn_State.start
-                delivery["rack_state"] = Delivery_Rack_States.reached
-                motor_l.Forward(speed = 0)
-                motor_r.Forward(speed = 0)
+            timed_turn_step(robot)
+            delivery["rack_state"] = Delivery_Rack_States.reached
+          
     
     # MODIFIED FOR TESTING
     # Step 3: Grab the load. Adjust timing in R_measure so that the claw can shut before the bot starts reversing. atp IDGAF is this part is blocking.
