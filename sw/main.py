@@ -162,8 +162,8 @@ def detect_junction_type(SL, SR):
    
 #This one need to test, its going backwards so idk if the the logic will be reversed.
 def back_line_follow_step(S1, S2):
-  base = 70
-  corr = 40
+  base = 80
+  corr = 20
   
   if (S1 == 0 and S2 == 1): # corrects left veer
     motor_r.Reverse(speed = corr) # speed ranges from 0 to 100 as defined
@@ -525,7 +525,7 @@ while True:
                 motion = Motion.follow
                 print("reached landmark T")
             else:
-                back_line_follow_step(S1, S2, 80, 20)
+                back_line_follow_step(S1, S2)
                 
 
     elif getout_state == Test_GetOut.Found_T:
