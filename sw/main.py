@@ -473,7 +473,7 @@ def rack_search(sensors, events, robot, delivery):
                 robot["motion"] = Motion.follow
                 return
             else:
-                delivery["slot_status"][delivery["search_slot_counter"] - 1] = 1
+                delivery["slot_status"][delivery["search_slot_counter"]] = 1
 
             if delivery["search_slot_counter"] < 6:
                 delivery["search_slot_counter"] += 1
