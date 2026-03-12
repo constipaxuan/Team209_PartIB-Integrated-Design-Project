@@ -545,8 +545,10 @@ def timed_turn_step(robot, time_ms):
 def handler_orange_L_delivery(sensors, events, robot, delivery):
     # Step 1: Enter delivery mode when laser detects a resistor load while bot is on a branch. 
     if delivery["rack_state"] == Delivery_Rack_States.load_detected:
+        print("IN load_detected")
  
         if robot["motion"] == Motion.turning:
+            print("STARTING TURN NOW")
             robot["turn_complete"] = timed_turn_step(robot, 1000)
             if robot["turn_complete"]:
                 print("APPROACHING 1")
