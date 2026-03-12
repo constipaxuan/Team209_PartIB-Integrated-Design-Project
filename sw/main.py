@@ -464,7 +464,7 @@ class Test_GetOut:
     Unloading = 4
     UB = 5
 
-getout_state = Test_GetOut.Exiting_Branch
+getout_state = Test_GetOut.Rev_Branch
 
 def timed_turn_step(timed_turn_started, timed_turn_start, turn_dir, motion):
     if not timed_turn_started:
