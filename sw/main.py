@@ -823,7 +823,7 @@ while True:
     print(f"Counter: {delivery['search_slot_counter']}")
     print(f"Slot status: {delivery['slot_status']}")
 
-    sleep(2)
+
     # loop continues indefinitely; break manually when done 
 
 
