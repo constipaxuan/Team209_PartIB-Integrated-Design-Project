@@ -429,7 +429,7 @@ def upperP_lowO_R_detect(events, laser_distance, delivery, robot):
 init_laser() #initialize laser
 
 # ---   get out of rack branch test - ends when we turn into green unloading bay. stop at RL. ---
-prev_on_junction = False
+""" prev_on_junction = False
 prev_on_T = False
 turn_state = Turn_State.start
 turn_dir = Turn_Direction.right # assuming starting in orange L
@@ -616,10 +616,10 @@ while True:
                     line_follow_step(S1, S2, 80, 20)
 
         prev_on_junction = on_junction   
-        prev_on_T = on_T
+        prev_on_T = on_T """
 
 # -- LOOP + MAPPING TEST ---
-""" while True:
+while True:
     sensors["S1"] = S1_sensor.value()
     sensors["S2"] = S2_sensor.value()
     sensors["SL"] = SL_sensor.value()
@@ -737,7 +737,7 @@ while True:
                     
     
         events["prev_on_junction"] = events["on_junction"]
-        events["prev_on_T"] = events["on_T"] """
+        events["prev_on_T"] = events["on_T"]
 
 #Resistor detection TEST
 
