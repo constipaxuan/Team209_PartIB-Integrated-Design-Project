@@ -525,7 +525,7 @@ def timed_turn_step(robot):
         motor_l.Forward(speed=20)
         motor_r.Forward(speed=60)
 
-    if ticks_diff(ticks_ms(), robot["timed_turn_start"]) > 300:   # modify according to needs.
+    if ticks_diff(ticks_ms(), robot["timed_turn_start"]) > 1100:   # modify according to needs.
         motor_l.Forward(speed=0)
         motor_r.Forward(speed=0)
         robot["motion"] = Motion.follow
