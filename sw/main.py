@@ -571,7 +571,6 @@ def upperP_lowO_R_detect(events, laser_distance, delivery, robot):
         # 1. Safety check: stop the counter if we run out of slots (All slots have been cleared for a particular rack)
         if delivery["search_slot_counter"] >= 6: # 6 slots
             robot["target_rack_idx"] += 1
-            print("hello")
             delivery["search_slot_counter"] = 0
             delivery["slot_status"] = [0,0,0,0,0,0]
             return
@@ -596,22 +595,42 @@ def upperP_lowO_R_detect(events, laser_distance, delivery, robot):
             return laser_distance
 
 init_laser() #initialize laser
+
 while True:
-    events["on_junction"] = (sensors["SL"] == 1 or sensors["SR"] == 1)
-    events["new_junction"] = (not events["prev_on_junction"]) and events["on_junction"]
+    button_now = button.value()
 
-    events["on_T"] = (sensors["SL"] == 1 and sensors["SR"] == 1)            # specifically T-shape / both side sensors active
-    events["new_T"] = (not events["prev_on_T"]) and events["on_T"]
+    if button_now == 1 and prev_button == 0:
+        if ticks_diff(ticks_ms(), last_press) > 200:
+            ON = not ON
+            last_press = ticks_ms()
+    
+    prev_button = button_now 
 
-    # pretend we just crossed a junction (update events before calling)
-    # call detector using globals; pass previous laser_distance or None
-    laser_distance = upperP_lowO_R_detect(events, laser_distance, delivery, robot)
-    # print distance sample and state for debugging
-    #print(f"Distance reading: {laser_distance}mm")
-    print(f"Counter: {delivery['search_slot_counter']}")
-    print(f"Slot status: {delivery['slot_status']}")
+    if not ON:
+        motor_l.Forward(speed = 0)
+        motor_r.Forward(speed = 0)
+        events["prev_on_junction"] = events["on_junction"]
+        events["prev_on_T"] = events["on_T"]
+        continue
 
-    sleep(2)
+    elif ON:
+        sensors["SL"] = S1_sensor.value()
+        sensors["SR"] = S2_sensor.value()
+        events["on_junction"] = (sensors["SL"] == 1 or sensors["SR"] == 1)
+        events["new_junction"] = (not events["prev_on_junction"]) and events["on_junction"]
+
+        events["on_T"] = (sensors["SL"] == 1 and sensors["SR"] == 1)            # specifically T-shape / both side sensors active
+        events["new_T"] = (not events["prev_on_T"]) and events["on_T"]
+        line_follow_step(sensors["S1"], sensors["S2"], 80, 20)
+        # pretend we just crossed a junction (update events before calling)
+        # call detector using globals; pass previous laser_distance or None
+        if events["new_junction"] == True:
+            laser_distance = upperP_lowO_R_detect(events, laser_distance, delivery, robot)
+        # print distance sample and state for debugging
+        #print(f"Distance reading: {laser_distance}mm")
+            print(f"Counter: {delivery['search_slot_counter']}")
+            print(f"Slot status: {delivery['slot_status']}")
+            sleep(0.5)
     # loop continues indefinitely; break manually when done
 
 
