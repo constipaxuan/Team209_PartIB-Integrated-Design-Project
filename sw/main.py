@@ -539,8 +539,12 @@ def handler_orange_L_delivery(sensors, events, robot, delivery):
     if delivery["rack_state"] == Delivery_Rack_States.load_detected:
  
         if robot["motion"] == Motion.turning:
-            timed_turn_step(robot)
-            delivery["rack_state"] = Delivery_Rack_States.reached
+            robot["turn_complete"] = timed_turn_step(robot)
+            if robot["turn_complete"]:
+                delivery["rack_state"] = Delivery_Rack_States.reached
+                motor_l.Forward(speed = 0)
+                motor_l.Forward(speed = 0)
+                robot["turn_complete"] = False
           
     
     # MODIFIED FOR TESTING
