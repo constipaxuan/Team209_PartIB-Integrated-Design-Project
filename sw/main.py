@@ -478,7 +478,7 @@ def timed_turn_step(timed_turn_started, timed_turn_start, turn_dir, motion):
         motor_l.Reverse(speed=30)
         motor_r.Forward(speed=80)
 
-    if ticks_diff(ticks_ms(), timed_turn_start) > 1300:   # modify according to needs.
+    if ticks_diff(ticks_ms(), timed_turn_start) > 1200:   # modify according to needs.
         motor_l.Forward(speed=0)
         motor_r.Forward(speed=0)
         motion = Motion.follow
