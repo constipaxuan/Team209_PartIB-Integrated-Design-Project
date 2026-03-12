@@ -628,6 +628,8 @@ while True:
             if ticks_diff(ticks_ms(), last_branch_time) > 2500:
                 print("out of rack zone")
                 getout_state = Test_GetOut.AwaitingTurn
+            
+            line_follow_step(S1, S2, 80, 20)
                     
 
         elif getout_state == Test_GetOut.AwaitingTurn:
