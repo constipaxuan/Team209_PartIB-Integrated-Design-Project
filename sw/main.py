@@ -971,6 +971,7 @@ while True:
 laser_distance = None
 init_laser_R()
 robot["mode"] = Mode.search
+robot["direction"] = Direction.cw
 
 while True:
 
