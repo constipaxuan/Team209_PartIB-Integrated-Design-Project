@@ -625,7 +625,7 @@ while True:
             if new_junction:
                 last_branch_time = ticks_ms()
 
-            if ticks_diff(ticks_ms(), last_branch_time) > 1000:
+            if ticks_diff(ticks_ms(), last_branch_time) > 2500:
                 print("out of rack zone")
                 getout_state = Test_GetOut.AwaitingTurn
                     
