@@ -470,9 +470,9 @@ def timed_turn_step(timed_turn_started, timed_turn_start, turn_dir, motion):
 
     if turn_dir == Turn_Direction.left:
         motor_l.Forward(speed=60)
-        motor_r.Forward(speed=20)
+        motor_r.Forward(speed=0)
     elif turn_dir == Turn_Direction.right:
-        motor_l.Forward(speed=20)
+        motor_l.Forward(speed=0)
         motor_r.Forward(speed=60)
 
     if ticks_diff(ticks_ms(), timed_turn_start) > 2400:   # modify according to needs.
