@@ -471,6 +471,7 @@ def rack_search(sensors, events, robot, delivery):
             if laser_distance < 100:
                 delivery["R_detected"] = True
                 robot["motion"] = Motion.follow
+                delivery["search_slot_counter"] += 1
                 return
             else:
                 delivery["slot_status"][delivery["search_slot_counter"]] = 1
@@ -845,7 +846,7 @@ while True:
 #Resistor detection TEST (Now with line following)
 
 laser_distance = None
-init_laser_L()
+init_laser_R()
 
 while True:
 
