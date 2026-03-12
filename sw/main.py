@@ -9,7 +9,11 @@ from locations import Junctions, Location, Direction, Resistor_Color
 from map_state import mapping
 
 # --- CLASSES ---
-
+class Get_Out_of_branch:
+    Rev_Branch = 0
+    Exiting_Branch = 1
+    RackZone = 2
+    AwaitingTurn = 3
 
 class Motion:
     follow = 1
@@ -108,7 +112,14 @@ delivery = {
     "R_detected": False,
     "search_slot_counter": 0,
     "slot_status": [0,0,0,0,0,0],
-    "rack_switching_bcount" : 0
+    "rack_switching_bcount" : 0,
+    "rack_cleared" : False,
+    "getout_state": Get_Out_of_branch.Rev_Branch,
+    "timed_turn_start": 0,
+    "timed_turn_started": False,
+    "timed_rev_started": False,
+    "timed_rev_start": 0,
+    "last_branch_time": 0
 }
 
 memory = {
@@ -421,6 +432,7 @@ def R_detect(events, laser_distance, delivery, robot):
         # decide which distance sensor to use based on direction of travel
         # 1. Safety check: stop the counter if we run out of slots (All slots have been cleared for a particular rack)
         if delivery["search_slot_counter"] >= 6: # 6 slots
+            delivery["rack_cleared"] = True
             robot["target_rack_idx"] += 1
             delivery["search_slot_counter"] = 0
             delivery["slot_status"] = [0,0,0,0,0,0] #still need to integrate this into wider system so that it also marks the rack as cleared
@@ -470,8 +482,11 @@ def rack_search(sensors, events, robot, delivery):
 
             if laser_distance < 100:
                 delivery["R_detected"] = True
-                robot["motion"] = Motion.follow
+                delivery["delivery_state"] = Delivery_States.pickup
+                delivery["ready_for_unloading"] = False
+                delivery["rack_state"] = Delivery_Rack_States.load_detected
                 delivery["search_slot_counter"] += 1
+                robot["mode"] = Mode.delivery
                 return
             else:
                 delivery["slot_status"][delivery["search_slot_counter"]] = 1
@@ -481,9 +496,117 @@ def rack_search(sensors, events, robot, delivery):
             else:
                 delivery["search_slot_counter"] = 0
                 robot["motion"] = Motion.follow
+                delivery["rack_cleared"] = True
+                robot["target_rack_idx"] += 1
+                delivery["slot_status"] = [0,0,0,0,0,0]
                 return
 
             robot["motion"] = Motion.follow
+
+def timed_turn_step(robot):
+    if not robot["timed_turn_started"]:
+        robot["timed_turn_started"] = True
+        robot["timed_turn_start"] = ticks_ms()
+
+    if robot["turn_dir"] == Turn_Direction.left:
+        motor_l.Forward(speed=60)
+        motor_r.Forward(speed=20)
+    elif robot["turn_dir"] == Turn_Direction.right:
+        motor_l.Forward(speed=20)
+        motor_r.Forward(speed=60)
+
+    if ticks_diff(ticks_ms(), robot["timed_turn_start"]) > 300:   # modify according to needs.
+        motor_l.Forward(speed=0)
+        motor_r.Forward(speed=0)
+        robot["motion"] = Motion.follow
+        robot["timed_turn_started"] = False
+        return True
+
+    return False
+
+def handler_orange_L_delivery(sensors, events, robot, delivery):
+    # Step 1: Enter delivery mode when laser detects a resistor load while bot is on a branch. 
+    if delivery["rack_state"] == Delivery_Rack_States.load_detected:
+        if events["new_junction"] and robot["motion"] != Motion.turning:
+            motor_l.Forward(speed = 0)
+            motor_r.Forward(speed = 0)
+            robot["motion"] = Motion.turning
+            robot["turn_state"] = Turn_State.start
+            if robot["direction"] == Direction.cw:
+                robot["turn_dir"] = Turn_Direction.right
+            elif robot["direction"] == Direction.acw:
+                robot["turn_dir"] = Turn_Direction.left
+        
+        if robot["motion"] == Motion.turning:
+            robot["turn_state"], robot["turn_complete"] = turn_v4(robot["turn_dir"], sensors["S1"], sensors["S2"], robot["turn_state"], motor_l, motor_r) 
+            if robot["turn_complete"]:
+                robot["motion"] = Motion.follow
+                robot["turn_complete"] = False
+                robot["turn_state"] = Turn_State.start
+                delivery["rack_state"] = Delivery_Rack_States.reached
+                motor_l.Forward(speed = 0)
+                motor_r.Forward(speed = 0)
+    
+    # MODIFIED FOR TESTING
+    # Step 3: Grab the load. Adjust timing in R_measure so that the claw can shut before the bot starts reversing. atp IDGAF is this part is blocking.
+    elif delivery["rack_state"] == Delivery_Rack_States.reached:
+        sleep_ms(400) 
+        delivery["resistor_color"] = Resistor_Color.green #measure the resistor color and store it as a variable so that the bot knows which bay to drop it off at
+        delivery["rack_state"] = Delivery_Rack_States.reorienting
+        robot["motion"] = Motion.turning
+        robot["turn_dir"] = Turn_Direction.right # Face the unloading bay.
+        robot["timed_turn_started"] = False
+    
+    # Step 4: No need to reverse. No space.
+
+    elif delivery["rack_state"] == Delivery_Rack_States.reorienting:
+        if delivery["getout_state"] == Get_Out_of_branch.Rev_Branch:
+            if not delivery["timed_rev_started"]:
+                delivery["timed_rev_started"] = True
+                delivery["timed_rev_start"] = ticks_ms()
+
+            else:
+                motor_l.Reverse(speed=80)
+                motor_r.Reverse(speed=80)
+
+            if ticks_diff(ticks_ms(), delivery["timed_rev_start"]) > 1000:   # modify according to needs.
+                motor_l.Forward(speed=0)
+                motor_r.Forward(speed=0)
+                robot["motion"] = Motion.follow
+                delivery["timed_rev_started"] = False
+                delivery["getout_state"] = Get_Out_of_branch.Exiting_Branch
+
+        elif delivery["getout_state"] == Get_Out_of_branch.Exiting_Branch:
+            if robot["motion"] != Motion.turning:
+                #motor_l.Forward(speed = 0)
+                #motor_r.Forward(speed = 0)
+                robot["motion"] = Motion.turning
+                Blue.value(1)
+                print("start timed turn!")
+            
+            if robot["motion"] == Motion.turning:
+                timed_turn_step(robot)
+                if robot["turn_complete"]:
+                    robot["turn_complete"] = False
+                    robot["turn_state"] = Turn_State.start
+                    Blue.value(0)
+                    motor_l.Forward(speed = 0)
+                    motor_r.Forward(speed = 0)
+                    delivery["getout_state"] = Get_Out_of_branch.RackZone
+                    print("timed turn finished")
+                    delivery["last_branch_time"] = ticks_ms()
+
+        elif delivery["getout_state"] == Get_Out_of_branch.RackZone:
+            if events["new_junction"]:
+                delivery["last_branch_time"] = ticks_ms()
+
+            if ticks_diff(ticks_ms(), delivery["last_branch_time"]) > 2500:
+                print("out of rack zone")
+                delivery["getout_state"] = Get_Out_of_branch.Rev_Branch #reset
+                delivery["rack_state"] = Delivery_Rack_States.load_detected #reset to search for next load after passing each branch, since each bay has 6 branches.
+                delivery["ready_for_unloading"] = True
+            
+            line_follow_step(sensors["S1"], sensors["S2"], 80, 20)
 
 # FUNCTION FOR OPENING AND CLOSING THE 3 WIRE CLAW SERVO
 #initialize the servo with 3 wires
@@ -847,6 +970,7 @@ while True:
 
 laser_distance = None
 init_laser_R()
+robot["mode"] = Mode.search
 
 while True:
 
@@ -879,8 +1003,10 @@ while True:
         continue
 
     elif ON:
-
-        rack_search(sensors, events, robot, delivery)
+        if robot["mode"] == Mode.search:
+            rack_search(sensors, events, robot, delivery)
+        elif robot["mode"] == Mode.delivery:
+            handler_orange_L_delivery(sensors, events, robot, delivery)
 
         events["prev_on_junction"] = events["on_junction"]
         events["prev_on_T"] = events["on_T"]

@@ -29,8 +29,7 @@ class Delivery_Rack_States:
     load_detected = 0
     reached = 1
     reorienting = 2
-    reoriented = 3
-
+    
 class Unloading_States:
     finding_bay = 0
     counting_bays = 1

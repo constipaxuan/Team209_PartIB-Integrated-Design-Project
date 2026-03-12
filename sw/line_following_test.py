@@ -66,4 +66,4 @@ def back_line_follow_step(S1, S2):
 while True:
     S1 = S1_sensor.value()
     S2 = S2_sensor.value()
-    back_line_follow_step(S1, S2)   
+    line_follow_step(S1, S2, 80, 20)   
