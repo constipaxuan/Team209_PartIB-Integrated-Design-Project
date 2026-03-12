@@ -486,9 +486,9 @@ def rack_search(sensors, events, robot, delivery):
                 delivery["search_slot_counter"] += 1
 
                 print("REVERSE")
-                motor_l.Reverse(speed=40)
-                motor_r.Reverse(speed=40)
-                sleep_ms(80)
+                motor_l.Reverse(speed=80)
+                motor_r.Reverse(speed=80)
+                sleep_ms(200)
                 motor_l.Forward(speed=0)
                 motor_r.Forward(speed=0)
 
