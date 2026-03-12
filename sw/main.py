@@ -452,14 +452,17 @@ motor_r = Motor(dirPin=7, PWMPin=6)
 
 timed_turn_started = False
 timed_turn_start = 0
+timed_rev_start = 0
+timed_rev_started = False
 GO_test_bcount = 0
 
 class Test_GetOut:
-    Exiting_Branch = 0
-    Reversing = 1
-    Found_T = 2
-    Unloading = 3
-    UB = 4
+    Rev_Branch = 0
+    Exiting_Branch = 1
+    Reversing = 2
+    Found_T = 3
+    Unloading = 4
+    UB = 5
 
 getout_state = Test_GetOut.Exiting_Branch
 
@@ -512,12 +515,27 @@ while True:
         continue
 
     elif ON:
+        
+        if getout_state == Test_GetOut.Rev_Branch:
+            if not timed_rev_started:
+                timed_rev_started = True
+                timed_rev_start = ticks_ms()
 
-        if getout_state == Test_GetOut.Exiting_Branch:
+            else:
+                motor_l.Reverse(speed=80)
+                motor_r.Reverse(speed=80)
+
+            if ticks_diff(ticks_ms(), timed_turn_start) > 3000:   # modify according to needs.
+                motor_l.Forward(speed=0)
+                motor_r.Forward(speed=0)
+                motion = Motion.follow
+                timed_rev_started = False
+
+        elif getout_state == Test_GetOut.Exiting_Branch:
 
             if motion != Motion.turning:
-                motor_l.Forward(speed = 0)
-                motor_r.Forward(speed = 0)
+                #motor_l.Forward(speed = 0)
+                #motor_r.Forward(speed = 0)
                 motion = Motion.turning
                 Blue.value(1)
                 print("start timed turn!")
