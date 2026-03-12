@@ -857,9 +857,11 @@ while True:
             if ticks_diff(ticks_ms(), robot["scan_start"]) >= 300: # edit
                 laser_distance = rec_dist_laser()
                 print("NEW distance:", laser_distance)
+                print(f"Counter: {delivery['search_slot_counter']}")
+                print(f"Slot status: {delivery['slot_status']}")
 
                 if delivery["search_slot_counter"] < 6:
-                    if laser_distance < 100:
+                    if laser_distance < 150:
                         delivery["R_detected"] = True
                     else:
                         delivery["slot_status"][delivery["search_slot_counter"]] = 1
