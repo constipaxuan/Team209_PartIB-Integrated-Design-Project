@@ -698,12 +698,12 @@ while True:
     events["on_T"] = (sensors["SL"] == 1 and sensors["SR"] == 1)            # specifically T-shape / both side sensors active
     events["new_T"] = (not events["prev_on_T"]) and events["on_T"]
 
-    if events["new_junction"]:
-        events["junction_type"] = detect_junction_type(sensors["SL"], sensors["SR"])
-    else:
-        events["junction_type"] = Junctions.nil
-    
-    robot["location"] = mapping(robot["location"], robot["mode"], robot["direction"], events["junction_type"])
+    #if events["new_junction"]:
+    #    events["junction_type"] = detect_junction_type(sensors["SL"], sensors["SR"])
+    #else:
+    #    events["junction_type"] = Junctions.nil
+    #
+    #robot["location"] = mapping(robot["location"], robot["mode"], robot["direction"], events["junction_type"])
 
 
     # non blocking debouncing. this allows sensors to still be read while button is being debounced, preventing missed junctions.
