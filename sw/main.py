@@ -253,7 +253,7 @@ def get_out_of_box(sensors, events, robot, delivery):
 
     # To prevent double counting: Only can update count while NOT in turning mode.
     if robot["start_state"] == Start_States.start or robot["start_state"] == Start_States.turn1_done:
-        events["start_T_shape_count"] = update_start_T_count(sensors["SL"], sensors["SR"], events["start_T_shape_count"], events["new_T"])
+        events["start_T_shape_count"] = update_start_T_count(events["start_T_shape_count"], events["new_T"])
 
     if robot["start_state"] == Start_States.start:   
     # State 1: Drive out of the box, drive straight
@@ -373,12 +373,69 @@ corners = [
 
 corner_idx = 0
 
-""" prev_on_junction = False
+def init_laser():
+    # config I2C Bus
+    i2c_bus = I2C(id=1, sda=Pin(10), scl=Pin(11)) # I2C0 on GP8 & GP9
+    # print(i2c_bus.scan())  # Get the address (nb 41=0x29, 82=0x52)
+        
+    # Setup vl53l0 object
+    global vl53l0
+    vl53l0 = VL53L0X(i2c_bus)
+    vl53l0.set_Vcsel_pulse_period(vl53l0.vcsel_period_type[0], 18)
+    vl53l0.set_Vcsel_pulse_period(vl53l0.vcsel_period_type[1], 14)
+
+def rec_dist_laser():
+    # Start device
+    vl53l0.start()
+    # Read one sample
+    laser_distance = vl53l0.read()
+    # Stop device
+    vl53l0.stop()
+    return laser_distance
+
+
+def upperP_lowO_R_detect(events, laser_distance, delivery, robot):
+    
+    # ONLY act if this is a BRAND NEW junction detection
+    if events["on_junction"] == True and not events["on_T"]:
+        # decide which distance sensor to use based on direction of travel
+        # 1. Safety check: stop the counter if we run out of slots (All slots have been cleared for a particular rack)
+        if delivery["search_slot_counter"] >= 6: # 6 slots
+            robot["target_rack_idx"] += 1
+            print("hello")
+            delivery["search_slot_counter"] = 0
+            delivery["slot_status"] = [0,0,0,0,0,0]
+            return
+
+        else:
+            motor_l.Forward(speed = 0)
+            motor_r.Forward(speed = 0)
+            # 2. Fire the laser ONCE
+            laser_distance = rec_dist_laser() 
+            print(f"Laser distance: {laser_distance}mm")
+            # 3. Update the CURRENT slot
+            if laser_distance < 100: 
+                delivery["R_detected"] = True
+                delivery["delivery_state"] = Delivery_States.pickup
+                delivery["ready_for_unloading"] = False
+                delivery["rack_state"] = Delivery_Rack_States.load_detected
+                delivery["search_slot_counter"] += 1
+            else:
+                delivery["slot_status"][delivery["search_slot_counter"]] = 1
+                delivery["search_slot_counter"] += 1
+                #mark the slot as cleared
+            return laser_distance
+
+init_laser() #initialize laser
+
+# ---   get out of rack branch test - ends when we turn into green unloading bay. stop at RL. ---
+prev_on_junction = False
+prev_on_T = False
 turn_state = Turn_State.start
-turn_dir = Turn_Direction.left
+turn_dir = Turn_Direction.right # assuming starting in orange L
 turn_complete = False
-turning = False
 turn_phase = 0
+motion = Motion.follow
 
 S1_pin = 21
 S2_pin = 20
@@ -391,10 +448,43 @@ SL_sensor = Pin(SL_pin, Pin.IN)
 SR_sensor = Pin(SR_pin, Pin.IN)
 
 motor_l = Motor(dirPin=4, PWMPin=5)
-motor_r = Motor(dirPin=7, PWMPin=6)  """
+motor_r = Motor(dirPin=7, PWMPin=6)  
 
-# --- TURN TEST ---
-""" while True:
+timed_turn_started = False
+timed_turn_start = 0
+GO_test_bcount = 0
+
+class Test_GetOut:
+    Exiting_Branch = 0
+    Reversing = 1
+    Found_T = 2
+    Unloading = 3
+    UB = 4
+
+getout_state = Test_GetOut.Exiting_Branch
+
+def timed_turn_step(timed_turn_started, timed_turn_start, turn_dir, motion):
+    if not timed_turn_started:
+        timed_turn_started = True
+        timed_turn_start = ticks_ms()
+
+    if turn_dir == Turn_Direction.left:
+        motor_l.Forward(speed=60)
+        motor_r.Forward(speed=20)
+    elif turn_dir == Turn_Direction.right:
+        motor_l.Forward(speed=20)
+        motor_r.Forward(speed=60)
+
+    if ticks_diff(ticks_ms(), timed_turn_start) > 300:   # modify according to needs.
+        motor_l.Forward(speed=0)
+        motor_r.Forward(speed=0)
+        motion = Motion.follow
+        timed_turn_started = False
+        return True, timed_turn_started, timed_turn_start, turn_dir, motion
+
+    return False, timed_turn_started, timed_turn_start, turn_dir, motion
+
+while True:
     S1 = S1_sensor.value()
     S2 = S2_sensor.value()
     SL = SL_sensor.value()
@@ -402,25 +492,94 @@ motor_r = Motor(dirPin=7, PWMPin=6)  """
 
     on_junction = (SL == 1 or SR == 1)
     new_junction = (not prev_on_junction) and on_junction
+    on_T = (SL  == 1 and SR == 1)
+    new_T = (not prev_on_T) and on_T
 
-    if new_junction and not turning:
-        motor_l.Forward(speed = 0)
-        motor_r.Forward(speed = 0)
-        turning = True
-        Blue.value(1)
+    if getout_state == Test_GetOut.Exiting_Branch:
+
+        if new_junction and motion != Motion.turning:
+            motor_l.Forward(speed = 0)
+            motor_r.Forward(speed = 0)
+            motion = Motion.turning
+            Blue.value(1)
+            print("start timed turn!")
+        
+        if motion == Motion.turning:
+            turn_complete, timed_turn_started, timed_turn_start, turn_dir, motion = timed_turn_step(timed_turn_started, timed_turn_start, turn_dir, motion)
+            if turn_complete:
+                turn_complete = False
+                turn_state = Turn_State.start
+                Blue.value(0)
+                motor_l.Forward(speed = 0)
+                motor_r.Forward(speed = 0)
+                getout_state = Test_GetOut.Reversing
+                print("timed turn finished")
+
+    elif getout_state == Test_GetOut.Reversing:
+        if motion == Motion.follow:
+            if on_T:
+                motor_l.Forward(speed = 0)
+                motor_r.Forward(speed = 0)
+                getout_state = Test_GetOut.Found_T
+                GO_test_bcount = 0
+                motion = Motion.follow
+                print("reached landmark T")
+            else:
+                back_line_follow_step(S1, S2, 80, 20)
+                
+
+    elif getout_state == Test_GetOut.Found_T:
+        
+        if motion == Motion.turning:
+            turn_state, turn_complete = turn_v4(turn_dir, S1, S2, turn_state, motor_l, motor_r)
+            if turn_complete:
+                motion = Motion.follow
+                turn_complete = False
+                turn_state = Turn_State.start
+                getout_state = Test_GetOut.Unloading
+                print("in unloading now")
+
+        if motion == Motion.follow:
+            line_follow_step(S1, S2, 80, 20)
+            if GO_test_bcount == 6 and new_junction:
+                turn_dir = Turn_Direction.left
+                turn_complete = False
+                turn_state = Turn_State.start
+                motion = Motion.turning
+            else:
+                if new_junction:
+                    GO_test_bcount += 1
+                
     
-    if turning:
-        turn_state, turn_complete = turn_v4(turn_dir, S1, S2, turn_state, motor_l, motor_r)
+    elif getout_state == Test_GetOut.Unloading:
+        
+        if motion == Motion.turning:
+            turn_state, turn_complete = turn_v4(turn_dir, S1, S2, turn_state, motor_l, motor_r)
+            if turn_complete:
+                motion = Motion.follow
+                turn_complete = False
+                turn_state = Turn_State.start
+                getout_state = Test_GetOut.UB
+        
+        if motion == Motion.follow:
+            line_follow_step(S1, S2, 80, 20)
+            if new_junction and motion != Motion.turning:
+                motion = Motion.turning 
+                turn_dir = Turn_Direction.right
+                turn_complete = False
+                turn_state = Turn_State.start
+        
+    elif getout_state == Test_GetOut.UB:
+        if motion == Motion.follow:
+            if on_T:
+                motor_l.Forward(speed = 0)
+                motor_r.Forward(speed = 0)
+                print("reached green bay")
+            else:
+                line_follow_step(S1, S2, 80, 20)
 
-        if turn_complete:
-            turning = False
-            turn_complete = False
-            turn_state = Turn_State.start
-            Blue.value(0)
-    else:
-        line_follow_step(S1, S2, 80, 20)
-
-    prev_on_junction = on_junction   """
+    prev_on_junction = on_junction   
+    prev_on_T = on_T
 
 # -- LOOP + MAPPING TEST ---
 """ while True:
@@ -443,7 +602,7 @@ motor_r = Motor(dirPin=7, PWMPin=6)  """
     else:
         events["junction_type"] = Junctions.nil
     
-    robot["location"] = mapping(events["previous_state"], robot["mode"], robot["direction"], events["junction_type"])
+    robot["location"] = mapping(robot["location"], robot["mode"], robot["direction"], events["junction_type"])
 
 
     # non blocking debouncing. this allows sensors to still be read while button is being debounced, preventing missed junctions.
@@ -531,107 +690,37 @@ motor_r = Motor(dirPin=7, PWMPin=6)  """
                         corner_idx += 1
                     else:
                         corner_idx = 0
-                        sleep_ms(500)
-                        motor_l.Forward(speed = 0)
-                        motor_r.Forward(speed = 0)
+                        if events["on_T"]:
+                            motor_l.Forward(speed = 0)
+                            motor_r.Forward(speed = 0)
+                        else:
+                            line_follow_step(sensors["S1"], sensors["S2"], 80, 20)
+                    
                     test_corner = corners[corner_idx]
                     
     
         events["prev_on_junction"] = events["on_junction"]
-        events["prev_on_T"] = events["on_T"]  """
+        events["prev_on_T"] = events["on_T"] """
 
 #Resistor detection TEST
 
-def init_laser():
-    # config I2C Bus
-    i2c_bus = I2C(id=1, sda=Pin(10), scl=Pin(11)) # I2C0 on GP8 & GP9
-    # print(i2c_bus.scan())  # Get the address (nb 41=0x29, 82=0x52)
-        
-    # Setup vl53l0 object
-    global vl53l0
-    vl53l0 = VL53L0X(i2c_bus)
-    vl53l0.set_Vcsel_pulse_period(vl53l0.vcsel_period_type[0], 18)
-    vl53l0.set_Vcsel_pulse_period(vl53l0.vcsel_period_type[1], 14)
+""" while True:
+    events["on_junction"] = (sensors["SL"] == 1 or sensors["SR"] == 1)
+    events["new_junction"] = (not events["prev_on_junction"]) and events["on_junction"]
 
-def rec_dist_laser():
-    # Start device
-    vl53l0.start()
-    # Read one sample
-    laser_distance = vl53l0.read()
-    # Stop device
-    vl53l0.stop()
-    return laser_distance
+    events["on_T"] = (sensors["SL"] == 1 and sensors["SR"] == 1)            # specifically T-shape / both side sensors active
+    events["new_T"] = (not events["prev_on_T"]) and events["on_T"]
 
+    # pretend we just crossed a junction (update events before calling)
+    # call detector using globals; pass previous laser_distance or None
+    laser_distance = upperP_lowO_R_detect(events, laser_distance, delivery, robot)
+    # print distance sample and state for debugging
+    #print(f"Distance reading: {laser_distance}mm")
+    print(f"Counter: {delivery['search_slot_counter']}")
+    print(f"Slot status: {delivery['slot_status']}")
 
-def upperP_lowO_R_detect(events, laser_distance, delivery, robot):
-    
-    # ONLY act if this is a BRAND NEW junction detection
-    if events["on_junction"] == True and not events["on_T"]:
-        # decide which distance sensor to use based on direction of travel
-        # 1. Safety check: stop the counter if we run out of slots (All slots have been cleared for a particular rack)
-        if delivery["search_slot_counter"] >= 6: # 6 slots
-            robot["target_rack_idx"] += 1
-            delivery["search_slot_counter"] = 0
-            delivery["slot_status"] = [0,0,0,0,0,0]
-            return
-
-        else:
-            motor_l.Forward(speed = 0)
-            motor_r.Forward(speed = 0)
-            # 2. Fire the laser ONCE
-            laser_distance = rec_dist_laser() 
-            print(f"Laser distance: {laser_distance}mm")
-            # 3. Update the CURRENT slot
-            if laser_distance < 100: 
-                delivery["R_detected"] = True
-                delivery["delivery_state"] = Delivery_States.pickup
-                delivery["ready_for_unloading"] = False
-                delivery["rack_state"] = Delivery_Rack_States.load_detected
-                delivery["search_slot_counter"] += 1
-            else:
-                delivery["slot_status"][delivery["search_slot_counter"]] = 1
-                delivery["search_slot_counter"] += 1
-                #mark the slot as cleared
-            return laser_distance
-
-init_laser() #initialize laser
-
-while True:
-    button_now = button.value()
-
-    if button_now == 1 and prev_button == 0:
-        if ticks_diff(ticks_ms(), last_press) > 200:
-            ON = not ON
-            last_press = ticks_ms()
-    
-    prev_button = button_now 
-
-    if not ON:
-        motor_l.Forward(speed = 0)
-        motor_r.Forward(speed = 0)
-        events["prev_on_junction"] = events["on_junction"]
-        events["prev_on_T"] = events["on_T"]
-        continue
-
-    elif ON:
-        sensors["SL"] = S1_sensor.value()
-        sensors["SR"] = S2_sensor.value()
-        events["on_junction"] = (sensors["SL"] == 1 or sensors["SR"] == 1)
-        events["new_junction"] = (not events["prev_on_junction"]) and events["on_junction"]
-
-        events["on_T"] = (sensors["SL"] == 1 and sensors["SR"] == 1)            # specifically T-shape / both side sensors active
-        events["new_T"] = (not events["prev_on_T"]) and events["on_T"]
-        line_follow_step(sensors["S1"], sensors["S2"], 80, 20)
-        # pretend we just crossed a junction (update events before calling)
-        # call detector using globals; pass previous laser_distance or None
-        if events["new_junction"] == True:
-            laser_distance = upperP_lowO_R_detect(events, laser_distance, delivery, robot)
-        # print distance sample and state for debugging
-        #print(f"Distance reading: {laser_distance}mm")
-            print(f"Counter: {delivery['search_slot_counter']}")
-            print(f"Slot status: {delivery['slot_status']}")
-            sleep(0.5)
-    # loop continues indefinitely; break manually when done
+    sleep(2)
+    # loop continues indefinitely; break manually when done """
 
 
 
