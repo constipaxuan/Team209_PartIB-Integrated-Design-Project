@@ -839,7 +839,7 @@ while True:
 #Resistor detection TEST (Now with line following)
 
 laser_distance = None
-init_laser_R()
+init_laser_L()
 
 while True:
 
