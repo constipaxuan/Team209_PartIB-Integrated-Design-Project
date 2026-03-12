@@ -514,7 +514,7 @@ def rack_search(sensors, events, robot, delivery):
 
             robot["motion"] = Motion.follow
 
-def timed_turn_step(robot):
+def timed_turn_step(robot, time_ms):
     if not robot["timed_turn_started"]:
         robot["timed_turn_started"] = True
         robot["timed_turn_start"] = ticks_ms()
@@ -526,7 +526,7 @@ def timed_turn_step(robot):
         motor_l.Forward(speed=0)
         motor_r.Forward(speed=80)
 
-    if ticks_diff(ticks_ms(), robot["timed_turn_start"]) > 1000:   # modify according to needs.
+    if ticks_diff(ticks_ms(), robot["timed_turn_start"]) > time_ms:   # modify according to needs.
         motor_l.Forward(speed=0)
         motor_r.Forward(speed=0)
         robot["motion"] = Motion.follow
@@ -540,7 +540,7 @@ def handler_orange_L_delivery(sensors, events, robot, delivery):
     if delivery["rack_state"] == Delivery_Rack_States.load_detected:
  
         if robot["motion"] == Motion.turning:
-            robot["turn_complete"] = timed_turn_step(robot)
+            robot["turn_complete"] = timed_turn_step(robot, 1000)
             if robot["turn_complete"]:
                 print("APPROACHING 1")
                 delivery["rack_state"] = Delivery_Rack_States.approaching
@@ -550,16 +550,16 @@ def handler_orange_L_delivery(sensors, events, robot, delivery):
                 robot["turn_complete"] = False
         
     elif delivery["rack_state"] == Delivery_Rack_States.approaching:
-        print("APPROACHING 2")
+        #print("APPROACHING 2")
         if not delivery["timed_rev_started"]:
                 delivery["timed_rev_started"] = True
                 delivery["timed_rev_start"] = ticks_ms()
 
         else:
-            print("FOLLOW")
+            #print("FOLLOW")
             line_follow_step(sensors["S1"], sensors["S2"], 80, 20)
 
-            if ticks_diff(ticks_ms(), delivery["timed_rev_start"]) > 1100:   # modify according to needs.
+            if ticks_diff(ticks_ms(), delivery["timed_rev_start"]) > 700:   # modify according to needs.
                 motor_l.Forward(speed=0)
                 motor_r.Forward(speed=0)
                 delivery["timed_rev_started"] = False
@@ -588,7 +588,7 @@ def handler_orange_L_delivery(sensors, events, robot, delivery):
                 motor_l.Reverse(speed=80)
                 motor_r.Reverse(speed=80)
 
-            if ticks_diff(ticks_ms(), delivery["timed_rev_start"]) > 1100:   # modify according to needs.
+            if ticks_diff(ticks_ms(), delivery["timed_rev_start"]) > 900:   # modify according to needs.
                 motor_l.Forward(speed=0)
                 motor_r.Forward(speed=0)
                 robot["motion"] = Motion.follow
@@ -604,7 +604,7 @@ def handler_orange_L_delivery(sensors, events, robot, delivery):
                 print("start timed turn!")
             
             if robot["motion"] == Motion.turning:
-                robot["turn_complete"] = timed_turn_step(robot)
+                robot["turn_complete"] = timed_turn_step(robot, 1200)
                 if robot["turn_complete"]:
                     robot["turn_complete"] = False
                     robot["turn_state"] = Turn_State.start
