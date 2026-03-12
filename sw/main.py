@@ -496,6 +496,8 @@ def rack_search(sensors, events, robot, delivery):
                 elif robot["direction"] == Direction.acw:
                     robot["turn_dir"] = Turn_Direction.left
 
+                print("LOAD DETECTED")
+
                 return
             else:
                 delivery["slot_status"][delivery["search_slot_counter"]] = 1
@@ -524,7 +526,7 @@ def timed_turn_step(robot):
         motor_l.Forward(speed=0)
         motor_r.Forward(speed=80)
 
-    if ticks_diff(ticks_ms(), robot["timed_turn_start"]) > 2000:   # modify according to needs.
+    if ticks_diff(ticks_ms(), robot["timed_turn_start"]) > 1000:   # modify according to needs.
         motor_l.Forward(speed=0)
         motor_r.Forward(speed=0)
         robot["motion"] = Motion.follow
@@ -540,6 +542,7 @@ def handler_orange_L_delivery(sensors, events, robot, delivery):
         if robot["motion"] == Motion.turning:
             robot["turn_complete"] = timed_turn_step(robot)
             if robot["turn_complete"]:
+                print("APPROACHING 1")
                 delivery["rack_state"] = Delivery_Rack_States.approaching
                 motor_l.Forward(speed = 0)
                 motor_r.Forward(speed = 0)
@@ -547,11 +550,13 @@ def handler_orange_L_delivery(sensors, events, robot, delivery):
                 robot["turn_complete"] = False
         
     elif delivery["rack_state"] == Delivery_Rack_States.approaching:
+        print("APPROACHING 2")
         if not delivery["timed_rev_started"]:
                 delivery["timed_rev_started"] = True
                 delivery["timed_rev_start"] = ticks_ms()
 
         else:
+            print("FOLLOW")
             line_follow_step(sensors["S1"], sensors["S2"], 80, 20)
 
             if ticks_diff(ticks_ms(), delivery["timed_rev_start"]) > 1100:   # modify according to needs.
