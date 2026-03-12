@@ -805,7 +805,7 @@ while True:
 
 init_laser()
 
- while True:
+''' while True:
     events["on_junction"] = (sensors["SL"] == 1 or sensors["SR"] == 1)
     events["new_junction"] = (not events["prev_on_junction"]) and events["on_junction"]
 
@@ -821,7 +821,8 @@ init_laser()
     print(f"Slot status: {delivery['slot_status']}")
 
     sleep(2)
-    # loop continues indefinitely; break manually when done """
+    # loop continues indefinitely; break manually when done 
+    '''
 
 
 
