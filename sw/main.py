@@ -683,7 +683,7 @@ while True:
         prev_on_T = on_T """
 
 # -- LOOP + MAPPING TEST ---
-while True:
+""" while True:
     sensors["S1"] = S1_sensor.value()
     sensors["S2"] = S2_sensor.value()
     sensors["SL"] = SL_sensor.value()
@@ -801,13 +801,13 @@ while True:
                     
     
         events["prev_on_junction"] = events["on_junction"]
-        events["prev_on_T"] = events["on_T"]
+        events["prev_on_T"] = events["on_T"] """
 
 #Resistor detection TEST (Now with line following)
 
 init_laser_R()
 
-''' while True:
+while True:
     events["on_junction"] = (sensors["SL"] == 1 or sensors["SR"] == 1)
     events["new_junction"] = (not events["prev_on_junction"]) and events["on_junction"]
 
@@ -816,15 +816,15 @@ init_laser_R()
     line_follow_step(sensors["S1"], sensors["S2"], 80, 20)
     # pretend we just crossed a junction (update events before calling)
     # call detector using globals; pass previous laser_distance or None
-    R_detect(events, laser_distance, delivery, robot)
+    laser_distance = R_detect(events, laser_distance, delivery, robot)
+
     # print distance sample and state for debugging
-    #print(f"Distance reading: {laser_distance}mm")
+    print(f"Distance reading: {laser_distance}mm")
     print(f"Counter: {delivery['search_slot_counter']}")
     print(f"Slot status: {delivery['slot_status']}")
 
     sleep(2)
     # loop continues indefinitely; break manually when done 
-    '''
 
 
 
