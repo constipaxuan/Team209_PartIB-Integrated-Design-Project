@@ -115,8 +115,6 @@ delivery = {
     "rack_switching_bcount" : 0,
     "rack_cleared" : False,
     "getout_state": Get_Out_of_branch.Rev_Branch,
-    "timed_turn_start": 0,
-    "timed_turn_started": False,
     "timed_rev_started": False,
     "timed_rev_start": 0,
     "last_branch_time": 0
@@ -491,6 +489,7 @@ def rack_search(sensors, events, robot, delivery):
                 robot["motion"] = Motion.turning
                 robot["turn_state"] = Turn_State.start
                 robot["turn_complete"] = False
+                robot["timed_turn_started"] = False
 
                 if robot["direction"] == Direction.cw:
                     robot["turn_dir"] = Turn_Direction.right
@@ -519,11 +518,11 @@ def timed_turn_step(robot):
         robot["timed_turn_start"] = ticks_ms()
 
     if robot["turn_dir"] == Turn_Direction.left:
-        motor_l.Forward(speed=60)
-        motor_r.Forward(speed=20)
+        motor_l.Forward(speed=80)
+        motor_r.Forward(speed=0)
     elif robot["turn_dir"] == Turn_Direction.right:
-        motor_l.Forward(speed=20)
-        motor_r.Forward(speed=60)
+        motor_l.Forward(speed=0)
+        motor_r.Forward(speed=80)
 
     if ticks_diff(ticks_ms(), robot["timed_turn_start"]) > 2000:   # modify according to needs.
         motor_l.Forward(speed=0)
@@ -543,7 +542,7 @@ def handler_orange_L_delivery(sensors, events, robot, delivery):
             if robot["turn_complete"]:
                 delivery["rack_state"] = Delivery_Rack_States.approaching
                 motor_l.Forward(speed = 0)
-                motor_l.Forward(speed = 0)
+                motor_r.Forward(speed = 0)
                 robot["motion"] = Motion.follow
                 robot["turn_complete"] = False
         
@@ -600,7 +599,7 @@ def handler_orange_L_delivery(sensors, events, robot, delivery):
                 print("start timed turn!")
             
             if robot["motion"] == Motion.turning:
-                timed_turn_step(robot)
+                robot["turn_complete"] = timed_turn_step(robot)
                 if robot["turn_complete"]:
                     robot["turn_complete"] = False
                     robot["turn_state"] = Turn_State.start
