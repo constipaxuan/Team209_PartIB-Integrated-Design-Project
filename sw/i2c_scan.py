@@ -1,6 +1,6 @@
 from machine import Pin, I2C
 from time import sleep_ms
-from VL53L0X import VL53L0X
+from libs.VL53L0X.VL53L0X import VL53L0X
 
 i2c = I2C(0, scl=Pin(9), sda=Pin(8), freq=100000)
 sleep_ms(100)
