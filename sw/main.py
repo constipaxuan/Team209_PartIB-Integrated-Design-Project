@@ -347,39 +347,6 @@ OB_counter = 0
 last_press = 0
 
 
-# defines turning sequence in line following test 5 Mar.
-def test_main_loop(robot, events, test_corner):
-    if test_corner == Test_Corners.upper_right:
-        if robot["gnd_loc_idx"] == :
-            robot["tnt_state"] = TNT_states.TNT
-            print("TNT")
-            robot["turn_dir"] = Turn_Direction.left
-            Red.value(1)
-    if test_corner == Test_Corners.upper_left:
-        if events["new_junction"]:
-            robot["tnt_state"] = TNT_states.TNT
-            print("TNT")
-            robot["turn_dir"] = Turn_Direction.left
-            Green.value(1)
-    if test_corner == Test_Corners.unloading:
-        if OB_counter == 6:
-            robot["tnt_state"] = TNT_states.TNT
-            print("TNT")
-            robot["turn_dir"] = Turn_Direction.left
-            OB_counter = 0
-            Yellow.value(1)
-        else:
-            if events["new_T"]:
-                OB_counter = 0
-            elif events["new_junction"]:
-                OB_counter += 1
-            robot["tnt_state"] = TNT_states.nil
-    if test_corner == Test_Corners.back_to_start:
-        if events["new_junction"]:
-            robot["tnt_state"] = TNT_states.TNT
-            robot["turn_dir"] = Turn_Direction.right
-    
-    return test_corner, OB_counter
 
 
 corners = [
