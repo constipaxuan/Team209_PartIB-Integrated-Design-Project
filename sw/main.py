@@ -348,9 +348,9 @@ last_press = 0
 
 
 # defines turning sequence in line following test 5 Mar.
-def test_main_loop(robot, events, test_corner, OB_counter):
+def test_main_loop(robot, events, test_corner):
     if test_corner == Test_Corners.upper_right:
-        if events["new_T"]:
+        if robot["gnd_loc_idx"] == :
             robot["tnt_state"] = TNT_states.TNT
             print("TNT")
             robot["turn_dir"] = Turn_Direction.left
@@ -915,14 +915,6 @@ while True:
     events["on_T"] = (sensors["SL"] == 1 and sensors["SR"] == 1)            # specifically T-shape / both side sensors active
     events["new_T"] = (not events["prev_on_T"]) and events["on_T"]
 
-    #if events["new_junction"]:
-    #    events["junction_type"] = detect_junction_type(sensors["SL"], sensors["SR"])
-    #else:
-    #    events["junction_type"] = Junctions.nil
-    #
-    #robot["location"] = mapping(robot["location"], robot["mode"], robot["direction"], events["junction_type"])
-
-
     # non blocking debouncing. this allows sensors to still be read while button is being debounced, preventing missed junctions.
     if button_now == 1 and prev_button == 0:
         if ticks_diff(ticks_ms(), last_press) > 200:
@@ -940,11 +932,11 @@ while True:
         
     elif ON:
 
-        #if events["new_junction"] and robot["motion"] == Motion.follow:
-        #    if robot["direction"] == Direction.acw:
-        #        robot["gnd_loc_idx"] = (robot["gnd_loc_idx"] + 1) % N
-        #    if robot["direction"] == Direction.cw:
-        #        robot["gnd_loc_idx"] = (robot["gnd_loc_idx"] - 1) % N
+        if events["new_junction"] and robot["motion"] == Motion.follow:
+            if robot["direction"] == Direction.acw:
+                robot["gnd_loc_idx"] = (robot["gnd_loc_idx"] + 1) % N
+            if robot["direction"] == Direction.cw:
+                robot["gnd_loc_idx"] = (robot["gnd_loc_idx"] - 1) % N
 
         if robot["mode"] == Mode.start:
             get_out_of_box(sensors, events, robot, delivery)
@@ -964,64 +956,20 @@ while True:
 
         
         else:
-            if robot["tnt_state"] == TNT_states.nil:
-                test_corner, OB_counter = test_main_loop(robot, events, test_corner, OB_counter)
 
+            if robot["gnd_loc_idx"] in [10, 12, 20, 0]:
+                robot["motion"] = Motion.turning
+            
             if robot["motion"] == Motion.follow:
-                if robot["tnt_state"] == TNT_states.TNT:
-                    if not events["on_junction"]:
-                        robot["tnt_state"] = TNT_states.waiting
-                        print("waiting")
-                    line_follow_step(sensors["S1"], sensors["S2"], 80, 20)
-
-
-                elif robot["tnt_state"] == TNT_states.waiting:
-                    if events["new_junction"]:
-                        robot["tnt_state"] = TNT_states.NT_is_here
-                        print("NT")
-                        Red.value(0)
-                        Green.value(0)
-                        Yellow.value(0)
-                    line_follow_step(sensors["S1"], sensors["S2"], 80, 20)
-
-                
-                elif robot["tnt_state"] == TNT_states.NT_is_here:
-                    sensors["SL"] = SL_sensor.value()
-                    sensors["SR"] = SR_sensor.value()
-                    motor_l.Forward(speed = 0)
-                    motor_r.Forward(speed = 0)
-                    robot["motion"] = Motion.turning
-                    robot["turn_complete"] = False
-                    robot["turn_state"] = Turn_State.start
-                    Red.value(1)
-
-                else:
-                    line_follow_step(sensors["S1"], sensors["S2"], 80, 20)
-
+                line_follow_step(sensors["S1"], sensors["S2"], 80, 20)
             elif robot["motion"] == Motion.turning:
                 if not robot["turn_complete"]:
                     robot["turn_state"], robot["turn_complete"] = turn_v4(robot["turn_dir"], sensors["S1"], sensors["S2"], robot["turn_state"], motor_l, motor_r)
-
-                else:
-                    robot["motion"] = Motion.follow
-                    robot["turn_complete"] = False
-                    robot["tnt_state"] = TNT_states.nil
-                    print(f"location:", robot["location"])
-                    Red.value(0)
-                    Green.value(0)
-                    Yellow.value(0)
-                    if corner_idx < len(corners) - 1:
-                        corner_idx += 1
-                    else:
-                        corner_idx = 0
-                        if events["on_T"]:
-                            motor_l.Forward(speed = 0)
-                            motor_r.Forward(speed = 0)
-                        else:
-                            line_follow_step(sensors["S1"], sensors["S2"], 80, 20)
-                    
-                    test_corner = corners[corner_idx]
-                    
+                    if robot["turn_complete"]:
+                        robot["turn_state"] = Turn_State.start
+                        robot["turn_complete"] = False
+                        robot["motion"] = Motion.follow
+                        robot["just_turned"] = True       
     
         events["prev_on_junction"] = events["on_junction"]
         events["prev_on_T"] = events["on_T"]
