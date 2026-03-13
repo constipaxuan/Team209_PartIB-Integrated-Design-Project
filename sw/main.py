@@ -397,16 +397,15 @@ def init_laser_L():
 
 #Code for reading distance from laser. detect functons call this.
 def rec_dist_laser():
-    # Start device
-    vl53l0.start()
     # Read one sample
     laser_distance = vl53l0.read()
     # Stop device
-    vl53l0.stop()
+    #vl53l0.stop()
     return laser_distance
 
 
-
+    
+    
 # --- RESISTOR DETECTION ---
 def rack_search(sensors, events, robot, delivery):
     if robot["motion"] == Motion.follow:
@@ -418,11 +417,12 @@ def rack_search(sensors, events, robot, delivery):
             else:
                 line_follow_step(sensors["S1"], sensors["S2"], 80, 20)
         
+
     elif robot["motion"] == Motion.stopped_for_scan:
         motor_l.Forward(speed=0)
         motor_r.Forward(speed=0)
 
-        if ticks_diff(ticks_ms(), robot["scan_start"]) >= 100: # edit
+        if ticks_diff(ticks_ms(), robot["scan_start"]) >= 30: # edit
             laser_distance = rec_dist_laser()
             print("NEW distance:", laser_distance)
             print("slot counter:", delivery["search_slot_counter"])
@@ -438,33 +438,38 @@ def rack_search(sensors, events, robot, delivery):
 
                 robot["turn_complete"] = False
                 robot["timed_turn_started"] = False
+                robot["motion"] = Motion.turning
 
                 if robot["direction"] == Direction.cw:
                     robot["turn_dir"] = Turn_Direction.right
                 elif robot["direction"] == Direction.acw:
                     robot["turn_dir"] = Turn_Direction.left
-
-                robot["turn_complete"] = timed_turn_step(robot, 1000)
-                if robot["turn_complete"] == True:
-                    robot["mode"] = Mode.delivery
-                    robot["motion"] = Motion.follow
-                    
-
+                
                 return
+
             else:
                 delivery["slot_status"][delivery["search_slot_counter"]] = 1
-
-            if delivery["search_slot_counter"] < 6:
-                delivery["search_slot_counter"] += 1
-            else:
-                delivery["search_slot_counter"] = 0
                 robot["motion"] = Motion.follow
-                delivery["rack_cleared"] = True
-                robot["target_rack_idx"] += 1
-                delivery["slot_status"] = [0,0,0,0,0,0]
-                return
 
-            robot["motion"] = Motion.follow
+                if delivery["search_slot_counter"] < 5: #changed 6 to 5
+                    delivery["search_slot_counter"] += 1
+                else:
+                    delivery["search_slot_counter"] = 0
+                    robot["motion"] = Motion.follow
+                    delivery["rack_cleared"] = True
+                    robot["target_rack_idx"] += 1
+                    delivery["slot_status"] = [0,0,0,0,0,0]
+                    robot["motion"] = Motion.follow
+                    return
+    
+    elif robot["motion"] == Motion.turning:
+        robot["turn_complete"] = timed_turn_step(robot, 1000)
+        if robot["turn_complete"] == True:
+            robot["mode"] = Mode.delivery
+            robot["motion"] = Motion.follow               
+            return
+
+    
 
 
 
@@ -915,6 +920,8 @@ laser_distance = None
 init_laser_R()
 robot["mode"] = Mode.search
 robot["direction"] = Direction.cw
+# Start device
+vl53l0.start()
 
 while True:
 
