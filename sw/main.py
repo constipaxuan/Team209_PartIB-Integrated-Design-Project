@@ -392,42 +392,35 @@ corners = [
 corner_idx = 0
 
 #This is the code for initializing laser, need to run everytime we want to use the laser on the right (for lower orange upper purple)
-def init_laser_R():
+def rec_dist_laserR():
     # config I2C Bus
     i2c_bus = I2C(id=1, sda=Pin(10), scl=Pin(11), freq=100000) # I2C1 on GP10 & GP11
-    # print(i2c_bus.scan())  # Get the address (nb 41=0x29, 82=0x52)
-        
     # Setup vl53l0 object
-    global vl53l0
-    vl53l0 = VL53L0X(i2c_bus)
-    vl53l0.set_Vcsel_pulse_period(vl53l0.vcsel_period_type[0], 18)
-    vl53l0.set_Vcsel_pulse_period(vl53l0.vcsel_period_type[1], 14)
+    vl53l0_R
+    vl53l0_R = VL53L0X(i2c_bus)
+    vl53l0_R.set_Vcsel_pulse_period(vl53l0_R.vcsel_period_type[0], 18)
+    vl53l0_R.set_Vcsel_pulse_period(vl53l0_R.vcsel_period_type[1], 14)
+    laser_distance = vl53l0_R.read()
+    return laser_distance
 
 #This is the code for initializing laser on the left (for lower purple upper orange)
-def init_laser_L():
+def rec_dist_laserL():
     # config I2C Bus
     i2c_bus = I2C(id=0, sda=Pin(8), scl=Pin(9)) # I2C0 on GP8 & GP9
     # print(i2c_bus.scan())  # Get the address (nb 41=0x29, 82=0x52)
         
     # Setup vl53l0 object
-    global vl53l0
-    vl53l0 = VL53L0X(i2c_bus)
-    vl53l0.set_Vcsel_pulse_period(vl53l0.vcsel_period_type[0], 18)
-    vl53l0.set_Vcsel_pulse_period(vl53l0.vcsel_period_type[1], 14)
-
-
-#Code for reading distance from laser. detect functons call this.
-def rec_dist_laser():
-    # Read one sample
-    laser_distance = vl53l0.read()
-    # Stop device
-    #vl53l0.stop()
+    vl53l0_L
+    vl53l0_L = VL53L0X(i2c_bus)
+    vl53l0_L.set_Vcsel_pulse_period(vl53l0_L.vcsel_period_type[0], 18)
+    vl53l0_L.set_Vcsel_pulse_period(vl53l0_L.vcsel_period_type[1], 14)
+    laser_distance = vl53l0_L.read()
     return laser_distance
 
 
     
     
-# --- RESISTOR DETECTION - Keep as it is---
+# --- RESISTOR DETECTION ---
 def rack_search(sensors, events, robot, delivery):
     if robot["motion"] == Motion.follow:
             if robot["gnd_rack_idx"] in [3, 4, 5, 6, 7, 8, 14, 15, 16, 17, 18 ,19]:
@@ -444,7 +437,10 @@ def rack_search(sensors, events, robot, delivery):
         motor_r.Forward(speed=0)
 
         if ticks_diff(ticks_ms(), robot["scan_start"]) >= 30: # edit
-            laser_distance = rec_dist_laser()
+            if target_racks[robot["target_rack_idx"]] == Location.rack_purple_L or target_racks[robot["target_rack_idx"]] == Location.rack_orange_U:
+                laser_distance = rec_dist_laserL()
+            elif target_racks[robot["target_rack_idx"]] == Location.rack_purple_U or target_racks[robot["target_rack_idx"]] == Location.rack_orange_L:
+                laser_distance = rec_dist_laserR()
             print("NEW distance:", laser_distance)
             print("slot counter:", delivery["search_slot_counter"])
             print("slot status:", delivery["slot_status"])
@@ -667,9 +663,9 @@ def delivery_from_orange_L(sensors, events, robot, delivery):
             handler_blue_bay(sensors, events, robot, delivery) # becomes mode search after this func ends.
 
 # FUNCTION FOR OPENING AND CLOSING THE 3 WIRE CLAW SERVO
-#initialize the servo with 3 wires
-servo = PWM(Pin(15))
-servo.freq(50) # Standard 50Hz frequency
+#initialize the servo with 3 wires (Different servos should be different pins)
+servo_claw = PWM(Pin(13))
+servo_claw.freq(50) # Standard 50Hz frequency
 
 def claw(angle):
     # Map 0-270 degrees to 500-2500 microseconds
@@ -677,20 +673,20 @@ def claw(angle):
     # 50Hz period is 20ms. 500us = 2.5% duty. 2500us = 12.5% duty.
     pulse_width = 500 + (angle / 270) * 2000
     duty = int((pulse_width / 20000) * 65535)
-    servo.duty_u16(duty)
+    servo_claw.duty_u16(duty)
 
 
 
 # FUNCTION FOR TURNING THE PLATFORM THAT HOLDS THE CLAW, 4 wire servo
 # Initialize the servo with 4 wires
-servo = PWM(Pin(15)) #QN: is this pin correct? It shares the same pin as the 3 wire servo
-servo.freq(50)
+servo_tilt = PWM(Pin(15)) #QN: is this pin correct? It shares the same pin as the 3 wire servo
+servo_tilt.freq(50)
 feedback = ADC(Pin(26)) #this is where the white wire goes
 
 def turn_claw(angle):
     pulse_width = 500 + (angle / 270) * 2000
     duty = int((pulse_width / 20000) * 65535)
-    servo.duty_u16(duty)
+    servo_tilt.duty_u16(duty)
 
 #FUNCTION FOR MEASURING THE RESISTANCE ONCE GRABBED AND LIGHTS APPROPRITE LED UP
 def R_measure():
@@ -1201,13 +1197,3 @@ while True:
             print(f"Distance reading: {laser_distance}mm")
             print(f"Counter: {delivery['search_slot_counter']}")
             print(f"Slot status: {delivery['slot_status']}") """
-
-       
-
-
-
-
-
-
-
-
