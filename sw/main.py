@@ -407,7 +407,7 @@ def rec_dist_laser():
 
 
 
-
+# --- RESISTOR DETECTION ---
 def rack_search(sensors, events, robot, delivery):
     if robot["motion"] == Motion.follow:
             if events["new_junction"] and not events["new_T"]:
@@ -436,7 +436,6 @@ def rack_search(sensors, events, robot, delivery):
                 delivery["rack_state"] = Delivery_Rack_States.approaching
                 delivery["search_slot_counter"] += 1
 
-                robot["motion"] = Motion.turning
                 robot["turn_complete"] = False
                 robot["timed_turn_started"] = False
 
