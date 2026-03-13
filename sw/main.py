@@ -414,40 +414,6 @@ def rec_dist_laser():
 
 
 #Code for detecting whether there is a resistor or not for each slot
-def R_detect(events, laser_distance, delivery, robot):
-#QN: after I detect a resistor, how do I connect the turning function after this? Turning left or right to collect a resistor depends on the rack
-    # ONLY act if this is a BRAND NEW junction detection (Does the new junction work here?)
-    if events["new_junction"] and not events["new_T"]:
-        # decide which distance sensor to use based on direction of travel
-        # 1. Safety check: stop the counter if we run out of slots (All slots have been cleared for a particular rack)
-        if delivery["search_slot_counter"] >= 6: # 6 slots
-            robot["target_rack_idx"] += 1
-            delivery["search_slot_counter"] = 0
-            delivery["slot_status"] = [0,0,0,0,0,0] #still need to integrate this into wider system so that it also marks the rack as cleared
-            return
-
-        else:
-            # 2. Find laser distance, fire once
-            laser_distance = rec_dist_laser()
-             
-            # 3. Update the CURRENT slot
-            if laser_distance < 100: 
-                delivery["R_detected"] = True
-                delivery["delivery_state"] = Delivery_States.pickup
-                delivery["ready_for_unloading"] = False
-                delivery["rack_state"] = Delivery_Rack_States.load_detected
-                delivery["search_slot_counter"] += 1
-                robot["mode"] = Mode.delivery
-                return
-            else:
-                delivery["slot_status"][delivery["search_slot_counter"]] = 1
-                delivery["search_slot_counter"] += 1
-                #mark the slot as cleared
-            return laser_distance
-    
-    else:
-        return None
-
 def rack_search(sensors, events, robot, delivery):
     if robot["motion"] == Motion.follow:
             if events["new_junction"] and not events["new_T"]:
@@ -898,13 +864,3 @@ while True:
             print(f"Distance reading: {laser_distance}mm")
             print(f"Counter: {delivery['search_slot_counter']}")
             print(f"Slot status: {delivery['slot_status']}") """
-
-       
-
-
-
-
-
-
-
-

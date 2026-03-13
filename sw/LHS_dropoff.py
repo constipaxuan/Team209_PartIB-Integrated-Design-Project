@@ -3,7 +3,7 @@
 
 from behaviour import Turn_Direction, Turn_State, Unloading_States
 from locations import Junctions, Resistor_Color
-from main import S1, S2, SR, detect_junction_type, turn_v4, line_follow_step, Motion, motor_l, motor_r
+from main import S1, S2, SR, SL, detect_junction_type, turn_v4, line_follow_step, Motion, motor_l, motor_r
 from R_pickup_N_measure import release
 from decision import sensors, robot, events, delivery
 
