@@ -4,7 +4,7 @@ from machine import Pin, PWM, I2C, ADC
 from libs.VL53L0X.VL53L0X import VL53L0X
 from time import sleep, sleep_ms, ticks_ms, ticks_diff
 #from enum import Enum
-from behaviour import Turn_Direction, Turn_State, Mode, Start_States, TNT_states, Delivery_States, Delivery_Rack_States 
+from behaviour import Turn_Direction, Turn_State, Mode, Start_States, TNT_states, Delivery_States, Delivery_Rack_States, Unloading_States
 from locations import Junctions, Location, Direction, Resistor_Color
 from map_state import mapping
 
@@ -556,6 +556,88 @@ def handler_orange_L_delivery(sensors, events, robot, delivery):
             
             line_follow_step(sensors["S1"], sensors["S2"], 80, 20)
 
+def LHS_dropoff(sensors, events, robot, delivery):
+    # ASSIGNING TARGET BAY
+    if delivery["resistor_color"] == Resistor_Color.red: 
+        delivery["target_bay"] = 4 # Red, which is the rightmost bay
+    elif delivery["resistor_color"] == Resistor_Color.yellow: 
+        delivery["target_bay"] = 3 # Yellow
+    elif delivery["resistor_color"] == Resistor_Color.green: 
+        delivery["target_bay"] = 1 # Green, skip 1 to skip the starting box
+    elif delivery["resistor_color"] == Resistor_Color.blue: 
+        delivery["target_bay"] = 0 # Blue
+
+
+    # State machine 
+    if delivery["unloading_state"] == Unloading_States.finding_bay:
+            
+        # TARGET DETECTION  
+        # case when the target bay is blue, no need to turn -- blue bay is literally straight ahead. 
+        if delivery["target_bay"] == 0:
+            if events["new_junction"]: # 1st junction reached.
+                delivery["unloading_state"] = Unloading_States.found_bay
+                
+        elif delivery["target_bay"] != 0:
+        # Turning into unloading corridoor if target bay is not blue. Motion = turning when correct bay is found. Handled in decision loop.
+            if events["new_junction"] and robot["motion"] != Motion.turning:
+                robot["motion"] = Motion.turning
+                robot["turn_state"] = Turn_State.start
+                robot["turn_dir"] = Turn_Direction.left
+                    
+    elif delivery["target_bay"] != 0 and delivery["unloading_state"] == Unloading_States.counting_bays:
+        if sensors["SR"] == 1 and not delivery["bay_latch"]: # if new_junction: (includes NOt doublecounting)
+            delivery["drop_off_bay"] += 1
+            delivery["bay_latch"] = True # Block further counting until we leave the line
+            #print(f"Passing branch {drop_off_bay}")
+        
+        
+        if sensors["SR"] == 0:
+            delivery["bay_latch"] = False # Reset the latch once we are back on black
+
+        if delivery["drop_off_bay"] == delivery["target_bay"] and robot["motion"] != Motion.turning:
+            print("Target reached! Turning into bay")
+            robot["motion"] = Motion.turning
+            robot["turn_state"] = Turn_State.start
+            robot["turn_dir"] = Turn_Direction.right
+
+    # --- MODIFIED FOR TESTING W/O GRABBER ---
+    elif delivery["unloading_state"] == Unloading_States.found_bay:
+        if events["new_T"]: #arrived at box
+            motor_l.Forward(speed = 0)
+            motor_r.Forward(speed = 0)
+            #release() #release grabber
+            delivery["unloading_state"] = Unloading_States.done
+    
+    # Motion Control: Called exactly ONCE per iteration
+    if robot["motion"] == Motion.follow:
+        line_follow_step(sensors["S1"], sensors["S2"], 80, 20)
+    elif robot["motion"] == Motion.turning:
+        robot["turn_state"], robot["turn_complete"] = turn_v4(robot["turn_dir"], sensors["S1"], sensors["S2"], robot["turn_state"], motor_l, motor_r) #turn into box
+        if robot["turn_complete"]:
+            robot["turn_state"] = Turn_State.start #reset turn state for next turn
+            robot["turn_complete"] = False
+            robot["motion"] = Motion.follow 
+            
+            if delivery["unloading_state"] == Unloading_States.finding_bay:
+                delivery["unloading_state"] = Unloading_States.counting_bays
+            elif delivery["unloading_state"] == Unloading_States.counting_bays:
+                delivery["unloading_state"] = Unloading_States.found_bay
+
+def delivery_from_orange_L(sensors, events, robot, delivery):
+    if delivery["delivery_state"] == Delivery_States.pickup:
+        if delivery["ready_for_unloading"] == False:
+            handler_orange_L_delivery(sensors, events, robot, delivery)
+        elif delivery["ready_for_unloading"] == True:
+            delivery["ready_for_unloading"] = False #reset for next load
+            delivery["delivery_state"] = Delivery_States.unloading
+        
+    elif delivery["delivery_state"] == Delivery_States.unloading:
+        LHS_dropoff(sensors, events, robot, delivery) 
+        if delivery["unloading_state"] == Unloading_States.done:
+            motor_l.Forward(speed = 0)
+            motor_r.Forward(speed = 0)
+
+
 # FUNCTION FOR OPENING AND CLOSING THE 3 WIRE CLAW SERVO
 #initialize the servo with 3 wires
 servo = PWM(Pin(15))
@@ -951,13 +1033,16 @@ while True:
         motor_r.Forward(speed = 0)
         events["prev_on_junction"] = events["on_junction"]
         events["prev_on_T"] = events["on_T"]
+        vl53l0.stop()
         continue
 
     elif ON:
         if robot["mode"] == Mode.search:
             rack_search(sensors, events, robot, delivery)
         elif robot["mode"] == Mode.delivery:
-            handler_orange_L_delivery(sensors, events, robot, delivery)
+            if delivery["delivery_state"] == Delivery_States.pickup:
+                handler_orange_L_delivery(sensors, events, robot, delivery)
+            elif delivery["delivery_state"] == Delivery_States.unloading
 
         events["prev_on_junction"] = events["on_junction"]
         events["prev_on_T"] = events["on_T"]
