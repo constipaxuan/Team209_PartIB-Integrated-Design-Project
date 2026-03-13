@@ -420,7 +420,7 @@ def rec_dist_laserL():
 
     
     
-# --- RESISTOR DETECTION ---
+# --- RESISTOR DETECTION - Keep as it is---
 def rack_search(sensors, events, robot, delivery):
     if robot["motion"] == Motion.follow:
             if robot["gnd_rack_idx"] in [3, 4, 5, 6, 7, 8, 14, 15, 16, 17, 18 ,19]:
