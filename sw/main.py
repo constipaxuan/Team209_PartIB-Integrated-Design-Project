@@ -479,6 +479,7 @@ def rack_search(sensors, events, robot, delivery):
             print("slot status:", delivery["slot_status"])
 
             if laser_distance < 100:
+                print("R detected")
                 delivery["R_detected"] = True
                 delivery["delivery_state"] = Delivery_States.pickup
                 delivery["ready_for_unloading"] = False
@@ -497,6 +498,8 @@ def rack_search(sensors, events, robot, delivery):
                 robot["turn_complete"] = timed_turn_step(robot, 1000)
                 if robot["turn_complete"] == True:
                     robot["mode"] = Mode.delivery
+                    robot["motion"] = Motion.follow
+                    print("turn complete")
 
                 return
             else:
@@ -518,6 +521,7 @@ def timed_turn_step(robot, time_ms):
     if not robot["timed_turn_started"]:
         robot["timed_turn_started"] = True
         robot["timed_turn_start"] = ticks_ms()
+        print("time start")
 
     if robot["turn_dir"] == Turn_Direction.left:
         motor_l.Forward(speed=80)
@@ -531,6 +535,7 @@ def timed_turn_step(robot, time_ms):
         motor_r.Forward(speed=0)
         robot["motion"] = Motion.follow
         robot["timed_turn_started"] = False
+        print("1000ms passed")
         return True
 
     return False
