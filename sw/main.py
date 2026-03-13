@@ -371,43 +371,34 @@ corners = [
 corner_idx = 0
 
 #This is the code for initializing laser, need to run everytime we want to use the laser on the right (for lower orange upper purple)
-def init_laser_R():
+def rec_dist_laserR():
     # config I2C Bus
     i2c_bus = I2C(id=1, sda=Pin(10), scl=Pin(11), freq=100000) # I2C1 on GP10 & GP11
-    # print(i2c_bus.scan())  # Get the address (nb 41=0x29, 82=0x52)
-        
     # Setup vl53l0 object
-    global vl53l0
-    vl53l0 = VL53L0X(i2c_bus)
-    vl53l0.set_Vcsel_pulse_period(vl53l0.vcsel_period_type[0], 18)
-    vl53l0.set_Vcsel_pulse_period(vl53l0.vcsel_period_type[1], 14)
+    vl53l0_R
+    vl53l0_R = VL53L0X(i2c_bus)
+    vl53l0_R.set_Vcsel_pulse_period(vl53l0_R.vcsel_period_type[0], 18)
+    vl53l0_R.set_Vcsel_pulse_period(vl53l0_R.vcsel_period_type[1], 14)
+    laser_distance = vl53l0_R.read()
+    return laser_distance
 
 #This is the code for initializing laser on the left (for lower purple upper orange)
-def init_laser_L():
+def rec_dist_laserL():
     # config I2C Bus
     i2c_bus = I2C(id=0, sda=Pin(8), scl=Pin(9)) # I2C0 on GP8 & GP9
     # print(i2c_bus.scan())  # Get the address (nb 41=0x29, 82=0x52)
         
     # Setup vl53l0 object
-    global vl53l0
-    vl53l0 = VL53L0X(i2c_bus)
-    vl53l0.set_Vcsel_pulse_period(vl53l0.vcsel_period_type[0], 18)
-    vl53l0.set_Vcsel_pulse_period(vl53l0.vcsel_period_type[1], 14)
-
-
-#Code for reading distance from laser. detect functons call this.
-def rec_dist_laser():
-    # Read one sample
-    laser_distance = vl53l0.read()
-    # Stop device
-    #vl53l0.stop()
+    vl53l0_L
+    vl53l0_L = VL53L0X(i2c_bus)
+    vl53l0_L.set_Vcsel_pulse_period(vl53l0_L.vcsel_period_type[0], 18)
+    vl53l0_L.set_Vcsel_pulse_period(vl53l0_L.vcsel_period_type[1], 14)
+    laser_distance = vl53l0_L.read()
     return laser_distance
 
 
-    
-    
 # --- RESISTOR DETECTION ---
-def rack_search(sensors, events, robot, delivery):
+def rack_search(sensors, events, robot, delivery, target_racks):
     if robot["motion"] == Motion.follow:
             if events["new_junction"] and not events["new_T"]:
                 motor_l.Forward(speed=0)
@@ -423,7 +414,10 @@ def rack_search(sensors, events, robot, delivery):
         motor_r.Forward(speed=0)
 
         if ticks_diff(ticks_ms(), robot["scan_start"]) >= 30: # edit
-            laser_distance = rec_dist_laser()
+            if target_racks[robot["target_rack_idx"]] == Location.rack_purple_L or target_racks[robot["target_rack_idx"]] == Location.rack_orange_U:
+                laser_distance = rec_dist_laserL()
+            elif target_racks[robot["target_rack_idx"]] == Location.rack_purple_U or target_racks[robot["target_rack_idx"]] == Location.rack_orange_L:
+                laser_distance = rec_dist_laserR()
             print("NEW distance:", laser_distance)
             print("slot counter:", delivery["search_slot_counter"])
             print("slot status:", delivery["slot_status"])
