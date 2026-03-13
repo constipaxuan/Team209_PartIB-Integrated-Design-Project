@@ -27,10 +27,10 @@ class Start_States:
 
 class Delivery_Rack_States:
     load_detected = 0
-    reached = 1
-    reorienting = 2
-    reoriented = 3
-
+    approaching = 1
+    reached = 2
+    reorienting = 3
+    
 class Unloading_States:
     finding_bay = 0
     counting_bays = 1

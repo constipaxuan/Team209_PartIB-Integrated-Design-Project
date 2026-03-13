@@ -282,7 +282,7 @@ def handler_orange_L_delivery(sensors, events, robot, delivery):
                 delivery["rack_state"] = Delivery_Rack_States.reoriented
                 motor_l.Forward(speed = 0)
                 motor_r.Forward(speed = 0)
-                memory["rack_branches_PL"] = 0
+                memory["rack_branches_OL"] = 0
     
     elif delivery["rack_state"] == Delivery_Rack_States.reoriented:
         if events["new_junction"]: # Detect SL HIGHs. No other junctions to be confused with so this is fine.
