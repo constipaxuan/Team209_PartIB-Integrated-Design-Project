@@ -134,7 +134,7 @@ memory = {
 counting = True
 
 
-# LED wiring
+# --- LED wiring ---
 B_led = 19 # pin 19
 G_led = 18 # pin 18
 R_led = 17 # pin 17
@@ -164,42 +164,7 @@ def line_follow_step(S1, S2, base, corr):
     motor_r.Forward(speed = base)
     motor_l.Forward(speed = base)
 
-def detect_junction_type(SL, SR):
-    if (SL == 1 and SR == 0): 
-        return Junctions.L
-    elif (SL == 0 and SR == 1):
-        return Junctions.R
-    elif (SL == 1 and SR == 1):
-        return Junctions.RL
-    return Junctions.nil
-   
-#This one need to test, its going backwards so idk if the the logic will be reversed.
-def back_line_follow_step(S1, S2):
-  base = 80
-  corr = 20
-  
-  if (S1 == 0 and S2 == 1): # corrects left veer
-    motor_r.Reverse(speed = corr) # speed ranges from 0 to 100 as defined
-    motor_l.Reverse(speed = base)
-  elif (S1 == 1 and S2 == 0): #corrects right veer
-    motor_l.Reverse(speed = corr)
-    motor_r.Reverse(speed = base)
-  else: #centered 
-    motor_r.Reverse(speed = base)
-    motor_l.Reverse(speed = base)
-
-
-def detect_junction_type(SL, SR):
-    if (SL == 1 and SR == 0): 
-        return Junctions.L
-    elif (SL == 0 and SR == 1):
-        return Junctions.R
-    elif (SL == 1 and SR == 1):
-        return Junctions.RL
-    return Junctions.nil
-
-
-
+# --- TURNING ---
 # returns True when turn complete, False otherwise. Call in discrete time steps while in turning mode.
 # change speed of wheel to match position of ideal pivot (lies on 45 degree line from the corner)
 # Prevents original line from being misidentified as the new line by forcing bot to lose the first line before finding the new one.
@@ -248,7 +213,28 @@ def turn_180(turn_dir, S1, S2, turn_state, turn_phase, motor_l, motor_r):
 
     return turn_state, False, turn_phase
 
+def timed_turn_step(robot, time_ms):
+    if not robot["timed_turn_started"]:
+        robot["timed_turn_started"] = True
+        robot["timed_turn_start"] = ticks_ms()
+        print("time start")
 
+    if robot["turn_dir"] == Turn_Direction.left:
+        motor_l.Forward(speed=80)
+        motor_r.Forward(speed=0)
+    elif robot["turn_dir"] == Turn_Direction.right:
+        motor_l.Forward(speed=0)
+        motor_r.Forward(speed=80)
+
+    if ticks_diff(ticks_ms(), robot["timed_turn_start"]) > time_ms:   # modify according to needs.
+        motor_l.Forward(speed=0)
+        motor_r.Forward(speed=0)
+        robot["motion"] = Motion.follow
+        robot["timed_turn_started"] = False
+        print("1000ms passed")
+        return True
+
+    return False
 
 def update_start_T_count(start_T_shape_count, new_T):
     #global start_T_shape_count, counting
@@ -422,41 +408,7 @@ def rec_dist_laser():
     return laser_distance
 
 
-#Code for detecting whether there is a resistor or not for each slot
-def R_detect(events, laser_distance, delivery, robot):
-#QN: after I detect a resistor, how do I connect the turning function after this? Turning left or right to collect a resistor depends on the rack
-    # ONLY act if this is a BRAND NEW junction detection (Does the new junction work here?)
-    if events["new_junction"] and not events["new_T"]:
-        # decide which distance sensor to use based on direction of travel
-        # 1. Safety check: stop the counter if we run out of slots (All slots have been cleared for a particular rack)
-        if delivery["search_slot_counter"] >= 6: # 6 slots
-            delivery["rack_cleared"] = True
-            robot["target_rack_idx"] += 1
-            delivery["search_slot_counter"] = 0
-            delivery["slot_status"] = [0,0,0,0,0,0] #still need to integrate this into wider system so that it also marks the rack as cleared
-            return
 
-        else:
-            # 2. Find laser distance, fire once
-            laser_distance = rec_dist_laser()
-             
-            # 3. Update the CURRENT slot
-            if laser_distance < 100: 
-                delivery["R_detected"] = True
-                delivery["delivery_state"] = Delivery_States.pickup
-                delivery["ready_for_unloading"] = False
-                delivery["rack_state"] = Delivery_Rack_States.load_detected
-                delivery["search_slot_counter"] += 1
-                robot["mode"] = Mode.delivery
-                return
-            else:
-                delivery["slot_status"][delivery["search_slot_counter"]] = 1
-                delivery["search_slot_counter"] += 1
-                #mark the slot as cleared
-            return laser_distance
-    
-    else:
-        return None
 
 def rack_search(sensors, events, robot, delivery):
     if robot["motion"] == Motion.follow:
@@ -517,44 +469,10 @@ def rack_search(sensors, events, robot, delivery):
 
             robot["motion"] = Motion.follow
 
-def timed_turn_step(robot, time_ms):
-    if not robot["timed_turn_started"]:
-        robot["timed_turn_started"] = True
-        robot["timed_turn_start"] = ticks_ms()
-        print("time start")
 
-    if robot["turn_dir"] == Turn_Direction.left:
-        motor_l.Forward(speed=80)
-        motor_r.Forward(speed=0)
-    elif robot["turn_dir"] == Turn_Direction.right:
-        motor_l.Forward(speed=0)
-        motor_r.Forward(speed=80)
-
-    if ticks_diff(ticks_ms(), robot["timed_turn_start"]) > time_ms:   # modify according to needs.
-        motor_l.Forward(speed=0)
-        motor_r.Forward(speed=0)
-        robot["motion"] = Motion.follow
-        robot["timed_turn_started"] = False
-        print("1000ms passed")
-        return True
-
-    return False
 
 def handler_orange_L_delivery(sensors, events, robot, delivery):
-    # Step 1: Enter delivery mode when laser detects a resistor load while bot is on a branch. 
-    """ if delivery["rack_state"] == Delivery_Rack_States.load_detected:
-        print("IN load_detected")
- 
-        if robot["motion"] == Motion.turning:
-            print("STARTING TURN NOW")
-            robot["turn_complete"] = timed_turn_step(robot, 1000)
-            if robot["turn_complete"]:
-                print("APPROACHING 1")
-                delivery["rack_state"] = Delivery_Rack_States.approaching
-                motor_l.Forward(speed = 0)
-                motor_r.Forward(speed = 0)
-                robot["motion"] = Motion.follow
-                robot["turn_complete"] = False """
+    # Step 1: Enter delivery mode when laser has turned into branch. 
         
     if delivery["rack_state"] == Delivery_Rack_States.approaching:
         #print("APPROACHING 2")
