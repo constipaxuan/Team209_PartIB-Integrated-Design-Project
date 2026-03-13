@@ -26,10 +26,9 @@ class Direction:
     acw = 2
 
 class Junctions:
-    R = 1
-    L = 2
-    RL = 3
-    nil = 4
+    RorL = 1
+    RL = 2
+    nil = 3
 
 class Target_Rack:
     orange_L = 1

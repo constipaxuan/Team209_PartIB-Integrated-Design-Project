@@ -48,16 +48,14 @@ def init_memory():
     #AT the end of the loop. Memory stored for next cycle. 
 #    prev_on_junction = (SL == 1 or SR == 1)
 
-def detect_junction_type(SL, SR):
-    if (SL == 1 and SR == 0): 
-        return Junctions.L
-    elif (SL == 0 and SR == 1):
-        return Junctions.R
-    elif (SL == 1 and SR == 1):
+def detect_junction_type(new_junction, new_T):
+    if new_T: 
         return Junctions.RL
+    elif new_junction:
+        return Junctions.RorL
     return Junctions.nil
 
-""" #include in main while loop 
+#include in main while loop 
 on_junction = (SL == 1 or SR == 1)
 new_junction = (not memory["prev_on_junction"] and on_junction)
 
@@ -65,7 +63,7 @@ if new_junction:
     junction_type = detect_junction_type(memory["prev_on_junction"], SL_sensor, SR_sensor)
 else:
     junction_type = Junctions.nil
-# end """
+# end 
 
 
 #replace take_a_turn with take_next_turn
@@ -98,33 +96,33 @@ SEARCH_TRANSITIONS = {
 
     #rack_orange_L
     (Mode.search, Location.rack_orange_L, Direction.cw, Junctions.RL): lambda : handler_rack_orange_L(Direction.cw, Junctions.RL),
-    (Mode.search, Location.rack_orange_L, Direction.cw, Junctions.R): lambda : handler_rack_orange_L(Direction.cw, Junctions.R),
-    (Mode.search, Location.rack_orange_L, Direction.acw, Junctions.L): lambda : handler_rack_orange_L(Direction.acw, Junctions.L),
+    (Mode.search, Location.rack_orange_L, Direction.cw, Junctions.RorL): lambda : handler_rack_orange_L(Direction.cw, Junctions.RorL),
+    (Mode.search, Location.rack_orange_L, Direction.acw, Junctions.RorL): lambda : handler_rack_orange_L(Direction.acw, Junctions.L),
 
     #rack_purple_L
     (Mode.search, Location.rack_purple_L, Direction.acw, Junctions.RL): lambda : handler_rack_purple_L(Direction.acw, Junctions.RL),
-    (Mode.search, Location.rack_purple_L, Direction.acw, Junctions.L): lambda : handler_rack_purple_L(Direction.acw, Junctions.L),
-    (Mode.search, Location.rack_purple_L, Direction.cw, Junctions.R): lambda : handler_rack_purple_L(Direction.cw, Junctions.R),
+    (Mode.search, Location.rack_purple_L, Direction.acw, Junctions.RorL): lambda : handler_rack_purple_L(Direction.acw, Junctions.RorL),
+    (Mode.search, Location.rack_purple_L, Direction.cw, Junctions.RorL): lambda : handler_rack_purple_L(Direction.cw, Junctions.RorL),
 
     #elevator_low
-    (Mode.search, Location.elevator_low, Direction.cw, Junctions.R): lambda : handler_elevator_low(Direction.cw, Junctions.R),
+    (Mode.search, Location.elevator_low, Direction.cw, Junctions.RorL): lambda : handler_elevator_low(Direction.cw, Junctions.RorL),
     (Mode.search, Location.elevator_low, Direction.cw, Junctions.RL): lambda : handler_elevator_low(Direction.cw, Junctions.RL),
-    (Mode.search, Location.elevator_low, Direction.acw, Junctions.L): lambda : handler_elevator_low(Direction.acw, Junctions.L),
+    (Mode.search, Location.elevator_low, Direction.acw, Junctions.RorL): lambda : handler_elevator_low(Direction.acw, Junctions.RorL),
     (Mode.search, Location.elevator_low, Direction.acw, Junctions.RL): lambda : handler_elevator_low(Direction.acw, Junctions.RL),
 
     #elevator_up
-    (Mode.search, Location.elevator_up, Direction.cw, Junctions.R): lambda : handler_elevator_up(Direction.cw, Junctions.R),
-    (Mode.search, Location.elevator_up, Direction.cw, Junctions.L): lambda : handler_elevator_up(Direction.cw, Junctions.L),
+    (Mode.search, Location.elevator_up, Direction.cw, Junctions.RorL): lambda : handler_elevator_up(Direction.cw, Junctions.RorL),
+    (Mode.search, Location.elevator_up, Direction.cw, Junctions.RorL): lambda : handler_elevator_up(Direction.cw, Junctions.RorL),
     (Mode.search, Location.elevator_up, Direction.cw, Junctions.RL): lambda : handler_elevator_up(Direction.cw, Junctions.RL),
-    (Mode.search, Location.elevator_up, Direction.acw, Junctions.L): lambda : handler_elevator_up(Direction.acw, Junctions.L),
-    (Mode.search, Location.elevator_up, Direction.acw, Junctions.R): lambda : handler_elevator_up(Direction.acw, Junctions.R),
+    (Mode.search, Location.elevator_up, Direction.acw, Junctions.RorL): lambda : handler_elevator_up(Direction.acw, Junctions.RorL),
+    (Mode.search, Location.elevator_up, Direction.acw, Junctions.RorL): lambda : handler_elevator_up(Direction.acw, Junctions.RorL),
     (Mode.search, Location.elevator_up, Direction.acw, Junctions.RL): lambda : handler_elevator_up(Direction.acw, Junctions.RL),
 
     #rack_orange_U
-    (Mode.search, Location.rack_orange_U, Direction.acw, Junctions.L): lambda : handler_rack_orange_U(Direction.acw, Junctions.L),
+    (Mode.search, Location.rack_orange_U, Direction.acw, Junctions.RorL): lambda : handler_rack_orange_U(Direction.acw, Junctions.RorL),
 
     #rack_purple_U
-    (Mode.search, Location.rack_purple_U, Direction.cw, Junctions.R): lambda : handler_rack_purple_U(Direction.cw, Junctions.R)
+    (Mode.search, Location.rack_purple_U, Direction.cw, Junctions.RorL): lambda : handler_rack_purple_U(Direction.cw, Junctions.RorL)
 }
 
 #Local rack handlers
@@ -134,12 +132,12 @@ def handler_rack_orange_L(direction, junction_type):
             memory["rack_branches_OL"] = 0
             #memory["prev_elevator_state"] = Elevator.none
             return Location.elevator_low
-        elif junction_type == Junctions.R:
+        elif junction_type == Junctions.RorL:
             memory["rack_branches_OL"] += 1
             return Location.rack_orange_L
         
     if direction == Direction.acw:
-        if junction_type == Junctions.L:
+        if junction_type == Junctions.RorL:
             memory["rack_branches_OL"] -= 1
         if memory["rack_branches_OL"] == -6:
             memory["rack_branches_OL"] = 0
@@ -152,11 +150,11 @@ def handler_rack_purple_L(direction, junction_type):
             memory["rack_branches_PL"] = 0
             #memory["prev_elevator_state"] = Elevator.none
             return Location.elevator_low
-        elif junction_type == Junctions.L:
+        elif junction_type == Junctions.RorL:
             memory["rack_branches_PL"] += 1
             return Location.rack_purple_L
     if direction == Direction.cw:
-        if junction_type == Junctions.R:
+        if junction_type == Junctions.RorL:
             memory["rack_branches_PL"] -= 1
             if memory["rack_branches_PL"] == -6:
                 memory["rack_branches_PL"] = 0
@@ -170,7 +168,7 @@ def handler_elevator_low(direction, junction_type):
                 memory["elevator_low_branches"] = 0
                 return Location.elevator_up
             
-            elif junction_type == Junctions.R:
+            elif junction_type == Junctions.RorL:
                 memory["elevator_low_branches"] += 1
             
             elif junction_type == Junctions.RL:
@@ -184,7 +182,7 @@ def handler_elevator_low(direction, junction_type):
                 memory["elevator_low_branches"] = 0
                 return Location.elevator_up
             
-            elif junction_type == Junctions.L:
+            elif junction_type == Junctions.RorL:
                 memory["elevator_low_branches"] -= 1
 
             elif junction_type == Junctions.RL:
