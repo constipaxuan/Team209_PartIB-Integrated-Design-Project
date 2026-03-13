@@ -999,11 +999,16 @@ while True:
 #Resistor detection TEST (Now with line following)
 
 laser_distance = None
+
+sleep_ms(100)
 init_laser_R()
+sleep_ms(50)
+vl53l0.start()
+
 robot["mode"] = Mode.search
 robot["direction"] = Direction.cw
 # Start device
-vl53l0.start()
+
 
 while True:
 
