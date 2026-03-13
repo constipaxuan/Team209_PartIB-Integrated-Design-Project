@@ -1001,7 +1001,7 @@ while True:
 laser_distance = None
 
 sleep_ms(100)
-init_laser_L()
+init_laser_R()
 sleep_ms(50)
 vl53l0.start()
 
