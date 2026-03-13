@@ -1033,7 +1033,7 @@ while True:
         motor_r.Forward(speed = 0)
         events["prev_on_junction"] = events["on_junction"]
         events["prev_on_T"] = events["on_T"]
-        vl53l0.stop()
+        #vl53l0.stop()
         continue
 
     elif ON:
