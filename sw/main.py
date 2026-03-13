@@ -482,19 +482,10 @@ def rack_search(sensors, events, robot, delivery):
                 delivery["R_detected"] = True
                 delivery["delivery_state"] = Delivery_States.pickup
                 delivery["ready_for_unloading"] = False
-                delivery["rack_state"] = Delivery_Rack_States.load_detected
+                delivery["rack_state"] = Delivery_Rack_States.approaching
                 delivery["search_slot_counter"] += 1
 
-                print("REVERSE")
-                motor_l.Reverse(speed=80)
-                motor_r.Reverse(speed=80)
-                sleep_ms(200)
-                motor_l.Forward(speed=0)
-                motor_r.Forward(speed=0)
-
-                robot["mode"] = Mode.delivery
                 robot["motion"] = Motion.turning
-                robot["turn_state"] = Turn_State.start
                 robot["turn_complete"] = False
                 robot["timed_turn_started"] = False
 
@@ -503,7 +494,9 @@ def rack_search(sensors, events, robot, delivery):
                 elif robot["direction"] == Direction.acw:
                     robot["turn_dir"] = Turn_Direction.left
 
-                print("LOAD DETECTED")
+                robot["turn_complete"] = timed_turn_step(robot, 1000)
+                if robot["turn_complete"] == True:
+                    robot["mode"] = Mode.delivery
 
                 return
             else:
@@ -544,7 +537,7 @@ def timed_turn_step(robot, time_ms):
 
 def handler_orange_L_delivery(sensors, events, robot, delivery):
     # Step 1: Enter delivery mode when laser detects a resistor load while bot is on a branch. 
-    if delivery["rack_state"] == Delivery_Rack_States.load_detected:
+    """ if delivery["rack_state"] == Delivery_Rack_States.load_detected:
         print("IN load_detected")
  
         if robot["motion"] == Motion.turning:
@@ -556,9 +549,9 @@ def handler_orange_L_delivery(sensors, events, robot, delivery):
                 motor_l.Forward(speed = 0)
                 motor_r.Forward(speed = 0)
                 robot["motion"] = Motion.follow
-                robot["turn_complete"] = False
+                robot["turn_complete"] = False """
         
-    elif delivery["rack_state"] == Delivery_Rack_States.approaching:
+    if delivery["rack_state"] == Delivery_Rack_States.approaching:
         #print("APPROACHING 2")
         if not delivery["timed_rev_started"]:
                 delivery["timed_rev_started"] = True
