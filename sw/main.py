@@ -900,7 +900,7 @@ while True:
         prev_on_T = on_T """
 
 # -- LOOP + MAPPING TEST ---
-""" while True:
+while True:
     sensors["S1"] = S1_sensor.value()
     sensors["S2"] = S2_sensor.value()
     sensors["SL"] = SL_sensor.value()
@@ -939,6 +939,12 @@ while True:
         continue
         
     elif ON:
+
+        #if events["new_junction"] and robot["motion"] == Motion.follow:
+        #    if robot["direction"] == Direction.acw:
+        #        robot["gnd_loc_idx"] = (robot["gnd_loc_idx"] + 1) % N
+        #    if robot["direction"] == Direction.cw:
+        #        robot["gnd_loc_idx"] = (robot["gnd_loc_idx"] - 1) % N
 
         if robot["mode"] == Mode.start:
             get_out_of_box(sensors, events, robot, delivery)
@@ -1018,7 +1024,7 @@ while True:
                     
     
         events["prev_on_junction"] = events["on_junction"]
-        events["prev_on_T"] = events["on_T"] """
+        events["prev_on_T"] = events["on_T"]
 
 
 #Resistor detection TEST (Now with line following)
@@ -1085,7 +1091,7 @@ while True:
         sleep_ms(10) """
 
 # --- FINAL MODEL ---
-while True:
+""" while True:
     sensors["S1"] = S1_sensor.value()
     sensors["S2"] = S2_sensor.value()
     sensors["SL"] = SL_sensor.value()
@@ -1182,7 +1188,7 @@ while True:
                 delivery_from_orange_L(sensors, events, robot, delivery)
         
         events["prev_on_junction"] = events["on_junction"]
-        events["prev_on_T"] = events["on_T"]
+        events["prev_on_T"] = events["on_T"] """
 
 
 
