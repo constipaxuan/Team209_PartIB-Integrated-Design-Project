@@ -1042,7 +1042,8 @@ while True:
         elif robot["mode"] == Mode.delivery:
             if delivery["delivery_state"] == Delivery_States.pickup:
                 handler_orange_L_delivery(sensors, events, robot, delivery)
-            elif delivery["delivery_state"] == Delivery_States.unloading
+            elif delivery["delivery_state"] == Delivery_States.unloading:
+                LHS_dropoff(sensors, events, robot, delivery)
 
         events["prev_on_junction"] = events["on_junction"]
         events["prev_on_T"] = events["on_T"]
