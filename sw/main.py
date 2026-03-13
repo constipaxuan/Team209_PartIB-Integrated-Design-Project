@@ -217,7 +217,6 @@ def timed_turn_step(robot, time_ms):
     if not robot["timed_turn_started"]:
         robot["timed_turn_started"] = True
         robot["timed_turn_start"] = ticks_ms()
-        print("time start")
 
     if robot["turn_dir"] == Turn_Direction.left:
         motor_l.Forward(speed=80)
@@ -231,7 +230,6 @@ def timed_turn_step(robot, time_ms):
         motor_r.Forward(speed=0)
         robot["motion"] = Motion.follow
         robot["timed_turn_started"] = False
-        print("1000ms passed")
         return True
 
     return False
@@ -431,7 +429,7 @@ def rack_search(sensors, events, robot, delivery):
             print("slot status:", delivery["slot_status"])
 
             if laser_distance < 100:
-                print("R detected")
+                Red.value(1)
                 delivery["R_detected"] = True
                 delivery["delivery_state"] = Delivery_States.pickup
                 delivery["ready_for_unloading"] = False
@@ -451,7 +449,7 @@ def rack_search(sensors, events, robot, delivery):
                 if robot["turn_complete"] == True:
                     robot["mode"] = Mode.delivery
                     robot["motion"] = Motion.follow
-                    print("turn complete")
+                    
 
                 return
             else:
@@ -489,6 +487,7 @@ def handler_orange_L_delivery(sensors, events, robot, delivery):
                 motor_r.Forward(speed=0)
                 delivery["timed_rev_started"] = False
                 delivery["rack_state"] = Delivery_Rack_States.reached
+                Red.value(0)
           
     
     # MODIFIED FOR TESTING
