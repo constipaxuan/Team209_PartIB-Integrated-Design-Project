@@ -633,9 +633,9 @@ def delivery_from_orange_L(sensors, events, robot, delivery):
 
 
 # FUNCTION FOR OPENING AND CLOSING THE 3 WIRE CLAW SERVO
-#initialize the servo with 3 wires
-servo = PWM(Pin(15))
-servo.freq(50) # Standard 50Hz frequency
+#initialize the servo with 3 wires (Different servos should be different pins)
+servo_claw = PWM(Pin(13))
+servo_claw.freq(50) # Standard 50Hz frequency
 
 def claw(angle):
     # Map 0-270 degrees to 500-2500 microseconds
@@ -643,20 +643,20 @@ def claw(angle):
     # 50Hz period is 20ms. 500us = 2.5% duty. 2500us = 12.5% duty.
     pulse_width = 500 + (angle / 270) * 2000
     duty = int((pulse_width / 20000) * 65535)
-    servo.duty_u16(duty)
+    servo_claw.duty_u16(duty)
 
 
 
 # FUNCTION FOR TURNING THE PLATFORM THAT HOLDS THE CLAW, 4 wire servo
 # Initialize the servo with 4 wires
-servo = PWM(Pin(15)) #QN: is this pin correct? It shares the same pin as the 3 wire servo
-servo.freq(50)
+servo_tilt = PWM(Pin(15)) #QN: is this pin correct? It shares the same pin as the 3 wire servo
+servo_tilt.freq(50)
 feedback = ADC(Pin(26)) #this is where the white wire goes
 
 def turn_claw(angle):
     pulse_width = 500 + (angle / 270) * 2000
     duty = int((pulse_width / 20000) * 65535)
-    servo.duty_u16(duty)
+    servo_tilt.duty_u16(duty)
 
 #FUNCTION FOR MEASURING THE RESISTANCE ONCE GRABBED AND LIGHTS APPROPRITE LED UP
 def R_measure():
