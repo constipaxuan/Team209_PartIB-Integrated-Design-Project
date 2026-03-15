@@ -89,6 +89,9 @@ def handler_blue_bay(sensors, events, robot, delivery):
                     robot["turn_complete"] = False #reset
                     delivery["delivery_state"] = Delivery_States.pickup
                     robot["direction"] = Direction.acw
+                    delivery["search_slot_counter"] = 0 # reset slot counter after each delivery.
+                    delivery["slot_status"] = [0,0,0,0,0,0]
+                    
         else:
             if events["new_junction"] and robot["motion"] != Motion.turning: 
                 motor_l.Forward(speed = 0)
@@ -110,6 +113,8 @@ def handler_blue_bay(sensors, events, robot, delivery):
                     robot["turn_complete"] = False #reset
                     delivery["delivery_state"] = Delivery_States.pickup
                     robot["direction"] = Direction.cw
+                    delivery["search_slot_counter"] = 0 # reset slot counter after each delivery.
+                    delivery["slot_status"] = [0,0,0,0,0,0]
 
 
 def handler_red_bay(sensors, events, robot, delivery):
@@ -151,6 +156,8 @@ def handler_red_bay(sensors, events, robot, delivery):
                     robot["turn_complete"] = False #reset
                     delivery["delivery_state"] = Delivery_States.pickup
                     robot["direction"] = Direction.cw
+                    delivery["search_slot_counter"] = 0 # reset slot counter after each delivery.
+                    delivery["slot_status"] = [0,0,0,0,0,0]
         else:
             if events["new_junction"] and robot["motion"] != Motion.turning: 
                 motor_l.Forward(speed = 0)
@@ -172,6 +179,8 @@ def handler_red_bay(sensors, events, robot, delivery):
                     robot["turn_complete"] = False #reset
                     delivery["delivery_state"] = Delivery_States.pickup
                     robot["direction"] = Direction.acw
+                    delivery["search_slot_counter"] = 0 # reset slot counter after each delivery.
+                    delivery["slot_status"] = [0,0,0,0,0,0]
 
 
 def handler_green_bay(sensors, events, robot, delivery):
@@ -212,6 +221,8 @@ def handler_green_bay(sensors, events, robot, delivery):
                     robot["turn_complete"] = False #reset
                     delivery["delivery_state"] = Delivery_States.pickup
                     robot["direction"] = Direction.acw
+                    delivery["search_slot_counter"] = 0 # reset slot counter after each delivery.
+                    delivery["slot_status"] = [0,0,0,0,0,0]
         else:
             if events["new_junction"] and robot["motion"] != Motion.turning: 
                 motor_l.Forward(speed = 0)
@@ -232,6 +243,8 @@ def handler_green_bay(sensors, events, robot, delivery):
                     robot["turn_complete"] = False #reset
                     delivery["delivery_state"] = Delivery_States.pickup
                     robot["direction"] = Direction.cw
+                    delivery["search_slot_counter"] = 0 # reset slot counter after each delivery.
+                    delivery["slot_status"] = [0,0,0,0,0,0]
 
 
 def handler_yellow_bay(sensors, events, robot, delivery):
@@ -272,6 +285,8 @@ def handler_yellow_bay(sensors, events, robot, delivery):
                     robot["turn_complete"] = False #reset
                     delivery["delivery_state"] = Delivery_States.pickup
                     robot["direction"] = Direction.cw
+                    delivery["search_slot_counter"] = 0 # reset slot counter after each delivery.
+                    delivery["slot_status"] = [0,0,0,0,0,0]
         else:
             if events["new_junction"] and robot["motion"] != Motion.turning: 
                 motor_l.Forward(speed = 0)
@@ -292,6 +307,8 @@ def handler_yellow_bay(sensors, events, robot, delivery):
                     robot["turn_complete"] = False #reset
                     delivery["delivery_state"] = Delivery_States.pickup
                     robot["direction"] = Direction.acw
+                    delivery["search_slot_counter"] = 0 # reset slot counter after each delivery.
+                    delivery["slot_status"] = [0,0,0,0,0,0]
 
 
 # --- OVERALL DELIVERY MODE FROM EACH RACK ---
