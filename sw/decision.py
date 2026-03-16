@@ -477,7 +477,7 @@ def handler_purple_L_delivery(sensors, events, robot, delivery):
             motor_r.Forward(speed = 0)
             delivery["rack_state"] = Delivery_Rack_States.reached """
 
-    #move forward until you grab. After grabbing reverse until reach RL junction, turn 90 deg right (cw)
+    #move forward until you grab. After grabbing reverse until reach RL junction, turn 85 deg right (cw)
     """ elif delivery["rack_state"] == Delivery_Rack_States.retracting:
         back_line_follow_step(sensors["S1"], sensors["S2"], base, 20) 
           if events["new_T"]: #detect RL junction. No need to lose the white line bc we are approaching in reverse

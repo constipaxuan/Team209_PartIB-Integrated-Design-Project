@@ -76,14 +76,14 @@ def turn(junction_type):
   if junction_type == Junctions.L:
     motor_l.Reverse(speed = 50)
     motor_r.Forward(speed = 50)
-    sleep(1) # might need to adjust time depending on how long it takes to turn 90 degrees. Might also want to add some sort of feedback system to determine when to stop turning instead of just relying on time.
+    sleep(1) # might need to adjust time depending on how long it takes to turn 85 degrees. Might also want to add some sort of feedback system to determine when to stop turning instead of just relying on time.
     motor_l.Forward(speed = base)
     motor_r.Forward(speed = base)
 # turn line following off while turning
   elif junction_type == Junctions.R:
     motor_l.Forward(speed = 50)
     motor_r.Reverse(speed = 50)
-    sleep(1) # might need to adjust time depending on how long it takes to turn 90 degrees. Might also want to add some sort of feedback system to determine when to stop turning instead of just relying on time.
+    sleep(1) # might need to adjust time depending on how long it takes to turn 85 degrees. Might also want to add some sort of feedback system to determine when to stop turning instead of just relying on time.
     motor_l.Forward(speed = base)
     motor_r.Forward(speed = base)
   #if junction_type == Junctions.RL:

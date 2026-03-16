@@ -179,7 +179,7 @@ def handler_red_bay(sensors, events, robot, delivery):
 turn_complete = False
 #first_done = False -- local variables no need to define
 #second_done = False
-turn_phase = 0 # 0 = first 90, 1 = second 90 for 180 turn
+turn_phase = 0 # 0 = first 85, 1 = second 85 for 180 turn
 def turn_180(turn_dir, S1, S2, turn_state, turn_phase, motor_l, motor_r):
     if turn_phase == 0:
         turn_state, first_done = turn_v4(turn_dir, S1, S2, turn_state, motor_l, motor_r)

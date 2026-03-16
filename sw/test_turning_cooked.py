@@ -4,7 +4,7 @@ from machine import Pin
 from test_motor import Motor
 
 # Start in front of a LEFT turn.
-# Test for 90 deg turn
+# Test for 85 deg turn
 
 prev_on_junction = False
 turn_state = Turn_State.start

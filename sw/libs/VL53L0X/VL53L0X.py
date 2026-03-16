@@ -597,8 +597,8 @@ class VL53L0X:
         start_overhead = 1320
         end_overhead = 960
         msrc_overhead = 660
-        tcc_overhead = 590
-        dss_overhead = 690
+        tcc_overhead = 585
+        dss_overhead = 685
         pre_range_overhead = 660
         final_range_overhead = 550
 
