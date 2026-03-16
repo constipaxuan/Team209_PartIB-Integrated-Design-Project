@@ -427,13 +427,6 @@ def start_rack_scan(robot, delivery):
     robot["motion"] = Motion.stopped_for_scan
     robot["scan_start"] = ticks_ms()
 
-    if robot["direction"] == Direction.cw:
-        delivery["scan_node"] = (robot["gnd_loc_idx"] + 1) % N
-    elif robot["direction"] == Direction.acw:
-        delivery["scan_node"] = (robot["gnd_loc_idx"] - 1) % N
-    else:
-        delivery["scan_node"] = robot["gnd_loc_idx"]
-
     print(
         f"RACK_SCAN_START | slot={delivery['search_slot_counter']} "
         f"| target={target_racks[robot['target_rack_idx']]}"
@@ -489,6 +482,23 @@ def handle_rack_load_detected(robot, delivery, laser_distance):
     start_rack_pickup_turn(robot)
     update_rack_search_turn(robot)
 
+def start_rack_comp_reverse(robot):
+    if not robot["timed_rev_started"]:
+        print("REV_UNCOOK_START")
+
+    done = timed_reverse_step(robot, 600)
+
+    if not done:
+        return
+
+    if robot["direction"] == Direction.cw:
+        turn_dir = Turn_Direction.right
+    elif robot["direction"] == Direction.acw:
+        turn_dir = Turn_Direction.left
+
+    #robot["motion"] = Motion.turning
+    start_turn(robot, turn_dir)
+    print("REV_BRANCH_DONE -> EXITING_BRANCH")
 
 def start_rack_pickup_turn(robot):
     start_turn(robot, get_turn_dir(robot))
@@ -706,6 +716,7 @@ def update_rack_leave_rack_zone(sensors, events, delivery):
     print("OUT_OF_RACK_ZONE -> READY_FOR_UNLOADING")
     delivery["getout_state"] = Get_Out_of_branch.Rev_Branch
     delivery["rack_state"] = Delivery_Rack_States.done
+    
     if target_racks[robot["target_rack_idx"]] == Racks.rack_orange_L:
         robot["direction"] = Direction.acw
     elif target_racks[robot["target_rack_idx"]] == Racks.rack_purple_L:
@@ -1297,7 +1308,7 @@ while True:
     update_location(robot, events)
 
     if robot["mode"] == Mode.search:
-        rack_search(sensors, events, robot, delivery)
+        rack_search(sensors, events, robot, delivery)     
     elif robot["mode"] == Mode.delivery:
         handle_delivery_from_orange_L(sensors, events, robot, delivery)
 
