@@ -186,6 +186,7 @@ Yellow.value(0)
 # Sensor connected to ADC0 (GP26)
 sensor = ADC(28) #FOR LEDs
 laser_distance = None
+last_press = 0
 
 # --- DEBUG PRINTS ---
 def dbg(msg):
