@@ -515,7 +515,7 @@ def finish_rack_search(robot, delivery):
     print(f"NEXT_TARGET_RACK_IDX = {robot['target_rack_idx']}")
 
 def update_rack_search_turn(robot):
-    robot["turn_complete"] = timed_turn_step(robot, 1000)
+    robot["turn_complete"] = timed_turn_step(robot, 1600)
 
     if not robot["turn_complete"]:
         return
@@ -592,7 +592,7 @@ def update_rack_approach(robot, delivery):
         print("ORANGE_L_APPROACH_START")
         Red.value(1)
 
-    done = timed_forward_step(robot, 700)
+    done = timed_forward_step(robot, 500)
 
     if not done:
         return
@@ -652,7 +652,7 @@ def update_orange_L_reverse_branch(robot, delivery):
     if not robot["timed_rev_started"]:
         print("REV_BRANCH_START")
 
-    done = timed_reverse_step(robot, 1200)
+    done = timed_reverse_step(robot, 900)
 
     if not done:
         return
@@ -668,7 +668,7 @@ def update_rack_exit_branch(robot, delivery):
     Blue.value(1)
     print("EXIT_BRANCH_TURN_START")
 
-    robot["turn_complete"] = timed_turn_step(robot, 1200)
+    robot["turn_complete"] = timed_turn_step(robot, 1600)
 
     if not robot["turn_complete"]:
         return
@@ -1257,11 +1257,10 @@ while True:
         latch_events(events)
         continue
 
-    #update_location(robot, events)
+    update_location(robot, events)
 
     if robot["mode"] == Mode.search:
         rack_search(sensors, events, robot, delivery)
-        update_location(robot, events)
     elif robot["mode"] == Mode.delivery:
         handle_delivery_from_orange_L(sensors, events, robot, delivery)
 
