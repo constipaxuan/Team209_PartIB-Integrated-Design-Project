@@ -1199,7 +1199,7 @@ while True:
 
 
     if robot["mode"] == Mode.start:
-        handle_start_mode(sensors, events, robot, delivery)
+        handle_start_mode(robot, sensors)
 
     elif robot["mode"] == Mode.search_init:
         handle_search_init_mode(sensors, events, robot, delivery)
