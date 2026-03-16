@@ -1217,8 +1217,10 @@ while True:
     else:
             
         if robot["motion"] == Motion.follow:
-            if events["new_junction"] and robot["gnd_loc_idx"] in [10, 12, 20, 0, 2]:
+            if events["new_junction"] and robot["gnd_loc_idx"] in [10, 12, 20, 2]:
                 start_turn(robot, Turn_Direction.left)
+            elif events["new_junction"] and robot["gnd_loc_idx"] in [0]:
+                start_turn(robot, Turn_Direction.right)
             line_follow_step(sensors["S1"], sensors["S2"], 80, 20)
         elif robot["motion"] == Motion.turning:
             robot["turn_complete"] = turn_v4(robot, sensors)
