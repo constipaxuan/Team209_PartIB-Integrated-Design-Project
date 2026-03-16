@@ -481,13 +481,6 @@ def handle_rack_load_detected(robot, delivery, laser_distance):
     delivery["rack_state"] = Delivery_Rack_States.approaching
     robot["motion"] = Motion.reversing
 
-    start_rack_pickup_turn(robot)
-
-
-
-
-
-
 def start_rack_pickup_turn(robot):
     start_turn(robot, get_turn_dir(robot))
 
