@@ -478,6 +478,7 @@ def handle_rack_load_detected(robot, delivery, laser_distance):
     delivery["delivery_state"] = Delivery_States.pickup
     delivery["rack_state"] = Delivery_Rack_States.approaching
 
+    start_rack_comp_reverse(robot)
     start_rack_pickup_turn(robot)
     update_rack_search_turn(robot)
 
@@ -491,13 +492,11 @@ def start_rack_comp_reverse(robot):
         return
 
     if robot["direction"] == Direction.cw:
-        turn_dir = Turn_Direction.right
+        robot["turn_dir"] = Turn_Direction.right
     elif robot["direction"] == Direction.acw:
-        turn_dir = Turn_Direction.left
+        robot["turn_dir"] = Turn_Direction.left
 
-    #robot["motion"] = Motion.turning
-    start_turn(robot, turn_dir)
-    print("REV_BRANCH_DONE -> EXITING_BRANCH")
+
 
 def start_rack_pickup_turn(robot):
     start_turn(robot, get_turn_dir(robot))
@@ -657,6 +656,8 @@ def update_orange_L_reorient(sensors, events, robot, delivery):
 
 def finish_orange_L_pickup(robot, delivery):
 
+    print("direction at finish is", robot["direction"])
+
     if robot["direction"] == Direction.acw:
         robot["gnd_loc_idx"] = 19   # OL6 re-sync hack
     elif robot["direction"] == Direction.cw:
@@ -709,17 +710,21 @@ def update_rack_leave_rack_zone(sensors, events, delivery):
 
     line_follow_step(sensors["S1"], sensors["S2"], 82, 20)
 
-    if ticks_diff(ticks_ms(), delivery["last_branch_time"]) <= 2500:
+    if ticks_diff(ticks_ms(), delivery["last_branch_time"]) <= 3500:
         return
 
+    print("old direction is", robot["direction"])
     print("OUT_OF_RACK_ZONE -> READY_FOR_UNLOADING")
-    delivery["getout_state"] = Get_Out_of_branch.Rev_Branch
-    delivery["rack_state"] = Delivery_Rack_States.done
-    
     if target_racks[robot["target_rack_idx"]] == Racks.rack_orange_L:
         robot["direction"] = Direction.acw
     elif target_racks[robot["target_rack_idx"]] == Racks.rack_purple_L:
         robot["direction"] = Direction.cw
+    
+    print("new direction is", robot["direction"])
+    delivery["getout_state"] = Get_Out_of_branch.Rev_Branch
+    delivery["rack_state"] = Delivery_Rack_States.done
+    print("delivery_state", delivery["rack_state"])
+
 
 # --- DELIVERY MODE: PICKUP HANDLER PURPLE_L ---
 def update_purple_L_pickup(sensors, events, robot, delivery):
