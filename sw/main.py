@@ -285,7 +285,7 @@ def start_turn(robot, turn_dir):
     robot["turn_state"] = Turn_State.start
     robot["timed_turn_started"] = False
     robot["turn_complete"] = False
-    print(f"START TURN: {turn_dir} at node {robot['gnd_loc_idx']}")
+    print(f"START TURN: {turn_dir} at node {robot['gnd_loc_idx']} | motion={robot['motion']}")
 
 def finish_turn(robot):
     robot["motion"] = Motion.follow
@@ -443,7 +443,7 @@ def update_rack_scan(robot, delivery):
     motor_l.Forward(speed=0)
     motor_r.Forward(speed=0)
 
-    if ticks_diff(ticks_ms(), robot["scan_start"]) < 30:
+    if ticks_diff(ticks_ms(), robot["scan_start"]) < 50:
         return
 
     Yellow.value(0)
@@ -476,7 +476,7 @@ def read_rack_laser(robot):
 def handle_rack_load_detected(robot, delivery, laser_distance):
     print(
         f"LOAD_DETECTED | slot={delivery['search_slot_counter']} "
-        f"| dist={laser_distance} | scan_node={delivery['scan_node']}"
+        f"| dist={laser_distance} | node={robot['gnd_loc_idx']} "
         f"| motion_before={robot['motion']}"
     )
     Red.value(1)
@@ -541,6 +541,12 @@ def rack_search(sensors, events, robot, delivery):
         follow -> stopped_for_scan -> follow
                                \-> turning -> Mode.delivery
     """
+
+    print(
+        f"RACK_SEARCH_TOP | motion={robot['motion']} "
+        f"| node={robot['gnd_loc_idx']} "
+        f"| new_junction={events['new_junction']}"
+    )
 
     if robot["motion"] == Motion.turning:
         update_rack_search_turn(robot)
@@ -699,6 +705,10 @@ def update_rack_leave_rack_zone(sensors, events, delivery):
     print("OUT_OF_RACK_ZONE -> READY_FOR_UNLOADING")
     delivery["getout_state"] = Get_Out_of_branch.Rev_Branch
     delivery["rack_state"] = Delivery_Rack_States.done
+    if target_racks[robot["target_rack_idx"]] == Racks.rack_orange_L:
+        robot["direction"] = Direction.acw
+    elif target_racks[robot["target_rack_idx"]] == Racks.rack_purple_L:
+        robot["direction"] = Direction.cw
 
 # --- DELIVERY MODE: PICKUP HANDLER PURPLE_L ---
 def update_purple_L_pickup(sensors, events, robot, delivery):
@@ -1260,6 +1270,7 @@ def handle_delivery_mode(sensors, events, robot, delivery):
 robot["mode"] = Mode.search
 robot["direction"] = Direction.cw
 robot["gnd_loc_idx"] = 20
+delivery["resistor_color"] = Resistor_Color.green
 
 while True:
 
