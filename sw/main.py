@@ -363,7 +363,6 @@ def update_location(robot, events):
 
         if robot["just_turned"]:
             robot["just_turned"] = False
-            return
 
         old = robot["gnd_loc_idx"]
 
@@ -1218,7 +1217,7 @@ while True:
     else:
             
         if robot["motion"] == Motion.follow:
-            if events["new_junction"] and robot["gnd_loc_idx"] in [10, 12, 20, 0]:
+            if events["new_junction"] and robot["gnd_loc_idx"] in [10, 12, 20, 0, 2]:
                 start_turn(robot, Turn_Direction.left)
             line_follow_step(sensors["S1"], sensors["S2"], 80, 20)
         elif robot["motion"] == Motion.turning:
