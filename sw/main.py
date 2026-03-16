@@ -168,7 +168,6 @@ delivery = {
     "slot_status": [0,0,0,0,0,0],
     "getout_state": Get_Out_of_branch.Rev_Branch,
     "last_branch_time": 0,
-    "scan_node": 0
 }
 
 target_racks = [Racks.rack_purple_L, Racks.rack_orange_L, Racks.rack_purple_U, Racks.rack_orange_U]
@@ -306,8 +305,7 @@ def timed_forward_step(robot, time_ms):
         robot["timed_move_started"] = True
         robot["timed_move_start"] = ticks_ms()
     
-    motor_l.Forward(speed = 82)
-    motor_r.Forward(speed = 82)
+    line_follow_step(sensors["S1"], sensors["S2"], 82, 20)
 
     if ticks_diff(ticks_ms(), robot["timed_move_start"]) > time_ms:   # modify according to needs.
         motor_l.Forward(speed=0)
@@ -476,7 +474,6 @@ def handle_rack_load_detected(robot, delivery, laser_distance):
     )
     Red.value(1)
 
-    delivery["pickup_node"] = delivery["scan_node"]
     delivery["delivery_state"] = Delivery_States.pickup
     delivery["rack_state"] = Delivery_Rack_States.approaching
     robot["motion"] = Motion.reversing
@@ -544,6 +541,7 @@ def rack_search(sensors, events, robot, delivery):
         done = timed_reverse_step(robot, 700)
         if not done:
             return  
+        print("REVERSE DONE | direction =", robot["direction"], "| turn_dir =", get_turn_dir(robot))
         start_turn(robot, get_turn_dir(robot))
         return
         
@@ -756,7 +754,7 @@ def update_purple_L_reached(robot, delivery):
     #R_measure(delivery)
     #print(f"RESISTOR_COLOR = {delivery['resistor_color']}")
 
-    # INSERT GRABBER CODE
+    grab()
     delivery["rack_state"] = Delivery_Rack_States.reorienting
     delivery["getout_state"] = Get_Out_of_branch.Rev_Branch
     robot["turn_dir"] = Turn_Direction.left
