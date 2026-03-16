@@ -442,7 +442,7 @@ def update_rack_scan(robot, delivery):
     motor_l.Forward(speed=0)
     motor_r.Forward(speed=0)
 
-    if ticks_diff(ticks_ms(), robot["scan_start"]) < 30:
+    if ticks_diff(ticks_ms(), robot["scan_start"]) < 100:
         return
 
     Yellow.value(0)
@@ -1246,6 +1246,7 @@ def handle_delivery_mode(sensors, events, robot, delivery):
 robot["mode"] = Mode.search
 robot["direction"] = Direction.cw
 robot["gnd_loc_idx"] = 20
+delivery["resistor_color"] = Resistor_Color.green
 
 while True:
 
