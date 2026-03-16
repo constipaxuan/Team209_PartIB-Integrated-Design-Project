@@ -44,7 +44,7 @@ def grab():
     set_angle_4wire(0) # might need to adjust angle depending on how the servo is mounted and how the claw is designed
 
 def release():
-    set_angle_4wire(85) # might need to adjust angle depending on how the servo is mounted and how the claw is designed
+    set_angle_4wire(82) # might need to adjust angle depending on how the servo is mounted and how the claw is designed
 
 def R_measure():
     #pass current through and measure voltage V&I

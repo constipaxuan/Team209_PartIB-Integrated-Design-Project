@@ -263,11 +263,11 @@ def timed_turn_step(robot, time_ms):
         robot["timed_turn_start"] = ticks_ms()
 
     if robot["turn_dir"] == Turn_Direction.left:
-        motor_l.Forward(speed=85)
+        motor_l.Forward(speed=82)
         motor_r.Forward(speed=0)
     elif robot["turn_dir"] == Turn_Direction.right:
         motor_l.Forward(speed=0)
-        motor_r.Forward(speed=85)
+        motor_r.Forward(speed=82)
 
     if ticks_diff(ticks_ms(), robot["timed_turn_start"]) > time_ms:   # modify according to needs.
         motor_l.Forward(speed=0)
@@ -303,8 +303,8 @@ def timed_forward_step(robot, time_ms):
         robot["timed_move_started"] = True
         robot["timed_move_start"] = ticks_ms()
     
-    motor_l.Forward(speed = 85)
-    motor_r.Forward(speed = 85)
+    motor_l.Forward(speed = 82)
+    motor_r.Forward(speed = 82)
 
     if ticks_diff(ticks_ms(), robot["timed_move_start"]) > time_ms:   # modify according to needs.
         motor_l.Forward(speed=0)
@@ -319,8 +319,8 @@ def timed_reverse_step(robot, time_ms):
         robot["timed_rev_started"] = True
         robot["timed_rev_start"] = ticks_ms()
     
-    motor_l.Reverse(speed = 85)
-    motor_r.Reverse(speed = 85)
+    motor_l.Reverse(speed = 82)
+    motor_r.Reverse(speed = 82)
 
     if ticks_diff(ticks_ms(), robot["timed_rev_start"]) > time_ms:   # modify according to needs.
         motor_l.Forward(speed=0)
@@ -542,7 +542,7 @@ def rack_search(sensors, events, robot, delivery):
             start_rack_scan(robot, delivery)
             return
 
-        line_follow_step(sensors["S1"], sensors["S2"], 85, 20)
+        line_follow_step(sensors["S1"], sensors["S2"], 82, 20)
         return
 
 # --- DELIVERY MODE: PICKUP HANDLER ORANGE_L --- Start when bot has finished turning INTO branch.
@@ -678,7 +678,7 @@ def update_rack_leave_rack_zone(sensors, events, delivery):
         delivery["last_branch_time"] = ticks_ms()
         print("RACKZONE_JUNCTION_SEEN")
 
-    line_follow_step(sensors["S1"], sensors["S2"], 85, 20)
+    line_follow_step(sensors["S1"], sensors["S2"], 82, 20)
 
     if ticks_diff(ticks_ms(), delivery["last_branch_time"]) <= 2500:
         return
@@ -857,7 +857,7 @@ def update_find_unloading_entry_acw(sensors, robot, delivery):
             return
     
         # If node 20 has not been reached yet
-        line_follow_step(sensors["S1"], sensors["S2"], 85, 20)
+        line_follow_step(sensors["S1"], sensors["S2"], 82, 20)
         return
 
     if robot["gnd_loc_idx"] == 20:
@@ -866,7 +866,7 @@ def update_find_unloading_entry_acw(sensors, robot, delivery):
         return
     
     # If node 20 has not been reached yet
-    line_follow_step(sensors["S1"], sensors["S2"], 85, 20)
+    line_follow_step(sensors["S1"], sensors["S2"], 82, 20)
 
 def update_find_unloading_entry_cw(sensors, robot, delivery):
     color = delivery["resistor_color"]
@@ -878,7 +878,7 @@ def update_find_unloading_entry_cw(sensors, robot, delivery):
             return
     
         # If node 2 has not been reached yet
-        line_follow_step(sensors["S1"], sensors["S2"], 85, 20)
+        line_follow_step(sensors["S1"], sensors["S2"], 82, 20)
         return
 
     if robot["gnd_loc_idx"] == 2:
@@ -887,7 +887,7 @@ def update_find_unloading_entry_cw(sensors, robot, delivery):
         return
     
     # If node 2 has not been reached yet
-    line_follow_step(sensors["S1"], sensors["S2"], 85, 20)
+    line_follow_step(sensors["S1"], sensors["S2"], 82, 20)
 
 def update_count_bays(sensors, robot, delivery):
     if robot["gnd_loc_idx"] == delivery["target_bay"]:
@@ -899,7 +899,7 @@ def update_count_bays(sensors, robot, delivery):
         start_turn(robot, turn_dir)
         return
 
-    line_follow_step(sensors["S1"], sensors["S2"], 85, 20)
+    line_follow_step(sensors["S1"], sensors["S2"], 82, 20)
 
 # UPDATE WITH GRABBER RELEASE. Called after turn finished
 def update_dropoff_at_bay(sensors, events, robot, delivery):
@@ -911,7 +911,7 @@ def update_dropoff_at_bay(sensors, events, robot, delivery):
         print("BAY_REACHED -> UNLOADING_DONE")
         return
 
-    line_follow_step(sensors["S1"], sensors["S2"], 85, 20)
+    line_follow_step(sensors["S1"], sensors["S2"], 82, 20)
 
 def update_unloading_turn(sensors, robot, delivery):
 
@@ -1139,7 +1139,7 @@ def handle_start_mode(robot, sensors):
             return
         
 def handle_search_init_mode(sensors, events, robot, delivery):
-    line_follow_step(sensors["S1"], sensors["S2"], 85, 20)
+    line_follow_step(sensors["S1"], sensors["S2"], 82, 20)
 
     if events["on_junction"] or events["on_T"]:
         return
@@ -1171,7 +1171,7 @@ def handle_search_mode(sensors, events, robot, delivery):
         print(f"MAIN_LOOP_TURN_START | node={robot['gnd_loc_idx']} | dir={robot['turn_dir']}")
         return
 
-    line_follow_step(sensors["S1"], sensors["S2"], 85, 20)
+    line_follow_step(sensors["S1"], sensors["S2"], 82, 20)
 
 def update_search_turn(sensors, robot):
     robot["turn_complete"] = turn_v4(robot, sensors)
@@ -1221,7 +1221,7 @@ while True:
                 start_turn(robot, Turn_Direction.left)
             elif events["new_junction"] and robot["gnd_loc_idx"] in [0]:
                 start_turn(robot, Turn_Direction.right)
-            line_follow_step(sensors["S1"], sensors["S2"], 85, 20)
+            line_follow_step(sensors["S1"], sensors["S2"], 82, 20)
         elif robot["motion"] == Motion.turning:
             robot["turn_complete"] = turn_v4(robot, sensors)
             if robot["turn_complete"]:
