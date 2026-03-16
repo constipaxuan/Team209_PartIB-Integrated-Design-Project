@@ -456,10 +456,10 @@ def read_rack_laser(robot):
     target_rack = target_racks[robot["target_rack_idx"]]
 
     if target_rack in [Racks.rack_purple_L, Racks.rack_orange_U]:
-        return rec_dist_laserL()
+        return rec_dist_laserR()
 
     if target_rack in [Racks.rack_purple_U, Racks.rack_orange_L]:
-        return rec_dist_laserR()
+        return rec_dist_laserL()
 
     print("WARNING: unknown target rack in read_rack_laser()")
     return 9999
