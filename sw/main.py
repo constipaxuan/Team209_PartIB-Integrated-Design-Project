@@ -534,11 +534,11 @@ def rack_search(sensors, events, robot, delivery):
                                \-> turning -> Mode.delivery
     """
 
-    print(
-        f"RACK_SEARCH_TOP | motion={robot['motion']} "
-        f"| node={robot['gnd_loc_idx']} "
-        f"| new_junction={events['new_junction']}"
-    )
+    #print(
+    #    f"RACK_SEARCH_TOP | motion={robot['motion']} "
+    #    f"| node={robot['gnd_loc_idx']} "
+    #    f"| new_junction={events['new_junction']}"
+    #)
 
     if robot["motion"] == Motion.reversing:
         done = timed_reverse_step(robot, 700)
