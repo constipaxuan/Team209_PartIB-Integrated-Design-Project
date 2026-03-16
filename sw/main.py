@@ -476,6 +476,7 @@ def handle_rack_load_detected(robot, delivery, laser_distance):
     print(
         f"LOAD_DETECTED | slot={delivery['search_slot_counter']} "
         f"| dist={laser_distance} | scan_node={delivery['scan_node']}"
+        f"| motion_before={robot['motion']}"
     )
     Red.value(1)
 
@@ -668,7 +669,7 @@ def update_rack_exit_branch(robot, delivery):
     Blue.value(1)
     print("EXIT_BRANCH_TURN_START")
 
-    robot["turn_complete"] = timed_turn_step(robot, 1600)
+    robot["turn_complete"] = timed_turn_step(robot, 1800)
 
     if not robot["turn_complete"]:
         return
