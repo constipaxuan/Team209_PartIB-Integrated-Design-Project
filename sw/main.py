@@ -191,6 +191,22 @@ sensor = ADC(28) #FOR LEDs
 laser_distance = None
 last_press = 0
 
+#Initialize servos to 135
+start_time = ticks_ms()
+servo_claw = PWM(Pin(13))
+while ticks_diff(ticks_ms(), start_time) < CLAW_OPERATION_DURATION:
+    pulse_width = 500 + (135 / 270) * 2000
+    duty = int((pulse_width / 20000) * 65535)
+    servo_claw.duty_u16(duty)
+
+start_time = ticks_ms()
+servo_tilt = PWM(Pin(15))
+while ticks_diff(ticks_ms(), start_time) < CLAW_OPERATION_DURATION:
+    pulse_width = 500 + (135 / 270) * 2000
+    duty = int((pulse_width / 20000) * 65535)
+    servo_tilt.duty_u16(duty)
+
+
 # --- DEBUG PRINTS ---
 def dbg(msg):
     print(msg)
@@ -1083,21 +1099,21 @@ def grab():
     #Map 0-270 degrees to 500-2500 microseconds
     #Pico PWM duty is 0-65535. 
     # 50Hz period is 20ms. 500us = 2.5% duty. 2500us = 12.5% duty.
-    """ start_time = ticks_ms()
+    start_time = ticks_ms()
     while ticks_diff(ticks_ms(), start_time) < CLAW_OPERATION_DURATION:
-        pulse_width = 500 + (90 (placeholder angle) / 270) * 2000
+        pulse_width = 500 + (90 / 270) * 2000
         duty = int((pulse_width / 20000) * 65535)
-        servo_claw.duty_u16(duty) """
+        servo_claw.duty_u16(duty)
     pass
 def release():
     # Map 0-270 degrees to 500-2500 microseconds
     # Pico PWM duty is 0-65535. 
     # 50Hz period is 20ms. 500us = 2.5% duty. 2500us = 12.5% duty.
-    """ start_time = ticks_ms()
+    start_time = ticks_ms()
     while ticks_diff(ticks_ms(), start_time) < CLAW_OPERATION_DURATION:
-        pulse_width = 500 + (90 (placeholder angle) / 270) * 2000
+        pulse_width = 500 + (160 / 270) * 2000
         duty = int((pulse_width / 20000) * 65535)
-        servo_claw.duty_u16(duty) """
+        servo_claw.duty_u16(duty)
     pass
 
 # FUNCTION FOR TURNING THE PLATFORM THAT HOLDS THE CLAW, 4 wire servo
@@ -1107,19 +1123,17 @@ servo_tilt.freq(50)
 feedback = ADC(Pin(27)) #this is where the white wire goes -- i changed from 26 to 27 because PINOUT sheet says 27.
 
 def turn_claw_up():
-    """ start_time = ticks_ms()
-        while ticks_diff(ticks_ms(), start_time) < CLAW_OPERATION_DURATION:
-            pulse_width = 500 + (90 (placeholder angle) / 270) * 2000
-            duty = int((pulse_width / 20000) * 65535)
-            servo_claw.duty_u16(duty) """
-    pass
+    start_time = ticks_ms()
+    while ticks_diff(ticks_ms(), start_time) < CLAW_OPERATION_DURATION:
+        pulse_width = 500 + (160 / 270) * 2000
+        duty = int((pulse_width / 20000) * 65535)
+        servo_tilt.duty_u16(duty)
 def turn_claw_down():
-    """ start_time = ticks_ms()
-        while ticks_diff(ticks_ms(), start_time) < CLAW_OPERATION_DURATION:
-            pulse_width = 500 + (90 (placeholder angle) / 270) * 2000
-            duty = int((pulse_width / 20000) * 65535)
-            servo_claw.duty_u16(duty) """
-    pass
+    start_time = ticks_ms()
+    while ticks_diff(ticks_ms(), start_time) < CLAW_OPERATION_DURATION:
+        pulse_width = 500 + (120 / 270) * 2000
+        duty = int((pulse_width / 20000) * 65535)
+        servo_tilt.duty_u16(duty)
 
 #FUNCTION FOR MEASURING THE RESISTANCE ONCE GRABBED AND LIGHTS APPROPRITE LED UP
 def R_measure(delivery):
@@ -1281,7 +1295,7 @@ def handle_delivery_mode(sensors, events, robot, delivery):
 
 
 #Resistor detection TEST (Now with line following)
-robot["mode"] = Mode.search
+""" robot["mode"] = Mode.search
 robot["direction"] = Direction.cw
 robot["gnd_loc_idx"] = 20
 delivery["resistor_color"] = Resistor_Color.green
@@ -1309,7 +1323,7 @@ while True:
     latch_events(events)
 
     sleep_ms(10)  
-        
+         """
 
 # --- FINAL MODEL ---
 """ while True:
@@ -1344,7 +1358,17 @@ while True:
     latch_events(events) """
 
 #grabber test (super simple)
-grab()
-#release()
+color_names = {
+    Resistor_Color.red: "red",
+    Resistor_Color.yellow: "yellow",
+    Resistor_Color.green: "green",
+    Resistor_Color.blue: "blue",
+    Resistor_Color.none: "none"
+}
+
+#grab()
 #turn_claw_down()
+resistor_color=R_measure(delivery)
+print(f"Resistor Color: {color_names.get(Resistor_Color)}")
 #turn_claw_up()
+#release()
