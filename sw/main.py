@@ -95,6 +95,7 @@ SR_sensor = Pin(SR_pin, Pin.IN)
 laser_distance = 0 #initialize laser distance
 button = Pin(14, Pin.IN) # button is a PULL_DOWN so it reads 0 when not pressed and 1 when pressed.
 ADC_SOLUTION = 65535  # Pico ADC is 16-bit (0–65535) FOR LEDs
+CLAW_OPERATION_DURATION = 2000
 # STOP IMMEDIATELY AFTER RESET
 motor_l.Forward(0)
 motor_r.Forward(0)
@@ -449,7 +450,7 @@ def update_rack_scan(robot, delivery):
     )
     print(f"slot_status={delivery['slot_status']}")
 
-    if laser_distance < 180:
+    if laser_distance < 180: #The actual threshold should be 2000~3000
         handle_rack_load_detected(robot, delivery, laser_distance)
     else:
         handle_rack_empty_slot(robot, delivery, laser_distance)
@@ -1090,20 +1091,24 @@ servo_claw = PWM(Pin(13))
 servo_claw.freq(50) # Standard 50Hz frequency
 
 def grab():
-    # Map 0-270 degrees to 500-2500 microseconds
-    # Pico PWM duty is 0-65535. 
+    #Map 0-270 degrees to 500-2500 microseconds
+    #Pico PWM duty is 0-65535. 
     # 50Hz period is 20ms. 500us = 2.5% duty. 2500us = 12.5% duty.
-    #pulse_width = 500 + (90 (placeholder angle) / 270) * 2000
-    #duty = int((pulse_width / 20000) * 65535)
-    #servo_claw.duty_u16(duty)
+    """ start_time = ticks_ms()
+    while ticks_diff(ticks_ms(), start_time) < CLAW_OPERATION_DURATION:
+        pulse_width = 500 + (90 (placeholder angle) / 270) * 2000
+        duty = int((pulse_width / 20000) * 65535)
+        servo_claw.duty_u16(duty) """
     pass
 def release():
     # Map 0-270 degrees to 500-2500 microseconds
     # Pico PWM duty is 0-65535. 
     # 50Hz period is 20ms. 500us = 2.5% duty. 2500us = 12.5% duty.
-    #pulse_width = 500 + (180 (placeholder angle) / 270) * 2000
-    #duty = int((pulse_width / 20000) * 65535)
-    #servo_claw.duty_u16(duty)
+    """ start_time = ticks_ms()
+    while ticks_diff(ticks_ms(), start_time) < CLAW_OPERATION_DURATION:
+        pulse_width = 500 + (90 (placeholder angle) / 270) * 2000
+        duty = int((pulse_width / 20000) * 65535)
+        servo_claw.duty_u16(duty) """
     pass
 
 # FUNCTION FOR TURNING THE PLATFORM THAT HOLDS THE CLAW, 4 wire servo
@@ -1113,14 +1118,18 @@ servo_tilt.freq(50)
 feedback = ADC(Pin(27)) #this is where the white wire goes -- i changed from 26 to 27 because PINOUT sheet says 27.
 
 def turn_claw_up():
-    #pulse_width = 500 + (placeholder angle / 270) * 2000
-    #duty = int((pulse_width / 20000) * 65535)
-    #servo_tilt.duty_u16(duty)
+    """ start_time = ticks_ms()
+        while ticks_diff(ticks_ms(), start_time) < CLAW_OPERATION_DURATION:
+            pulse_width = 500 + (90 (placeholder angle) / 270) * 2000
+            duty = int((pulse_width / 20000) * 65535)
+            servo_claw.duty_u16(duty) """
     pass
 def turn_claw_down():
-    #pulse_width = 500 + (placeholder angle / 270) * 2000
-    #duty = int((pulse_width / 20000) * 65535)
-    #servo_tilt.duty_u16(duty)
+    """ start_time = ticks_ms()
+        while ticks_diff(ticks_ms(), start_time) < CLAW_OPERATION_DURATION:
+            pulse_width = 500 + (90 (placeholder angle) / 270) * 2000
+            duty = int((pulse_width / 20000) * 65535)
+            servo_claw.duty_u16(duty) """
     pass
 
 #FUNCTION FOR MEASURING THE RESISTANCE ONCE GRABBED AND LIGHTS APPROPRITE LED UP
@@ -1345,3 +1354,8 @@ while True:
 
     latch_events(events) """
 
+#grabber test (super simple)
+grab()
+#release()
+#turn_claw_down()
+#turn_claw_up()
