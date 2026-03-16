@@ -612,7 +612,7 @@ def update_rack_approach(robot, delivery):
         print("ORANGE_L_APPROACH_START")
         Red.value(1)
 
-    done = timed_forward_step(robot, 500)
+    done = timed_forward_step(robot, 200)
 
     if not done:
         return
@@ -674,7 +674,7 @@ def update_orange_L_reverse_branch(robot, delivery):
     if not robot["timed_rev_started"]:
         print("REV_BRANCH_START")
 
-    done = timed_reverse_step(robot, 900)
+    done = timed_reverse_step(robot, 400)
 
     if not done:
         return
