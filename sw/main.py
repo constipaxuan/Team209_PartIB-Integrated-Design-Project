@@ -1205,10 +1205,9 @@ while True:
         motor_r.Forward(speed = 0)
         latch_events(events)
         continue
-
-    update_location(robot, events)
-
-
+    
+    if robot["mode"] not in [Mode.start, Mode.search_init]:
+        update_location(robot, events)
 
     if robot["mode"] == Mode.start:
         handle_start_mode(robot, sensors)
