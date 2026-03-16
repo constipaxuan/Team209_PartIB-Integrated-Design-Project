@@ -488,6 +488,23 @@ def handle_rack_load_detected(robot, delivery, laser_distance):
     start_rack_pickup_turn(robot)
     update_rack_search_turn(robot)
 
+def start_rack_comp_reverse(robot):
+    if not robot["timed_rev_started"]:
+        print("REV_UNCOOK_START")
+
+    done = timed_reverse_step(robot, 600)
+
+    if not done:
+        return
+
+    if robot["direction"] == Direction.cw:
+        turn_dir = Turn_Direction.right
+    elif robot["direction"] == Direction.acw:
+        turn_dir = Turn_Direction.left
+
+    #robot["motion"] = Motion.turning
+    start_turn(robot, turn_dir)
+    print("REV_BRANCH_DONE -> EXITING_BRANCH")
 
 def start_rack_pickup_turn(robot):
     start_turn(robot, get_turn_dir(robot))
@@ -1285,13 +1302,11 @@ while True:
         latch_events(events)
         continue
 
-    #update_location(robot, events)
+    update_location(robot, events)
 
     if robot["mode"] == Mode.search:
-        rack_search(sensors, events, robot, delivery)
-        update_location(robot, events)
+        rack_search(sensors, events, robot, delivery)     
     elif robot["mode"] == Mode.delivery:
-        update_location(robot, events)
         handle_delivery_from_orange_L(sensors, events, robot, delivery)
 
     latch_events(events)
