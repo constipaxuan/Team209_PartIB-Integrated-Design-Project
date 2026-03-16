@@ -542,15 +542,10 @@ def rack_search(sensors, events, robot, delivery):
 
     if robot["motion"] == Motion.reversing:
         done = timed_reverse_step(robot, 700)
-
-        if done:
-            start_turn(robot, get_turn_dir(robot))
-            robot["motion"] = Motion.turning
-            if robot["direction"] == Direction.cw:
-                robot["turn_dir"] = Turn_Direction.right
-            elif robot["direction"] == Direction.acw:
-                robot["turn_dir"] = Turn_Direction.left
-            return
+        if not done:
+            return  
+        start_turn(robot, get_turn_dir(robot))
+        return
         
     if robot["motion"] == Motion.turning:
         update_rack_search_turn(robot)
@@ -628,6 +623,9 @@ def update_orange_L_reached(robot, delivery):
     delivery["getout_state"] = Get_Out_of_branch.Rev_Branch
     robot["turn_dir"] = Turn_Direction.right
     robot["timed_turn_started"] = False
+    robot["timed_rev_started"] = False
+    robot["timed_move_started"] = False
+    robot["turn_complete"] = False
 
     print("REACHED -> REORIENTING")
 
@@ -673,7 +671,6 @@ def update_orange_L_reverse_branch(robot, delivery):
     if not done:
         return
 
-    robot["motion"] = Motion.follow
     delivery["getout_state"] = Get_Out_of_branch.Exiting_Branch
     start_turn(robot, Turn_Direction.right)
 
