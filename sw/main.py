@@ -152,7 +152,8 @@ robot = {
     "move_complete": False,
     "target_rack_idx": 0,
     "scan_start": 0,
-    "just_turned": False
+    "just_turned": False,
+    "junction_lock": False
 }
 
 delivery = {
@@ -349,9 +350,20 @@ def latch_events(events):
 
 # --- LOCATION UPDATING --- complete with debug prints yippie!!
 def update_location(robot, events):
-    if events["new_junction"] and robot["motion"] == Motion.follow:
+    if robot["motion"] != Motion.follow:
+        return
+
+    if robot["junction_lock"]:
+        if not events["on_junction"]:
+            robot["junction_lock"] = False
+        return
+
+    if events["new_junction"]:
+        robot["junction_lock"] = True
+
         if robot["just_turned"]:
-            robot["just_turned"] = False # turn off double counting latch
+            robot["just_turned"] = False
+            return
 
         old = robot["gnd_loc_idx"]
 
