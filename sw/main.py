@@ -579,14 +579,14 @@ def update_rack_approach(robot, delivery):
     print("ORANGE_L_APPROACH_DONE -> REACHED")
     Red.value(0)
 
-# NEED TO UPDATE WITH GRABBER GRAB
+# NEED TO UPDATE WITH GRABBER GRAB. WILL BE BLOCKING 
 def update_orange_L_reached(robot, delivery):
     print("ORANGE_L_REACHED")
 
-    R_measure(delivery)
-    print(f"RESISTOR_COLOR = {delivery['resistor_color']}")
-
     # INSERT GRABBER CODE
+
+    #R_measure(delivery)
+    #print(f"RESISTOR_COLOR = {delivery['resistor_color']}")
 
     delivery["rack_state"] = Delivery_Rack_States.reorienting
     delivery["getout_state"] = Get_Out_of_branch.Rev_Branch
@@ -709,8 +709,8 @@ def update_purple_L_pickup(sensors, events, robot, delivery):
 # UPDATE WITH GRABBER CODE
 def update_purple_L_reached(robot, delivery):
     print("PURPLE_L_REACHED")
-    R_measure(delivery)
-    print(f"RESISTOR_COLOR = {delivery['resistor_color']}")
+    #R_measure(delivery)
+    #print(f"RESISTOR_COLOR = {delivery['resistor_color']}")
 
     # INSERT GRABBER CODE
     delivery["rack_state"] = Delivery_Rack_States.reorienting
