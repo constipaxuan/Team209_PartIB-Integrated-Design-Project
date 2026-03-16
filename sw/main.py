@@ -1271,11 +1271,13 @@ while True:
         latch_events(events)
         continue
 
-    update_location(robot, events)
+    #update_location(robot, events)
 
     if robot["mode"] == Mode.search:
         rack_search(sensors, events, robot, delivery)
+        update_location(robot, events)
     elif robot["mode"] == Mode.delivery:
+        update_location(robot, events)
         handle_delivery_from_orange_L(sensors, events, robot, delivery)
 
     latch_events(events)
