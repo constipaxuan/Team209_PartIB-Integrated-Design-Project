@@ -541,7 +541,7 @@ def rack_search(sensors, events, robot, delivery):
     )
 
     if robot["motion"] == Motion.reversing:
-        done = timed_reverse_step(robot, 600)
+        done = timed_reverse_step(robot, 700)
 
         if done:
             start_turn(robot, get_turn_dir(robot))
