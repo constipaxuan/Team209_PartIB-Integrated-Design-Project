@@ -1223,7 +1223,7 @@ while True:
                 start_turn(robot, Turn_Direction.right)
             line_follow_step(sensors["S1"], sensors["S2"], 82, 20)
         elif robot["motion"] == Motion.turning:
-            robot["turn_complete"] = turn_v4(robot, sensors)
+            robot["turn_complete"] = timed_turn_step(robot, 700)
             if robot["turn_complete"]:
                 finish_turn(robot)     
     
