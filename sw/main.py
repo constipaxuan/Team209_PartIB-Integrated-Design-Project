@@ -165,7 +165,8 @@ delivery = {
     "search_slot_counter": 0,
     "slot_status": [0,0,0,0,0,0],
     "getout_state": Get_Out_of_branch.Rev_Branch,
-    "last_branch_time": 0
+    "last_branch_time": 0,
+    "scan_node": 0
 }
 
 target_racks = [Racks.rack_purple_L, Racks.rack_orange_L, Racks.rack_purple_U, Racks.rack_orange_U]
@@ -424,6 +425,13 @@ def start_rack_scan(robot, delivery):
     robot["motion"] = Motion.stopped_for_scan
     robot["scan_start"] = ticks_ms()
 
+    if robot["direction"] == Direction.cw:
+        delivery["scan_node"] = (robot["gnd_loc_idx"] + 1) % N
+    elif robot["direction"] == Direction.acw:
+        delivery["scan_node"] = (robot["gnd_loc_idx"] - 1) % N
+    else:
+        delivery["scan_node"] = robot["gnd_loc_idx"]
+
     print(
         f"RACK_SCAN_START | slot={delivery['search_slot_counter']} "
         f"| target={target_racks[robot['target_rack_idx']]}"
@@ -467,10 +475,11 @@ def read_rack_laser(robot):
 def handle_rack_load_detected(robot, delivery, laser_distance):
     print(
         f"LOAD_DETECTED | slot={delivery['search_slot_counter']} "
-        f"| dist={laser_distance}"
+        f"| dist={laser_distance} | scan_node={delivery['scan_node']}"
     )
     Red.value(1)
 
+    delivery["pickup_node"] = delivery["scan_node"]
     delivery["delivery_state"] = Delivery_States.pickup
     delivery["rack_state"] = Delivery_Rack_States.approaching
 
@@ -1248,10 +1257,11 @@ while True:
         latch_events(events)
         continue
 
-    update_location(robot, events)
+    #update_location(robot, events)
 
     if robot["mode"] == Mode.search:
         rack_search(sensors, events, robot, delivery)
+        update_location(robot, events)
     elif robot["mode"] == Mode.delivery:
         handle_delivery_from_orange_L(sensors, events, robot, delivery)
 
