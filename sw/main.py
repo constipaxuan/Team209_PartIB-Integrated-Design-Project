@@ -19,6 +19,7 @@ class Motion:
     follow = 1
     turning = 2
     stopped_for_scan = 3
+    reversing = 4
 
 class Motor:
     def __init__(self, dirPin, PWMPin):
@@ -478,24 +479,12 @@ def handle_rack_load_detected(robot, delivery, laser_distance):
     delivery["pickup_node"] = delivery["scan_node"]
     delivery["delivery_state"] = Delivery_States.pickup
     delivery["rack_state"] = Delivery_Rack_States.approaching
+    robot["motion"] = Motion.reversing
 
-    start_rack_comp_reverse(robot)
     start_rack_pickup_turn(robot)
-    update_rack_search_turn(robot)
 
-def start_rack_comp_reverse(robot):
-    if not robot["timed_rev_started"]:
-        print("REV_UNCOOK_START")
 
-    done = timed_reverse_step(robot, 600)
 
-    if not done:
-        return
-
-    if robot["direction"] == Direction.cw:
-        robot["turn_dir"] = Turn_Direction.right
-    elif robot["direction"] == Direction.acw:
-        robot["turn_dir"] = Turn_Direction.left
 
 
 
@@ -558,6 +547,18 @@ def rack_search(sensors, events, robot, delivery):
         f"| new_junction={events['new_junction']}"
     )
 
+    if robot["motion"] == Motion.reversing:
+        done = timed_reverse_step(robot, 600)
+
+        if done:
+            start_turn(robot, get_turn_dir(robot))
+            robot["motion"] = Motion.turning
+            if robot["direction"] == Direction.cw:
+                robot["turn_dir"] = Turn_Direction.right
+            elif robot["direction"] == Direction.acw:
+                robot["turn_dir"] = Turn_Direction.left
+            return
+        
     if robot["motion"] == Motion.turning:
         update_rack_search_turn(robot)
         return
