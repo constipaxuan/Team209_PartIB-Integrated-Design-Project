@@ -69,6 +69,12 @@ class Racks:
     rack_orange_U = 2
     rack_purple_U = 3
 
+class Claw_State:
+    idle = 0
+    start = 1
+    waiting = 2
+    done = 3
+
 lower_loop = [Node.Starting_node, Node.Yellow_bay, Node.Red_bay, 
          Node.PL1, Node.PL2, Node.PL3, Node.PL4, Node.PL5, Node.PL6, Node.Purple_T, 
          Node.Elev_low_P, Node.Elev_junc, Node.Elev_low_O,
@@ -155,7 +161,10 @@ robot = {
     "target_rack_idx": 0,
     "scan_start": 0,
     "just_turned": False,
-    "junction_lock": False
+    "junction_lock": False,
+    "claw_state": Claw_State.idle,
+    "claw_started": False,
+    "claw_start": 0
 }
 
 delivery = {
@@ -204,8 +213,7 @@ servo_tilt = PWM(Pin(15))
 while ticks_diff(ticks_ms(), start_time) < CLAW_OPERATION_DURATION:
     pulse_width = 500 + (135 / 270) * 2000
     duty = int((pulse_width / 20000) * 65535)
-    servo_tilt.duty_u16(duty)
-
+    servo_tilt.duty_u16(duty) 
 
 # --- DEBUG PRINTS ---
 def dbg(msg):
@@ -624,14 +632,14 @@ def update_rack_approach(robot, delivery):
     print("ORANGE_L_APPROACH_DONE -> REACHED")
     Red.value(0)
 
-# NEED TO UPDATE WITH GRABBER GRAB. WILL BE BLOCKING 
+# UPDATED WITH GRABBER AND TILT
 def update_orange_L_reached(robot, delivery):
     print("ORANGE_L_REACHED")
 
-    # INSERT GRABBER CODE
-
-    #R_measure(delivery)
-    #print(f"RESISTOR_COLOR = {delivery['resistor_color']}")
+    turn_claw_up()
+    grab()
+    R_measure(delivery)
+    print(f"RESISTOR_COLOR = {delivery['resistor_color']}")
 
     delivery["rack_state"] = Delivery_Rack_States.reorienting
     delivery["getout_state"] = Get_Out_of_branch.Rev_Branch
@@ -764,13 +772,14 @@ def update_purple_L_pickup(sensors, events, robot, delivery):
 
     print("WARNING: unknown rack_state in update_purple_L_pickup()")
 
-# UPDATE WITH GRABBER CODE
+# UPDATED WITH GRABBER + TILT
 def update_purple_L_reached(robot, delivery):
     print("PURPLE_L_REACHED")
-    #R_measure(delivery)
-    #print(f"RESISTOR_COLOR = {delivery['resistor_color']}")
-
+    turn_claw_up()
     grab()
+    R_measure(delivery)
+    print(f"RESISTOR_COLOR = {delivery['resistor_color']}")
+
     delivery["rack_state"] = Delivery_Rack_States.reorienting
     delivery["getout_state"] = Get_Out_of_branch.Rev_Branch
     robot["turn_dir"] = Turn_Direction.left
@@ -951,7 +960,8 @@ def update_dropoff_at_bay(sensors, events, robot, delivery):
     if events["new_T"]:
         motor_l.Forward(speed = 0)
         motor_r.Forward(speed = 0)
-        # release()   # uncomment when grabber is ready
+        turn_claw_down()
+        release()   # uncomment when grabber is ready
         delivery["unloading_state"] = Unloading_States.done
         print("BAY_REACHED -> UNLOADING_DONE")
         return
