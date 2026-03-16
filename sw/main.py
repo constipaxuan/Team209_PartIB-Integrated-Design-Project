@@ -915,7 +915,7 @@ def update_dropoff_at_bay(sensors, events, robot, delivery):
 
 def update_unloading_turn(sensors, robot, delivery):
 
-    robot["turn_complete"] = turn_v4(robot, sensors)
+    robot["turn_complete"] = timed_turn_step(robot, 700)
 
     if not robot["turn_complete"]:
         return
@@ -1129,7 +1129,7 @@ def handle_start_mode(robot, sensors):
             robot["motion"] = Motion.turning
             robot["turn_dir"] = Turn_Direction.right
     elif robot["motion"] == Motion.turning:
-        robot["turn_complete"] = turn_v4(robot, sensors)
+        robot["turn_complete"] = timed_turn_step(robot, 700)
         if robot["turn_complete"]:
             robot["motion"] = Motion.follow
             motor_l.Forward(speed = 0)
@@ -1174,7 +1174,7 @@ def handle_search_mode(sensors, events, robot, delivery):
     line_follow_step(sensors["S1"], sensors["S2"], 82, 20)
 
 def update_search_turn(sensors, robot):
-    robot["turn_complete"] = turn_v4(robot, sensors)
+    robot["turn_complete"] = timed_turn_step(robot, 700)
 
     if not robot["turn_complete"]:
         return
