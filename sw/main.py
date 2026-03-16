@@ -418,6 +418,7 @@ def rec_dist_laserL():
     laser_distance = vl53l0_L.read()
     return laser_distance
 
+
 def start_rack_scan(robot, delivery):
     motor_l.Forward(speed=0)
     motor_r.Forward(speed=0)
@@ -1072,15 +1073,22 @@ def finish_bay_recover(robot, delivery, cfg):
 servo_claw = PWM(Pin(13))
 servo_claw.freq(50) # Standard 50Hz frequency
 
-def claw(angle):
+def grab():
     # Map 0-270 degrees to 500-2500 microseconds
     # Pico PWM duty is 0-65535. 
     # 50Hz period is 20ms. 500us = 2.5% duty. 2500us = 12.5% duty.
-    pulse_width = 500 + (angle / 270) * 2000
-    duty = int((pulse_width / 20000) * 65535)
-    servo_claw.duty_u16(duty)
-
-
+    #pulse_width = 500 + (90 (placeholder angle) / 270) * 2000
+    #duty = int((pulse_width / 20000) * 65535)
+    #servo_claw.duty_u16(duty)
+    pass
+def release():
+    # Map 0-270 degrees to 500-2500 microseconds
+    # Pico PWM duty is 0-65535. 
+    # 50Hz period is 20ms. 500us = 2.5% duty. 2500us = 12.5% duty.
+    #pulse_width = 500 + (180 (placeholder angle) / 270) * 2000
+    #duty = int((pulse_width / 20000) * 65535)
+    #servo_claw.duty_u16(duty)
+    pass
 
 # FUNCTION FOR TURNING THE PLATFORM THAT HOLDS THE CLAW, 4 wire servo
 # Initialize the servo with 4 wires
@@ -1088,10 +1096,16 @@ servo_tilt = PWM(Pin(15)) #QN: is this pin correct? It shares the same pin as th
 servo_tilt.freq(50)
 feedback = ADC(Pin(27)) #this is where the white wire goes -- i changed from 26 to 27 because PINOUT sheet says 27.
 
-def turn_claw(angle):
-    pulse_width = 500 + (angle / 270) * 2000
-    duty = int((pulse_width / 20000) * 65535)
-    servo_tilt.duty_u16(duty)
+def turn_claw_up():
+    #pulse_width = 500 + (placeholder angle / 270) * 2000
+    #duty = int((pulse_width / 20000) * 65535)
+    #servo_tilt.duty_u16(duty)
+    pass
+def turn_claw_down():
+    #pulse_width = 500 + (placeholder angle / 270) * 2000
+    #duty = int((pulse_width / 20000) * 65535)
+    #servo_tilt.duty_u16(duty)
+    pass
 
 #FUNCTION FOR MEASURING THE RESISTANCE ONCE GRABBED AND LIGHTS APPROPRITE LED UP
 def R_measure(delivery):

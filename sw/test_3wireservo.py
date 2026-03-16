@@ -1,8 +1,9 @@
 from machine import Pin, PWM
 import time
 
-#set servo on PWM pin 15
-servo = PWM(Pin(15))
+#now testing the claw
+#set servo on PWM pin 13
+servo = PWM(Pin(13))
 servo.freq(50) # Standard 50Hz frequency
 
 def set_angle(angle):

@@ -69,6 +69,7 @@ def test():
     sleep(0.5)
     turn_claw(10)
     sleep(0.5)
+    claw(-10)
     resistor_color = R_measure()
     print(f"Color: {resistor_color}")
 
