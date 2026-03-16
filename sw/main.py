@@ -644,7 +644,7 @@ def update_orange_L_reorient(sensors, events, robot, delivery):
         return
 
     if state == Get_Out_of_branch.RackZone:
-        update_rack_leave_rack_zone(sensors, events, delivery)
+        update_rack_leave_rack_zone(robot, sensors, events, delivery)
         return
 
     print("WARNING: unknown getout_state in update_orange_L_reorient()")
@@ -698,7 +698,7 @@ def update_rack_exit_branch(robot, delivery):
     print("EXIT_BRANCH_TURN_DONE -> RACKZONE")
 
 # SAME FOR ALL RACKS
-def update_rack_leave_rack_zone(sensors, events, delivery):
+def update_rack_leave_rack_zone(robot, sensors, events, delivery):
     if events["new_junction"]:
         delivery["last_branch_time"] = ticks_ms()
         print("RACKZONE_JUNCTION_SEEN")
@@ -780,7 +780,7 @@ def update_purple_L_reorient(sensors, events, robot, delivery):
         return
 
     if state == Get_Out_of_branch.RackZone:
-        update_rack_leave_rack_zone(sensors, events, delivery)
+        update_rack_leave_rack_zone(robot, sensors, events, delivery)
         return
 
     print("WARNING: unknown getout_state in update_purple_L_reorient()")
