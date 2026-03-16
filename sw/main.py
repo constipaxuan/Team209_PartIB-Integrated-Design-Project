@@ -426,13 +426,6 @@ def start_rack_scan(robot, delivery):
     robot["motion"] = Motion.stopped_for_scan
     robot["scan_start"] = ticks_ms()
 
-    if robot["direction"] == Direction.cw:
-        delivery["scan_node"] = (robot["gnd_loc_idx"] + 1) % N
-    elif robot["direction"] == Direction.acw:
-        delivery["scan_node"] = (robot["gnd_loc_idx"] - 1) % N
-    else:
-        delivery["scan_node"] = robot["gnd_loc_idx"]
-
     print(
         f"RACK_SCAN_START | slot={delivery['search_slot_counter']} "
         f"| target={target_racks[robot['target_rack_idx']]}"
@@ -722,6 +715,7 @@ def update_rack_leave_rack_zone(sensors, events, delivery):
     print("OUT_OF_RACK_ZONE -> READY_FOR_UNLOADING")
     delivery["getout_state"] = Get_Out_of_branch.Rev_Branch
     delivery["rack_state"] = Delivery_Rack_States.done
+    
     if target_racks[robot["target_rack_idx"]] == Racks.rack_orange_L:
         robot["direction"] = Direction.acw
     elif target_racks[robot["target_rack_idx"]] == Racks.rack_purple_L:
