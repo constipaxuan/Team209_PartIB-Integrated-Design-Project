@@ -3,7 +3,7 @@ import time
 
 #now testing the claw
 #set servo on PWM pin 13
-servo = PWM(Pin(13))
+servo = PWM(Pin(15))
 servo.freq(50) # Standard 50Hz frequency
 
 def set_angle(angle):
@@ -17,9 +17,7 @@ def set_angle(angle):
 # Test Sweep
 while True:
     print("Moving to 0 degrees")
-    set_angle(0)
-    time.sleep(1)
-    
-    print("Moving to 270 degrees")
-    set_angle(270)
-    time.sleep(1)
+    set_angle(135) #135 is reference
+
+#for tilt, 120 goes down, 160 goes up,
+#for claw, 135 is idle, 
