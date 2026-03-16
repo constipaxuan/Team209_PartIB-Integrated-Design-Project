@@ -1193,7 +1193,7 @@ def handle_delivery_mode(sensors, events, robot, delivery):
     print("WARNING: unsupported delivery target rack")
 
 # -- LOOP + MAPPING TEST ---
-while True:
+""" while True:
     update_sensors_and_events(sensors, events)
 
     button_now = button.value()
@@ -1227,11 +1227,11 @@ while True:
             if robot["turn_complete"]:
                 finish_turn(robot)     
     
-        latch_events(events)
+        latch_events(events) """
 
 
 #Resistor detection TEST (Now with line following)
-""" robot["mode"] = Mode.search
+robot["mode"] = Mode.search
 robot["direction"] = Direction.cw
 robot["gnd_loc_idx"] = 20
 
@@ -1257,7 +1257,7 @@ while True:
 
     latch_events(events)
 
-    sleep_ms(10)  """
+    sleep_ms(10)  
         
 
 # --- FINAL MODEL ---
