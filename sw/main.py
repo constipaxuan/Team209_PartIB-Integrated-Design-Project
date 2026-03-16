@@ -1180,7 +1180,7 @@ def handle_delivery_mode(sensors, events, robot, delivery):
     print("WARNING: unsupported delivery target rack")
 
 # -- LOOP + MAPPING TEST ---
-""" while True:
+while True:
     update_sensors_and_events(sensors, events)
 
     button_now = button.value()
@@ -1213,7 +1213,7 @@ def handle_delivery_mode(sensors, events, robot, delivery):
             if robot["turn_complete"]:
                 finish_turn(robot)     
     
-        latch_events(events) """
+        latch_events(events)
 
 
 #Resistor detection TEST (Now with line following)
@@ -1247,7 +1247,7 @@ while True:
         
 
 # --- FINAL MODEL ---
-while True:
+""" while True:
     update_sensors_and_events(sensors, events)
 
     button_now = button.value()
@@ -1276,5 +1276,5 @@ while True:
     else:
         print("WARNING: unknown mode")
 
-    latch_events(events)
+    latch_events(events) """
 
