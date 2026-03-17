@@ -1310,7 +1310,7 @@ robot["mode"] = Mode.search
 robot["direction"] = Direction.cw
 robot["gnd_loc_idx"] = 20
 delivery["resistor_color"] = Resistor_Color.green
-target_racks[robot["target_rack_idx"]] == Racks.rack_orange_L
+target_racks[robot["target_rack_idx"]] = Racks.rack_orange_L
 
 while True:
 
