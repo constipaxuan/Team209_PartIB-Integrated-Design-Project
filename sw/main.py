@@ -566,7 +566,7 @@ def finish_rack_search(robot, delivery):
     print(f"NEXT_TARGET_RACK_IDX = {robot['target_rack_idx']}")
 
 def update_rack_search_turn(robot):
-    robot["turn_complete"] = timed_turn_step(robot, 1500)
+    robot["turn_complete"] = timed_turn_step(robot, 1800)
 
     if not robot["turn_complete"]:
         return
@@ -596,7 +596,7 @@ def rack_search(sensors, events, robot, delivery):
     #)
 
     if robot["motion"] == Motion.reversing:
-        done = timed_reverse_step(robot, 600)
+        done = timed_reverse_step(robot, 900)
         if not done:
             return  
         print("REVERSE DONE | direction =", robot["direction"], "| turn_dir =", get_turn_dir(robot))
@@ -1072,7 +1072,7 @@ def update_recover_reverse_to_spine(robot, delivery):
     if not robot["timed_rev_started"]:
         print("RECOVER_REVERSE_TO_SPINE_START")
 
-    done = timed_reverse_step(robot, 1500)
+    done = timed_reverse_step(robot, 1800)
 
     if not done:
         return
