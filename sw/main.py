@@ -569,7 +569,7 @@ def finish_rack_search(robot, delivery):
     print(f"NEXT_TARGET_RACK_IDX = {robot['target_rack_idx']}")
 
 def update_rack_search_turn(robot):
-    robot["turn_complete"] = timed_turn_step(robot, 1480)
+    robot["turn_complete"] = timed_turn_step(robot, 1500)
 
     if not robot["turn_complete"]:
         return
