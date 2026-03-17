@@ -220,6 +220,7 @@ servo_claw = PWM(Pin(13))
 #Grabbing & Initialize functions
 def grab():
     start_time = ticks_ms()
+    print("grab called")
     while ticks_diff(ticks_ms(), start_time) < CLAW_OPERATION_DURATION:
             Moves the claw from its current position to 90 degrees.
             print("grab called")
@@ -228,6 +229,7 @@ def grab():
 
 def release():
     start_time = ticks_ms()
+    print("release called")
     while ticks_diff(ticks_ms(), start_time) < CLAW_OPERATION_DURATION:
             Moves the claw from its current position to 160 degrees.
             global current_claw_angle
@@ -657,7 +659,7 @@ def update_rack_approach(robot, delivery):
         print("ORANGE_L_APPROACH_START")
         Red.value(1)
 
-    done = timed_forward_step(robot, 200)
+    done = timed_forward_step(robot, 300)
 
     if not done:
         return
