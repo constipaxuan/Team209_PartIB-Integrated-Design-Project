@@ -222,6 +222,7 @@ def grab():
     start_time = ticks_ms()
     while ticks_diff(ticks_ms(), start_time) < CLAW_OPERATION_DURATION:
             """Moves the claw from its current position to 90 degrees."""
+            print("grab called")
             global current_claw_angle
             current_claw_angle = set_angle_slow(current_claw_angle, 100, 0.01)
 
@@ -553,7 +554,7 @@ def finish_rack_search(robot, delivery):
     print(f"NEXT_TARGET_RACK_IDX = {robot['target_rack_idx']}")
 
 def update_rack_search_turn(robot):
-    robot["turn_complete"] = timed_turn_step(robot, 1800)
+    robot["turn_complete"] = timed_turn_step(robot, 1500)
 
     if not robot["turn_complete"]:
         return
@@ -644,7 +645,7 @@ def update_rack_approach(robot, delivery):
         print("ORANGE_L_APPROACH_START")
         Red.value(1)
 
-    done = timed_forward_step(robot, 400)
+    done = timed_forward_step(robot, 200)
 
     if not done:
         return
@@ -798,9 +799,9 @@ def update_purple_L_pickup(sensors, events, robot, delivery):
 def update_purple_L_reached(robot, delivery):
     print("PURPLE_L_REACHED")
     #turn_claw_up()
-    """ grab()
+    grab()
     R_measure(delivery)
-    print(f"RESISTOR_COLOR = {delivery['resistor_color']}") """
+    print(f"RESISTOR_COLOR = {delivery['resistor_color']}")
 
     delivery["rack_state"] = Delivery_Rack_States.reorienting
     delivery["getout_state"] = Get_Out_of_branch.Rev_Branch
@@ -983,7 +984,7 @@ def update_dropoff_at_bay(sensors, events, robot, delivery):
         motor_l.Forward(speed = 0)
         motor_r.Forward(speed = 0)
         #turn_claw_down()
-        #release()   # uncomment when grabber is ready
+        release()   # uncomment when grabber is ready
         delivery["unloading_state"] = Unloading_States.done
         print("BAY_REACHED -> UNLOADING_DONE")
         return
