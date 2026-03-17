@@ -688,7 +688,7 @@ def update_orange_L_reverse_branch(robot, delivery):
     if not robot["timed_rev_started"]:
         print("REV_BRANCH_START")
 
-    done = timed_reverse_step(robot, 700)
+    done = timed_reverse_step(robot, 900)
 
     if not done:
         return
