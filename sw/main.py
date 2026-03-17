@@ -532,7 +532,7 @@ def finish_rack_search(robot, delivery):
     print(f"NEXT_TARGET_RACK_IDX = {robot['target_rack_idx']}")
 
 def update_rack_search_turn(robot):
-    robot["turn_complete"] = timed_turn_step(robot, 1600)
+    robot["turn_complete"] = timed_turn_step(robot, 1400)
 
     if not robot["turn_complete"]:
         return
@@ -1309,6 +1309,7 @@ robot["mode"] = Mode.search
 robot["direction"] = Direction.cw
 robot["gnd_loc_idx"] = 20
 delivery["resistor_color"] = Resistor_Color.green
+target_racks[robot["target_rack_idx"]] == Racks.rack_orange_L
 
 while True:
 
