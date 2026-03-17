@@ -1374,7 +1374,12 @@ while True:
          
 
 # --- FINAL MODEL ---
-""" while True:
+""" 
+robot["gnd_loc_idx"] = 19
+delivery["resistor_color"] = Resistor_Color.green
+robot["mode"] = Mode.delivery
+
+while True:
     update_sensors_and_events(sensors, events)
 
     button_now = button.value()
@@ -1420,3 +1425,8 @@ resistor_color=R_measure(delivery)
 print(f"Resistor Color: {color_names.get(Resistor_Color)}")
 #turn_claw_up()
 #release() """
+
+# Broken reverse -- testing recovery only
+# Start at node 19, so it turns at 20, get it to turn at 21, stop at bay, TURN 180 -- timed turn for like 2000ms? on new_junction node = 21 then left? see if doublecounting occurs. 
+
+
