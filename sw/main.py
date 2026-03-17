@@ -596,7 +596,7 @@ def rack_search(sensors, events, robot, delivery):
     #)
 
     if robot["motion"] == Motion.reversing:
-        done = timed_reverse_step(robot, 900)
+        done = timed_reverse_step(robot, 700)
         if not done:
             return  
         print("REVERSE DONE | direction =", robot["direction"], "| turn_dir =", get_turn_dir(robot))
@@ -657,7 +657,7 @@ def update_rack_approach(robot, delivery):
         print("ORANGE_L_APPROACH_START")
         Red.value(1)
 
-    done = timed_forward_step(robot, 200)
+    done = timed_forward_step(robot, 400)
 
     if not done:
         return
