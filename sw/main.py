@@ -239,15 +239,15 @@ def initialize_claw():
             global current_claw_angle
             current_claw_angle = set_angle_slow(current_claw_angle, 135, 0.01)
 
-initialize_claw()
+#initialize_claw()
 
-start_time = ticks_ms()
+""" start_time = ticks_ms()
 servo_tilt = PWM(Pin(15))
 while ticks_diff(ticks_ms(), start_time) < CLAW_OPERATION_DURATION:
     pulse_width = 500 + (135 / 270) * 2000
     duty = int((pulse_width / 20000) * 65535)
     servo_tilt.duty_u16(duty) 
-
+ """
 # --- DEBUG PRINTS ---
 def dbg(msg):
     print(msg)
