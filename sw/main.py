@@ -590,7 +590,7 @@ def rack_search(sensors, events, robot, delivery):
     #)
 
     if robot["motion"] == Motion.reversing:
-        done = timed_reverse_step(robot, 900)
+        done = timed_reverse_step(robot, 700)
         if not done:
             return  
         print("REVERSE DONE | direction =", robot["direction"], "| turn_dir =", get_turn_dir(robot))
@@ -651,7 +651,7 @@ def update_rack_approach(robot, delivery):
         print("ORANGE_L_APPROACH_START")
         Red.value(1)
 
-    done = timed_forward_step(robot, 200)
+    done = timed_forward_step(robot, 400)
 
     if not done:
         return
@@ -1345,7 +1345,12 @@ while True:
           """
 
 # --- FINAL MODEL ---
-""" while True:
+""" 
+robot["gnd_loc_idx"] = 19
+delivery["resistor_color"] = Resistor_Color.green
+robot["mode"] = Mode.delivery
+
+while True:
     update_sensors_and_events(sensors, events)
 
     button_now = button.value()
@@ -1382,4 +1387,9 @@ grab()
 #turn_claw_down()
 resistor_color=R_measure(delivery)
 #turn_claw_up()
-#release() 
+#release() """
+
+# Broken reverse -- testing recovery only
+# Start at node 19, so it turns at 20, get it to turn at 21, stop at bay, TURN 180 -- timed turn for like 2000ms? on new_junction node = 21 then left? see if doublecounting occurs. 
+
+
