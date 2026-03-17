@@ -596,7 +596,7 @@ def rack_search(sensors, events, robot, delivery):
     #)
 
     if robot["motion"] == Motion.reversing:
-        done = timed_reverse_step(robot, 700)
+        done = timed_reverse_step(robot, 600)
         if not done:
             return  
         print("REVERSE DONE | direction =", robot["direction"], "| turn_dir =", get_turn_dir(robot))
@@ -722,7 +722,7 @@ def update_orange_L_reverse_branch(robot, delivery):
     if not robot["timed_rev_started"]:
         print("REV_BRANCH_START")
 
-    done = timed_reverse_step(robot, 900)
+    done = timed_reverse_step(robot, 1000)
 
     if not done:
         return
@@ -1072,7 +1072,7 @@ def update_recover_reverse_to_spine(robot, delivery):
     if not robot["timed_rev_started"]:
         print("RECOVER_REVERSE_TO_SPINE_START")
 
-    done = timed_reverse_step(robot, 2000)
+    done = timed_reverse_step(robot, 1500)
 
     if not done:
         return
