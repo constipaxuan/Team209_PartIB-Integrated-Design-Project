@@ -64,10 +64,10 @@ class Node:
     Green_bay = 21
 
 class Racks:
-    rack_orange_L = 0
-    rack_purple_L = 1
-    rack_orange_U = 2
-    rack_purple_U = 3
+    rack_purple_L = 0
+    rack_orange_L = 1
+    rack_purple_U = 2
+    rack_orange_U = 3
 
 class Claw_State:
     idle = 0
@@ -703,7 +703,7 @@ def update_rack_exit_branch(robot, delivery):
     Blue.value(1)
     print("EXIT_BRANCH_TURN_START")
 
-    robot["turn_complete"] = timed_turn_step(robot, 2100)
+    robot["turn_complete"] = timed_turn_step(robot, 2300)
 
     if not robot["turn_complete"]:
         return
