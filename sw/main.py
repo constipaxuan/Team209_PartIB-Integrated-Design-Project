@@ -1189,6 +1189,8 @@ def R_measure(delivery):
     voltage = 3.3*sensor.read_u16()/ADC_SOLUTION 
     #this is the final voltage reading
 
+    print("voltage," ,voltage)
+
     if voltage > 3:
         Blue.value(1) #turns LED on to blue
         delivery["resistor_color"] = Resistor_Color.blue # Blue
@@ -1201,6 +1203,8 @@ def R_measure(delivery):
     elif 0.2 < voltage <= 1:
         Yellow.value(1)
         delivery["resistor_color"] = Resistor_Color.yellow # Yellow
+    
+    print("res color:", delivery["resistor_color"])
 
 # --- LOCAL DELIVERY HANDLERS ---
 def handle_delivery_from_orange_L(sensors, events, robot, delivery):
