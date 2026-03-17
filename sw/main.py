@@ -1006,7 +1006,7 @@ def update_bay_recover(events, robot, delivery):
     update_bay_recover_wait_for_junction(events, robot, delivery)
 
 def get_bay_recover_config(delivery):
-    target_rack = delivery["target_rack"]
+    target_rack = target_racks[robot["target_rack_idx"]]
 
     if delivery["resistor_color"] == Resistor_Color.blue:
         if target_rack == Racks.rack_purple_L:
@@ -1231,7 +1231,7 @@ def handle_search_init_mode(sensors, events, robot, delivery):
 
     robot["mode"] = Mode.search
     robot["direction"] = Direction.acw
-    delivery["target_rack"] = Racks.rack_purple_L
+    target_racks[robot["target_rack_idx"]] = Racks.rack_purple_L
 
     print("SEARCH_INIT -> SEARCH")
 
