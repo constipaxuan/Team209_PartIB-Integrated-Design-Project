@@ -636,10 +636,10 @@ def update_rack_approach(robot, delivery):
 def update_orange_L_reached(robot, delivery):
     print("ORANGE_L_REACHED")
 
-    turn_claw_up()
+    """ turn_claw_up()
     grab()
     R_measure(delivery)
-    print(f"RESISTOR_COLOR = {delivery['resistor_color']}")
+    print(f"RESISTOR_COLOR = {delivery['resistor_color']}") """
 
     delivery["rack_state"] = Delivery_Rack_States.reorienting
     delivery["getout_state"] = Get_Out_of_branch.Rev_Branch
@@ -775,11 +775,11 @@ def update_purple_L_pickup(sensors, events, robot, delivery):
 # UPDATED WITH GRABBER + TILT
 def update_purple_L_reached(robot, delivery):
     print("PURPLE_L_REACHED")
-    turn_claw_up()
+    """ turn_claw_up()
     grab()
     R_measure(delivery)
     print(f"RESISTOR_COLOR = {delivery['resistor_color']}")
-
+ """
     delivery["rack_state"] = Delivery_Rack_States.reorienting
     delivery["getout_state"] = Get_Out_of_branch.Rev_Branch
     robot["turn_dir"] = Turn_Direction.left
