@@ -1305,7 +1305,7 @@ def handle_delivery_mode(sensors, events, robot, delivery):
 
 
 #Resistor detection TEST (Now with line following)
-""" robot["mode"] = Mode.search
+robot["mode"] = Mode.search
 robot["direction"] = Direction.cw
 robot["gnd_loc_idx"] = 20
 delivery["resistor_color"] = Resistor_Color.green
@@ -1333,7 +1333,7 @@ while True:
     latch_events(events)
 
     sleep_ms(10)  
-         """
+         
 
 # --- FINAL MODEL ---
 """ while True:
@@ -1368,7 +1368,7 @@ while True:
     latch_events(events) """
 
 #grabber test (super simple)
-color_names = {
+""" color_names = {
     Resistor_Color.red: "red",
     Resistor_Color.yellow: "yellow",
     Resistor_Color.green: "green",
@@ -1381,4 +1381,4 @@ color_names = {
 resistor_color=R_measure(delivery)
 print(f"Resistor Color: {color_names.get(Resistor_Color)}")
 #turn_claw_up()
-#release()
+#release() """
