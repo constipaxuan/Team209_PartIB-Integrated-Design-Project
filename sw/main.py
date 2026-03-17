@@ -223,7 +223,7 @@ def grab():
     while ticks_diff(ticks_ms(), start_time) < CLAW_OPERATION_DURATION:
             """Moves the claw from its current position to 90 degrees."""
             global current_claw_angle
-            current_claw_angle = set_angle_slow(current_claw_angle, 120, 0.01)
+            current_claw_angle = set_angle_slow(current_claw_angle, 100, 0.01)
 
 def release():
     start_time = ticks_ms()
@@ -232,14 +232,8 @@ def release():
             global current_claw_angle
             current_claw_angle = set_angle_slow(current_claw_angle, 160, 0.01)
 
-def initialize_claw():
-    start_time = ticks_ms()
-    while ticks_diff(ticks_ms(), start_time) < CLAW_OPERATION_DURATION:
-            """Moves the claw from its current position to 135 degrees."""
-            global current_claw_angle
-            current_claw_angle = set_angle_slow(current_claw_angle, 135, 0.01)
 
-#initialize_claw()
+release() #idle position of claw opening
 
 """ start_time = ticks_ms()
 servo_tilt = PWM(Pin(15))
@@ -1137,31 +1131,6 @@ def finish_bay_recover(robot, delivery, cfg):
     )
 
 
-# FUNCTION FOR OPENING AND CLOSING THE 3 WIRE CLAW SERVO
-#initialize the servo with 3 wires (Different servos should be different pins)
-servo_claw = PWM(Pin(13))
-servo_claw.freq(50) # Standard 50Hz frequency
-
-def grab():
-    #Map 0-270 degrees to 500-2500 microseconds
-    #Pico PWM duty is 0-65535. 
-    # 50Hz period is 20ms. 500us = 2.5% duty. 2500us = 12.5% duty.
-    start_time = ticks_ms()
-    while ticks_diff(ticks_ms(), start_time) < CLAW_OPERATION_DURATION:
-        pulse_width = 500 + (90 / 270) * 2000
-        duty = int((pulse_width / 20000) * 65535)
-        servo_claw.duty_u16(duty)
-    pass
-def release():
-    # Map 0-270 degrees to 500-2500 microseconds
-    # Pico PWM duty is 0-65535. 
-    # 50Hz period is 20ms. 500us = 2.5% duty. 2500us = 12.5% duty.
-    start_time = ticks_ms()
-    while ticks_diff(ticks_ms(), start_time) < CLAW_OPERATION_DURATION:
-        pulse_width = 500 + (160 / 270) * 2000
-        duty = int((pulse_width / 20000) * 65535)
-        servo_claw.duty_u16(duty)
-    pass
 
 # FUNCTION FOR TURNING THE PLATFORM THAT HOLDS THE CLAW, 4 wire servo
 # Initialize the servo with 4 wires
@@ -1172,7 +1141,7 @@ feedback = ADC(Pin(27)) #this is where the white wire goes -- i changed from 26 
 def turn_claw_up():
     start_time = ticks_ms()
     while ticks_diff(ticks_ms(), start_time) < CLAW_OPERATION_DURATION:
-        pulse_width = 500 + (160 / 270) * 2000
+        pulse_width = 500 + (150 / 270) * 2000
         duty = int((pulse_width / 20000) * 65535)
         servo_tilt.duty_u16(duty)
 def turn_claw_down():
@@ -1181,6 +1150,8 @@ def turn_claw_down():
         pulse_width = 500 + (120 / 270) * 2000
         duty = int((pulse_width / 20000) * 65535)
         servo_tilt.duty_u16(duty)
+
+turn_claw_up()
 
 #FUNCTION FOR MEASURING THE RESISTANCE ONCE GRABBED AND LIGHTS APPROPRITE LED UP
 def R_measure(delivery):
@@ -1342,7 +1313,7 @@ def handle_delivery_mode(sensors, events, robot, delivery):
 
 
 #Resistor detection TEST (Now with line following)
-robot["mode"] = Mode.search
+""" robot["mode"] = Mode.search
 robot["direction"] = Direction.cw
 robot["gnd_loc_idx"] = 20
 delivery["resistor_color"] = Resistor_Color.green
@@ -1371,7 +1342,7 @@ while True:
     latch_events(events)
 
     sleep_ms(10)  
-         
+          """
 
 # --- FINAL MODEL ---
 """ while True:
@@ -1406,17 +1377,9 @@ while True:
     latch_events(events) """
 
 #grabber test (super simple)
-""" color_names = {
-    Resistor_Color.red: "red",
-    Resistor_Color.yellow: "yellow",
-    Resistor_Color.green: "green",
-    Resistor_Color.blue: "blue",
-    Resistor_Color.none: "none"
-}
 
-#grab()
+grab()
 #turn_claw_down()
 resistor_color=R_measure(delivery)
-print(f"Resistor Color: {color_names.get(Resistor_Color)}")
 #turn_claw_up()
-#release() """
+#release() 
