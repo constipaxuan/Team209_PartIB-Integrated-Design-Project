@@ -235,13 +235,6 @@ def release():
 
 release() #idle position of claw opening
 
-""" start_time = ticks_ms()
-servo_tilt = PWM(Pin(15))
-while ticks_diff(ticks_ms(), start_time) < CLAW_OPERATION_DURATION:
-    pulse_width = 500 + (135 / 270) * 2000
-    duty = int((pulse_width / 20000) * 65535)
-    servo_tilt.duty_u16(duty) 
- """
 # --- DEBUG PRINTS ---
 def dbg(msg):
     print(msg)
@@ -1313,7 +1306,7 @@ def handle_delivery_mode(sensors, events, robot, delivery):
 
 
 #Resistor detection TEST (Now with line following)
-""" robot["mode"] = Mode.search
+robot["mode"] = Mode.search
 robot["direction"] = Direction.cw
 robot["gnd_loc_idx"] = 20
 delivery["resistor_color"] = Resistor_Color.green
@@ -1342,7 +1335,7 @@ while True:
     latch_events(events)
 
     sleep_ms(10)  
-          """
+        
 
 # --- FINAL MODEL ---
 """ 
@@ -1383,10 +1376,10 @@ while True:
 
 #grabber test (super simple)
 
-grab()
+""" grab()
 #turn_claw_down()
 resistor_color=R_measure(delivery)
-#turn_claw_up()
+#turn_claw_up() """
 #release() """
 
 # Broken reverse -- testing recovery only
