@@ -223,7 +223,6 @@ def grab():
     print("grab called")
     while ticks_diff(ticks_ms(), start_time) < CLAW_OPERATION_DURATION:
             #Moves the claw from its current position to 90 degrees.
-            print("grab called")
             global current_claw_angle
             current_claw_angle = set_angle_slow(current_claw_angle, 100, 0.01)
 
@@ -570,7 +569,7 @@ def finish_rack_search(robot, delivery):
     print(f"NEXT_TARGET_RACK_IDX = {robot['target_rack_idx']}")
 
 def update_rack_search_turn(robot):
-    robot["turn_complete"] = timed_turn_step(robot, 1450)
+    robot["turn_complete"] = timed_turn_step(robot, 1480)
 
     if not robot["turn_complete"]:
         return
