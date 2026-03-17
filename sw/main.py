@@ -329,7 +329,8 @@ def timed_forward_step(robot, time_ms):
         robot["timed_move_started"] = True
         robot["timed_move_start"] = ticks_ms()
     
-    line_follow_step(sensors["S1"], sensors["S2"], 82, 20)
+    motor_l.Forward(speed = 82)
+    motor_r.Forward(speed = 82)
 
     if ticks_diff(ticks_ms(), robot["timed_move_start"]) > time_ms:   # modify according to needs.
         motor_l.Forward(speed=0)
@@ -1045,8 +1046,8 @@ def update_recover_reverse_to_spine(robot, delivery):
     print("MAIN_SPINE_DETECTED")
 
 def update_bay_recover_wait_for_junction(events, robot, delivery):
-    if not events["new_junction"]:
-        return
+    #if not events["new_junction"]:
+    #    return
 
     cfg = get_bay_recover_config(delivery)
     if cfg is None:
