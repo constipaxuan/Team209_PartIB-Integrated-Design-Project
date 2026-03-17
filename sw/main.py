@@ -1043,27 +1043,27 @@ def get_bay_recover_config(delivery):
 
     if delivery["resistor_color"] == Resistor_Color.blue:
         if target_rack == Racks.rack_purple_L:
-            return {"node": 20, "turn_dir": Turn_Direction.left,  "new_direction": Direction.acw, "turn_time_ms": 700}
+            return {"node": 20, "turn_dir": Turn_Direction.left,  "new_direction": Direction.acw, "turn_time_ms": 1000}
         else:
-            return {"node": 20, "turn_dir": Turn_Direction.left,  "new_direction": Direction.cw,  "turn_time_ms": 1500}
+            return {"node": 20, "turn_dir": Turn_Direction.left,  "new_direction": Direction.cw,  "turn_time_ms": 2000}
 
     if delivery["resistor_color"] == Resistor_Color.red:
         if target_rack == Racks.rack_orange_L:
-            return {"node": 2,  "turn_dir": Turn_Direction.right, "new_direction": Direction.cw,  "turn_time_ms": 700}
+            return {"node": 2,  "turn_dir": Turn_Direction.right, "new_direction": Direction.cw,  "turn_time_ms": 1000}
         else:
-            return {"node": 2,  "turn_dir": Turn_Direction.right, "new_direction": Direction.acw, "turn_time_ms": 1500}
+            return {"node": 2,  "turn_dir": Turn_Direction.right, "new_direction": Direction.acw, "turn_time_ms": 2000}
 
     if delivery["resistor_color"] == Resistor_Color.green:
         if target_rack == Racks.rack_purple_L:
-            return {"node": 21, "turn_dir": Turn_Direction.left,  "new_direction": Direction.acw, "turn_time_ms": 700}
+            return {"node": 21, "turn_dir": Turn_Direction.left,  "new_direction": Direction.acw, "turn_time_ms": 1000}
         else:
-            return {"node": 21, "turn_dir": Turn_Direction.right, "new_direction": Direction.cw,  "turn_time_ms": 700}
+            return {"node": 21, "turn_dir": Turn_Direction.right, "new_direction": Direction.cw,  "turn_time_ms": 1000}
 
     if delivery["resistor_color"] == Resistor_Color.yellow:
         if target_rack == Racks.rack_orange_L:
-            return {"node": 1,  "turn_dir": Turn_Direction.right, "new_direction": Direction.cw,  "turn_time_ms": 700}
+            return {"node": 1,  "turn_dir": Turn_Direction.right, "new_direction": Direction.cw,  "turn_time_ms": 1000}
         else:
-            return {"node": 1,  "turn_dir": Turn_Direction.left,  "new_direction": Direction.acw, "turn_time_ms": 700}
+            return {"node": 1,  "turn_dir": Turn_Direction.left,  "new_direction": Direction.acw, "turn_time_ms": 1000}
 
     print("WARNING: unknown bay color in get_bay_recover_config()")
     return None
