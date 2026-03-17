@@ -1227,7 +1227,7 @@ def handle_delivery_from_purple_L(sensors, events, robot, delivery):
 # --- MODE HANDLERS
 def handle_start_mode(robot, sensors):
     if robot["motion"] == Motion.follow:
-        robot["move_complete"] = timed_forward_step(robot, 1000)
+        robot["move_complete"] = timed_forward_step(robot, 1300)
         if robot["move_complete"]:
             motor_l.Forward(speed = 0)
             motor_r.Forward(speed = 0)
@@ -1271,7 +1271,7 @@ def handle_search_mode(sensors, events, robot, delivery):
         rack_search(sensors, events, robot, delivery)
         return
 
-    if should_turn_here(robot): # at forced turn node 2, 10, 12, 20
+    if should_turn_here(robot, events): # at forced turn node 2, 10, 12, 20
         start_turn(robot, get_turn_dir(robot))
         print(f"MAIN_LOOP_TURN_START | node={robot['gnd_loc_idx']} | dir={robot['turn_dir']}")
         return
@@ -1336,7 +1336,7 @@ def handle_delivery_mode(sensors, events, robot, delivery):
 
 
 #Resistor detection TEST (Now with line following)
-robot["mode"] = Mode.search
+""" robot["mode"] = Mode.search
 robot["direction"] = Direction.cw
 robot["gnd_loc_idx"] = 20
 #delivery["resistor_color"] = Resistor_Color.green
@@ -1364,14 +1364,10 @@ while True:
 
     latch_events(events)
 
-    sleep_ms(10)  
+    sleep_ms(10)   """
         
 
 # --- FINAL MODEL ---
-""" 
-robot["gnd_loc_idx"] = 19
-delivery["resistor_color"] = Resistor_Color.green
-robot["mode"] = Mode.delivery
 
 while True:
     update_sensors_and_events(sensors, events)
@@ -1402,7 +1398,7 @@ while True:
     else:
         print("WARNING: unknown mode")
 
-    latch_events(events) """
+    latch_events(events)
 
 #grabber test (super simple)
 
