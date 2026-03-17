@@ -44,7 +44,7 @@ def release():
             current_claw_angle = set_angle_slow(current_claw_angle, 160, 0.01)
 
 # --- MAIN LOOP ---
-grab()
+grab(claw_move_done)
 sleep(1)
 release()
         

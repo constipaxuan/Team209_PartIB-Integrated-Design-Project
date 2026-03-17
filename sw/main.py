@@ -239,15 +239,15 @@ def initialize_claw():
             global current_claw_angle
             current_claw_angle = set_angle_slow(current_claw_angle, 135, 0.01)
 
-initialize_claw()
+#initialize_claw()
 
-start_time = ticks_ms()
+""" start_time = ticks_ms()
 servo_tilt = PWM(Pin(15))
 while ticks_diff(ticks_ms(), start_time) < CLAW_OPERATION_DURATION:
     pulse_width = 500 + (135 / 270) * 2000
     duty = int((pulse_width / 20000) * 65535)
     servo_tilt.duty_u16(duty) 
-
+ """
 # --- DEBUG PRINTS ---
 def dbg(msg):
     print(msg)
@@ -566,7 +566,7 @@ def finish_rack_search(robot, delivery):
     print(f"NEXT_TARGET_RACK_IDX = {robot['target_rack_idx']}")
 
 def update_rack_search_turn(robot):
-    robot["turn_complete"] = timed_turn_step(robot, 1500)
+    robot["turn_complete"] = timed_turn_step(robot, 1800)
 
     if not robot["turn_complete"]:
         return
@@ -596,7 +596,7 @@ def rack_search(sensors, events, robot, delivery):
     #)
 
     if robot["motion"] == Motion.reversing:
-        done = timed_reverse_step(robot, 700)
+        done = timed_reverse_step(robot, 900)
         if not done:
             return  
         print("REVERSE DONE | direction =", robot["direction"], "| turn_dir =", get_turn_dir(robot))
@@ -722,7 +722,7 @@ def update_orange_L_reverse_branch(robot, delivery):
     if not robot["timed_rev_started"]:
         print("REV_BRANCH_START")
 
-    done = timed_reverse_step(robot, 900)
+    done = timed_reverse_step(robot, 1000)
 
     if not done:
         return
@@ -1043,27 +1043,27 @@ def get_bay_recover_config(delivery):
 
     if delivery["resistor_color"] == Resistor_Color.blue:
         if target_rack == Racks.rack_purple_L:
-            return {"node": 20, "turn_dir": Turn_Direction.left,  "new_direction": Direction.acw, "turn_time_ms": 700}
+            return {"node": 20, "turn_dir": Turn_Direction.left,  "new_direction": Direction.acw, "turn_time_ms": 1000}
         else:
-            return {"node": 20, "turn_dir": Turn_Direction.left,  "new_direction": Direction.cw,  "turn_time_ms": 1500}
+            return {"node": 20, "turn_dir": Turn_Direction.left,  "new_direction": Direction.cw,  "turn_time_ms": 2000}
 
     if delivery["resistor_color"] == Resistor_Color.red:
         if target_rack == Racks.rack_orange_L:
-            return {"node": 2,  "turn_dir": Turn_Direction.right, "new_direction": Direction.cw,  "turn_time_ms": 700}
+            return {"node": 2,  "turn_dir": Turn_Direction.right, "new_direction": Direction.cw,  "turn_time_ms": 1000}
         else:
-            return {"node": 2,  "turn_dir": Turn_Direction.right, "new_direction": Direction.acw, "turn_time_ms": 1500}
+            return {"node": 2,  "turn_dir": Turn_Direction.right, "new_direction": Direction.acw, "turn_time_ms": 2000}
 
     if delivery["resistor_color"] == Resistor_Color.green:
         if target_rack == Racks.rack_purple_L:
-            return {"node": 21, "turn_dir": Turn_Direction.left,  "new_direction": Direction.acw, "turn_time_ms": 700}
+            return {"node": 21, "turn_dir": Turn_Direction.left,  "new_direction": Direction.acw, "turn_time_ms": 1000}
         else:
-            return {"node": 21, "turn_dir": Turn_Direction.right, "new_direction": Direction.cw,  "turn_time_ms": 700}
+            return {"node": 21, "turn_dir": Turn_Direction.right, "new_direction": Direction.cw,  "turn_time_ms": 1000}
 
     if delivery["resistor_color"] == Resistor_Color.yellow:
         if target_rack == Racks.rack_orange_L:
-            return {"node": 1,  "turn_dir": Turn_Direction.right, "new_direction": Direction.cw,  "turn_time_ms": 700}
+            return {"node": 1,  "turn_dir": Turn_Direction.right, "new_direction": Direction.cw,  "turn_time_ms": 1000}
         else:
-            return {"node": 1,  "turn_dir": Turn_Direction.left,  "new_direction": Direction.acw, "turn_time_ms": 700}
+            return {"node": 1,  "turn_dir": Turn_Direction.left,  "new_direction": Direction.acw, "turn_time_ms": 1000}
 
     print("WARNING: unknown bay color in get_bay_recover_config()")
     return None
@@ -1072,7 +1072,7 @@ def update_recover_reverse_to_spine(robot, delivery):
     if not robot["timed_rev_started"]:
         print("RECOVER_REVERSE_TO_SPINE_START")
 
-    done = timed_reverse_step(robot, 2000)
+    done = timed_reverse_step(robot, 1800)
 
     if not done:
         return
