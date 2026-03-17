@@ -237,12 +237,14 @@ def release():
 
 #Original 
 def grab():
+    print("grab b4")
     pulse_width = 500 + (110 / 270) * 2000
     duty = int((pulse_width / 20000) * 65535)
     print("grabbed")
     servo_claw.duty_u16(duty)
 
 def release():
+    print("release b4")
     pulse_width = 500 + (160 / 270) * 2000
     duty = int((pulse_width / 20000) * 65535)
     servo_claw.duty_u16(duty)
@@ -598,7 +600,7 @@ def rack_search(sensors, events, robot, delivery):
     #)
 
     if robot["motion"] == Motion.reversing:
-        done = timed_reverse_step(robot, 700)
+        done = timed_reverse_step(robot, 600)
         if not done:
             return  
         print("REVERSE DONE | direction =", robot["direction"], "| turn_dir =", get_turn_dir(robot))
