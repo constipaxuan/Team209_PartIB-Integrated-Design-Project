@@ -202,7 +202,7 @@ last_press = 0
 current_claw_angle = 135
 servo_claw = PWM(Pin(13))
 
-def set_angle_slow(current_angle, target_angle, speed_delay):
+""" def set_angle_slow(current_angle, target_angle, speed_delay):
     # Efficiency check: If we are already there, don't do anything
     if current_angle == target_angle:
         return target_angle
@@ -222,7 +222,8 @@ def grab():
     start_time = ticks_ms()
     print("grab called")
     while ticks_diff(ticks_ms(), start_time) < CLAW_OPERATION_DURATION:
-            """Moves the claw from its current position to 90 degrees."""
+            Moves the claw from its current position to 90 degrees.
+            print("grab called")
             global current_claw_angle
             current_claw_angle = set_angle_slow(current_claw_angle, 100, 0.01)
 
@@ -230,10 +231,20 @@ def release():
     start_time = ticks_ms()
     print("release called")
     while ticks_diff(ticks_ms(), start_time) < CLAW_OPERATION_DURATION:
-            """Moves the claw from its current position to 160 degrees."""
+            Moves the claw from its current position to 160 degrees.
             global current_claw_angle
-            current_claw_angle = set_angle_slow(current_claw_angle, 160, 0.01)
+            current_claw_angle = set_angle_slow(current_claw_angle, 160, 0.01) """
 
+#Original
+def grab():
+    pulse_width = 500 + (110 / 270) * 2000
+    duty = int((pulse_width / 20000) * 65535)
+    servo_claw.duty_u16(duty)
+
+def release():
+    pulse_width = 500 + (160 / 270) * 2000
+    duty = int((pulse_width / 20000) * 65535)
+    servo_claw.duty_u16(duty)
 
 release() #idle position of claw opening
 
@@ -1133,7 +1144,7 @@ servo_tilt = PWM(Pin(15)) #QN: is this pin correct? It shares the same pin as th
 servo_tilt.freq(50)
 feedback = ADC(Pin(27)) #this is where the white wire goes -- i changed from 26 to 27 because PINOUT sheet says 27.
 
-def turn_claw_up():
+""" def turn_claw_up():
     start_time = ticks_ms()
     while ticks_diff(ticks_ms(), start_time) < CLAW_OPERATION_DURATION:
         pulse_width = 500 + (150 / 270) * 2000
@@ -1144,7 +1155,17 @@ def turn_claw_down():
     while ticks_diff(ticks_ms(), start_time) < CLAW_OPERATION_DURATION:
         pulse_width = 500 + (120 / 270) * 2000
         duty = int((pulse_width / 20000) * 65535)
-        servo_tilt.duty_u16(duty)
+        servo_tilt.duty_u16(duty) """
+
+def turn_claw_up():
+    pulse_width = 500 + (150 / 270) * 2000
+    duty = int((pulse_width / 20000) * 65535)
+    servo_tilt.duty_u16(duty)
+
+def turn_claw_down():
+    pulse_width = 500 + (120 / 270) * 2000
+    duty = int((pulse_width / 20000) * 65535)
+    servo_tilt.duty_u16(duty)
 
 turn_claw_up()
 
