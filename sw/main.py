@@ -237,12 +237,14 @@ def release():
 
 #Original 
 def grab():
+    print("grab b4")
     pulse_width = 500 + (110 / 270) * 2000
     duty = int((pulse_width / 20000) * 65535)
     print("grabbed")
     servo_claw.duty_u16(duty)
 
 def release():
+    print("release b4")
     pulse_width = 500 + (160 / 270) * 2000
     duty = int((pulse_width / 20000) * 65535)
     servo_claw.duty_u16(duty)
