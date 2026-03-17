@@ -671,9 +671,9 @@ def update_orange_L_reached(robot, delivery):
     print("ORANGE_L_REACHED")
 
     #turn_claw_up()
-    grab()
+    """ grab()
     R_measure(delivery)
-    print(f"RESISTOR_COLOR = {delivery['resistor_color']}")
+    print(f"RESISTOR_COLOR = {delivery['resistor_color']}") """
 
     delivery["rack_state"] = Delivery_Rack_States.reorienting
     delivery["getout_state"] = Get_Out_of_branch.Rev_Branch
@@ -811,9 +811,9 @@ def update_purple_L_pickup(sensors, events, robot, delivery):
 def update_purple_L_reached(robot, delivery):
     print("PURPLE_L_REACHED")
     #turn_claw_up()
-    grab()
+    """ grab()
     R_measure(delivery)
-    print(f"RESISTOR_COLOR = {delivery['resistor_color']}")
+    print(f"RESISTOR_COLOR = {delivery['resistor_color']}") """
 
     delivery["rack_state"] = Delivery_Rack_States.reorienting
     delivery["getout_state"] = Get_Out_of_branch.Rev_Branch
@@ -996,7 +996,7 @@ def update_dropoff_at_bay(sensors, events, robot, delivery):
         motor_l.Forward(speed = 0)
         motor_r.Forward(speed = 0)
         #turn_claw_down()
-        release()   # uncomment when grabber is ready
+        #release()   # uncomment when grabber is ready
         delivery["unloading_state"] = Unloading_States.done
         print("BAY_REACHED -> UNLOADING_DONE")
         return
@@ -1005,7 +1005,7 @@ def update_dropoff_at_bay(sensors, events, robot, delivery):
 
 def update_unloading_turn(sensors, robot, delivery):
 
-    robot["turn_complete"] = timed_turn_step(robot, 700)
+    robot["turn_complete"] = timed_turn_step(robot, 1100)
 
     if not robot["turn_complete"]:
         return
@@ -1031,13 +1031,15 @@ def update_bay_recover(events, robot, delivery):
         return
 
     if robot["motion"] == Motion.turning:
+        print("turning called")
         update_bay_recover_turn(robot, delivery)
         return
 
+    print("waiting for turn -- this is what sets turn_dir")
     update_bay_recover_wait_for_junction(events, robot, delivery)
 
 def get_bay_recover_config(delivery):
-    target_rack = delivery["target_rack"]
+    target_rack = target_racks[robot["target_rack_idx"]]
 
     if delivery["resistor_color"] == Resistor_Color.blue:
         if target_rack == Racks.rack_purple_L:
@@ -1262,7 +1264,7 @@ def handle_search_init_mode(sensors, events, robot, delivery):
 
     robot["mode"] = Mode.search
     robot["direction"] = Direction.acw
-    delivery["target_rack"] = Racks.rack_purple_L
+    target_racks[robot["target_rack_idx"]] = Racks.rack_purple_L
 
     print("SEARCH_INIT -> SEARCH")
 
