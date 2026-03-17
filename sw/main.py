@@ -660,7 +660,7 @@ def update_rack_approach(robot, delivery):
         print("ORANGE_L_APPROACH_START")
         Red.value(1)
 
-    done = timed_forward_step(robot, 350)
+    done = timed_forward_step(robot, 380)
 
     if not done:
         return
