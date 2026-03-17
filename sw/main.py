@@ -102,7 +102,7 @@ SR_sensor = Pin(SR_pin, Pin.IN)
 laser_distance = 0 #initialize laser distance
 button = Pin(14, Pin.IN) # button is a PULL_DOWN so it reads 0 when not pressed and 1 when pressed.
 ADC_SOLUTION = 65535  # Pico ADC is 16-bit (0–65535) FOR LEDs
-CLAW_OPERATION_DURATION = 2000
+CLAW_OPERATION_DURATION = 5500
 # STOP IMMEDIATELY AFTER RESET
 motor_l.Forward(0)
 motor_r.Forward(0)
@@ -199,14 +199,47 @@ Yellow.value(0)
 sensor = ADC(28) #FOR LEDs
 laser_distance = None
 last_press = 0
-
-#Initialize servos to 135
-start_time = ticks_ms()
+current_claw_angle = 135
 servo_claw = PWM(Pin(13))
-while ticks_diff(ticks_ms(), start_time) < CLAW_OPERATION_DURATION:
-    pulse_width = 500 + (135 / 270) * 2000
-    duty = int((pulse_width / 20000) * 65535)
-    servo_claw.duty_u16(duty)
+
+def set_angle_slow(current_angle, target_angle, speed_delay):
+    # Efficiency check: If we are already there, don't do anything
+    if current_angle == target_angle:
+        return target_angle
+
+    step = 1 if target_angle > current_angle else -1
+    
+    for angle in range(current_angle, target_angle + step, step):
+        pulse_width = 500 + (angle / 270) * 2000
+        duty = int((pulse_width / 20000) * 65535)
+        
+        servo_claw.duty_u16(duty)
+        sleep(speed_delay)
+    return target_angle 
+
+#Grabbing & Initialize functions
+def grab():
+    start_time = ticks_ms()
+    while ticks_diff(ticks_ms(), start_time) < CLAW_OPERATION_DURATION:
+            """Moves the claw from its current position to 90 degrees."""
+            global current_claw_angle
+            current_claw_angle = set_angle_slow(current_claw_angle, 90, 0.01)
+
+def release():
+    start_time = ticks_ms()
+    while ticks_diff(ticks_ms(), start_time) < CLAW_OPERATION_DURATION:
+            """Moves the claw from its current position to 160 degrees."""
+            global current_claw_angle
+            current_claw_angle = set_angle_slow(current_claw_angle, 160, 0.01)
+
+def initialize_claw():
+    start_time = ticks_ms()
+    while ticks_diff(ticks_ms(), start_time) < CLAW_OPERATION_DURATION:
+            """Moves the claw from its current position to 135 degrees."""
+            global current_claw_angle
+            current_claw_angle = set_angle_slow(current_claw_angle, 135, 0.01)
+
+initialize_claw()
 
 start_time = ticks_ms()
 servo_tilt = PWM(Pin(15))
