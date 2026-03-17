@@ -961,8 +961,8 @@ def update_dropoff_at_bay(sensors, events, robot, delivery):
     if events["new_T"]:
         motor_l.Forward(speed = 0)
         motor_r.Forward(speed = 0)
-        turn_claw_down()
-        release()   # uncomment when grabber is ready
+        #turn_claw_down()
+        #release()   # uncomment when grabber is ready
         delivery["unloading_state"] = Unloading_States.done
         print("BAY_REACHED -> UNLOADING_DONE")
         return
@@ -1036,7 +1036,7 @@ def update_recover_reverse_to_spine(robot, delivery):
     if not robot["timed_rev_started"]:
         print("RECOVER_REVERSE_TO_SPINE_START")
 
-    done = timed_reverse_step(robot, 500)
+    done = timed_reverse_step(robot, 2000)
 
     if not done:
         return
