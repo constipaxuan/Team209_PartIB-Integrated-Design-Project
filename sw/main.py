@@ -972,7 +972,7 @@ def update_dropoff_at_bay(sensors, events, robot, delivery):
 
 def update_unloading_turn(sensors, robot, delivery):
 
-    robot["turn_complete"] = timed_turn_step(robot, 700)
+    robot["turn_complete"] = timed_turn_step(robot, 900)
 
     if not robot["turn_complete"]:
         return
