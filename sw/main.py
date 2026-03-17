@@ -998,9 +998,11 @@ def update_bay_recover(events, robot, delivery):
         return
 
     if robot["motion"] == Motion.turning:
+        print("turning called")
         update_bay_recover_turn(robot, delivery)
         return
 
+    print("waiting for turn -- this is what sets turn_dir")
     update_bay_recover_wait_for_junction(events, robot, delivery)
 
 def get_bay_recover_config(delivery):
