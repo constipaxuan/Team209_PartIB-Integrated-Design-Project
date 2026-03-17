@@ -233,16 +233,18 @@ def release():
             global current_claw_angle
             current_claw_angle = set_angle_slow(current_claw_angle, 160, 0.01) """
 
-#Original
+#Original 
 def grab():
     pulse_width = 500 + (110 / 270) * 2000
     duty = int((pulse_width / 20000) * 65535)
+    print("grabbed")
     servo_claw.duty_u16(duty)
 
 def release():
     pulse_width = 500 + (160 / 270) * 2000
     duty = int((pulse_width / 20000) * 65535)
     servo_claw.duty_u16(duty)
+    print("released")
 
 release() #idle position of claw opening
 
