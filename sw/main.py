@@ -730,7 +730,7 @@ def update_rack_leave_rack_zone(robot, sensors, events, delivery):
     print("old direction is", robot["direction"])
     print("OUT_OF_RACK_ZONE -> READY_FOR_UNLOADING")
     if target_racks[robot["target_rack_idx"]] == Racks.rack_orange_L:
-        print("poop")
+        print("poop", robot["target_rack_idx"])
         robot["direction"] = Direction.acw
     elif target_racks[robot["target_rack_idx"]] == Racks.rack_purple_L:
         robot["direction"] = Direction.cw
