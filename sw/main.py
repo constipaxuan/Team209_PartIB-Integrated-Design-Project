@@ -570,7 +570,7 @@ def finish_rack_search(robot, delivery):
     print(f"NEXT_TARGET_RACK_IDX = {robot['target_rack_idx']}")
 
 def update_rack_search_turn(robot):
-    robot["turn_complete"] = timed_turn_step(robot, 1400)
+    robot["turn_complete"] = timed_turn_step(robot, 1450)
 
     if not robot["turn_complete"]:
         return
@@ -661,7 +661,7 @@ def update_rack_approach(robot, delivery):
         print("ORANGE_L_APPROACH_START")
         Red.value(1)
 
-    done = timed_forward_step(robot, 300)
+    done = timed_forward_step(robot, 350)
 
     if not done:
         return
