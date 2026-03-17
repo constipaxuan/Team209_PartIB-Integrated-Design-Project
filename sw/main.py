@@ -570,7 +570,7 @@ def finish_rack_search(robot, delivery):
     print(f"NEXT_TARGET_RACK_IDX = {robot['target_rack_idx']}")
 
 def update_rack_search_turn(robot):
-    robot["turn_complete"] = timed_turn_step(robot, 1500)
+    robot["turn_complete"] = timed_turn_step(robot, 1400)
 
     if not robot["turn_complete"]:
         return
@@ -600,7 +600,7 @@ def rack_search(sensors, events, robot, delivery):
     #)
 
     if robot["motion"] == Motion.reversing:
-        done = timed_reverse_step(robot, 600)
+        done = timed_reverse_step(robot, 500)
         if not done:
             return  
         print("REVERSE DONE | direction =", robot["direction"], "| turn_dir =", get_turn_dir(robot))
@@ -1162,7 +1162,7 @@ def turn_claw_down():
         servo_tilt.duty_u16(duty) """
 
 def turn_claw_up():
-    pulse_width = 500 + (150 / 270) * 2000
+    pulse_width = 500 + (160 / 270) * 2000
     duty = int((pulse_width / 20000) * 65535)
     servo_tilt.duty_u16(duty)
 
@@ -1336,7 +1336,7 @@ def handle_delivery_mode(sensors, events, robot, delivery):
 robot["mode"] = Mode.search
 robot["direction"] = Direction.cw
 robot["gnd_loc_idx"] = 20
-delivery["resistor_color"] = Resistor_Color.green
+#delivery["resistor_color"] = Resistor_Color.green
 target_racks[robot["target_rack_idx"]] = Racks.rack_orange_L
 
 while True:
