@@ -164,7 +164,9 @@ robot = {
     "junction_lock": False,
     "claw_state": Claw_State.idle,
     "claw_started": False,
-    "claw_start": 0
+    "claw_start": 0,
+    "pending_resync": False,
+    "pending_resync_node": 0
 }
 
 delivery = {
@@ -365,8 +367,7 @@ def timed_forward_step(robot, time_ms):
         robot["timed_move_started"] = True
         robot["timed_move_start"] = ticks_ms()
     
-    motor_l.Forward(speed = 82)
-    motor_r.Forward(speed = 82)
+    line_follow_step(sensors["S1"], sensors["S2"], 82, 20)
 
     if ticks_diff(ticks_ms(), robot["timed_move_start"]) > time_ms:   # modify according to needs.
         motor_l.Forward(speed=0)
@@ -847,7 +848,7 @@ def update_purple_L_reverse_branch(robot, delivery):
     if not robot["timed_rev_started"]:
         print("REV_BRANCH_START")
 
-    done = timed_reverse_step(robot, 1200)
+    done = timed_reverse_step(robot, 1000)
 
     if not done:
         return
@@ -1092,7 +1093,7 @@ def update_bay_recover_wait_for_junction(events, robot, delivery):
         return
 
     # Reorienting itself on node based map.
-    robot["gnd_loc_idx"] = cfg["node"]
+    #robot["gnd_loc_idx"] = cfg["node"]
 
     # Sets motion into turning 
     start_turn(robot, cfg["turn_dir"])
@@ -1119,12 +1120,15 @@ def finish_bay_recover(robot, delivery, cfg):
     robot["mode"] = Mode.search
     robot["direction"] = cfg["new_direction"]
 
+    robot["pending_resync"] = True
+    robot["pending_resync_node"] = cfg["node"]
+
     # Reinitialise for next time recovery is called.
     delivery["main_spine_detected"] = False
     delivery["delivery_state"] = Delivery_States.pickup
-    robot["turn_complete"] = False
+    #robot["turn_complete"] = False
 
-    # Start pickup all over again/
+    # Start pickup all over again
     delivery["search_slot_counter"] = 0
     delivery["slot_status"] = [0, 0, 0, 0, 0, 0]
     
@@ -1139,7 +1143,18 @@ def finish_bay_recover(robot, delivery, cfg):
         f"| dir={robot['direction']}"
     )
 
+def try_apply_pending_resync(sensors, robot, events):
+    if not robot["pending_resync"]:
+        return
 
+    centered = (sensors["S1"] == 1 and sensors["S2"] == 1)
+
+
+    if centered and not events["on_junction"]:
+        robot["gnd_loc_idx"] = robot["pending_resync_node"]
+        robot["pending_resync"] = False
+        robot["just_turned"] = True   # suppress next junction count
+        print(f"RESYNC_APPLIED | node={robot['gnd_loc_idx']}")
 
 # FUNCTION FOR TURNING THE PLATFORM THAT HOLDS THE CLAW, 4 wire servo
 # Initialize the servo with 4 wires
@@ -1203,6 +1218,9 @@ def R_measure(delivery):
     elif 0.2 < voltage <= 1:
         Yellow.value(1)
         delivery["resistor_color"] = Resistor_Color.yellow # Yellow
+    else: # if R measure doesnt work just make this the ONLY path so it delivers to green EACH TIME.
+        Green.value(1)
+        delivery["resistor_color"] = Resistor_Color.green # Deliver EVERYTHING to green because it is tried and tested. 
     
     print("res color:", delivery["resistor_color"])
 
@@ -1263,6 +1281,8 @@ def handle_search_init_mode(sensors, events, robot, delivery):
     print("SEARCH_INIT -> SEARCH")
 
 def handle_search_mode(sensors, events, robot, delivery):
+    try_apply_pending_resync(sensors, robot, events)
+
     if robot["motion"] == Motion.turning:
         update_search_turn(sensors, robot)
         return
@@ -1380,8 +1400,13 @@ while True:
         motor_r.Forward(speed = 0)
         latch_events(events)
         continue
+    
+    if robot["target_rack_idx"] == 2:
+        motor_l.Forward(0)
+        motor_r.Forward(0)
 
-    update_location(robot, events)
+    if robot["mode"] not in [Mode.start, Mode.search_init]:
+        update_location(robot, events)
 
     if robot["mode"] == Mode.start:
         handle_start_mode(robot, sensors)
