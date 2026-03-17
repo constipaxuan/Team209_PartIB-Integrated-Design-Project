@@ -22,16 +22,16 @@ class Motor:
 motor_l = Motor(dirPin=4, PWMPin=5)
 motor_r = Motor(dirPin=7, PWMPin=6) 
 
-motor_l.Forward(speed=40)
-motor_r.Forward(speed=40)
+motor_l.Forward(speed=82)
+motor_r.Forward(speed=82)
 sleep(2)
 
 motor_l.Forward(speed=0)
 motor_r.Forward(speed=0)
 sleep(1)
 
-motor_l.Reverse(speed=40)
-motor_r.Reverse(speed=40)
+motor_l.Reverse(speed=82)
+motor_r.Reverse(speed=82)
 sleep(2)
 
 motor_l.Forward(speed=0)
