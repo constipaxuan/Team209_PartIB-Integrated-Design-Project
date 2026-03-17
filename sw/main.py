@@ -474,7 +474,7 @@ def update_rack_scan(robot, delivery):
     )
     print(f"slot_status={delivery['slot_status']}")
 
-    if laser_distance < 180: #The actual threshold should be 2000~3000
+    if laser_distance < 250: #The actual threshold should be 2000~3000
         handle_rack_load_detected(robot, delivery, laser_distance)
     else:
         handle_rack_empty_slot(robot, delivery, laser_distance)
