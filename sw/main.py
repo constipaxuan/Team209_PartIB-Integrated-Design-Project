@@ -201,7 +201,7 @@ laser_distance = None
 last_press = 0
 current_claw_angle = 135
 servo_claw = PWM(Pin(13))
-
+servo_claw.freq(50)
 """ def set_angle_slow(current_angle, target_angle, speed_delay):
     # Efficiency check: If we are already there, don't do anything
     if current_angle == target_angle:
