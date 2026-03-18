@@ -1410,6 +1410,10 @@ while True:
 
             if at_target_rack_zone(robot):
                 rack_search(sensors, events, robot, delivery)  
+            
+            if robot["gnd_loc_idx"] == 1:
+                motor_l.Forward(speed = 0)
+                motor_r.Forward(speed = 0)
 
         elif robot["mode"] == Mode.delivery:
             handle_delivery_from_orange_L(sensors, events, robot, delivery)
