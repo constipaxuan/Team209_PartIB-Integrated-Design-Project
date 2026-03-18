@@ -1224,6 +1224,8 @@ def R_measure(delivery):
         Green.value(1)
         delivery["resistor_color"] = Resistor_Color.green # Deliver EVERYTHING to green because it is tried and tested. 
     
+    #Try this out, might fix resistor color
+    return delivery["resistor_color"]
     print("res color:", delivery["resistor_color"])
 
 # --- LOCAL DELIVERY HANDLERS ---
