@@ -570,7 +570,7 @@ def finish_rack_search(robot, delivery):
     #print(f"NEXT_TARGET_RACK_IDX = {robot['target_rack_idx']}")
 
 def update_rack_search_turn(robot):
-    robot["turn_complete"] = timed_turn_step(robot, 1300)
+    robot["turn_complete"] = timed_turn_step(robot, 3000)
 
     if not robot["turn_complete"]:
         return
@@ -741,7 +741,7 @@ def update_rack_exit_branch(robot, delivery):
     Blue.value(1)
     print("EXIT_BRANCH_TURN_START")
 
-    robot["turn_complete"] = timed_turn_step(robot, 2000)
+    robot["turn_complete"] = timed_turn_step(robot, 3000)
 
     if not robot["turn_complete"]:
         return
