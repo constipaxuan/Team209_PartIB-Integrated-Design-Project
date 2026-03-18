@@ -1384,6 +1384,7 @@ while True:
         handle_start_mode(robot, sensors)
 
     elif robot["mode"] == Mode.search_init:
+        robot["direction"] = Direction.cw
         handle_search_init_mode(sensors, events, robot, delivery)
 
     elif robot["mode"] == Mode.search:
