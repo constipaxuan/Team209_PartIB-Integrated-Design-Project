@@ -1253,7 +1253,7 @@ def handle_start_mode(robot, sensors):
             motor_l.Forward(speed = 0)
             motor_r.Forward(speed = 0)
             robot["motion"] = Motion.turning
-            robot["turn_dir"] = Turn_Direction.right
+            robot["turn_dir"] = Turn_Direction.left
     elif robot["motion"] == Motion.turning:
         robot["turn_complete"] = timed_turn_step(robot, 1650)
         if robot["turn_complete"]:
