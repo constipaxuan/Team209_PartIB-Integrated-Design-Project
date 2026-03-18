@@ -164,7 +164,9 @@ robot = {
     "junction_lock": False,
     "claw_state": Claw_State.idle,
     "claw_started": False,
-    "claw_start": 0
+    "claw_start": 0,
+    "pending_resync": False,
+    "pending_resync_node": 0
 }
 
 delivery = {
@@ -232,7 +234,7 @@ def release():
     while ticks_diff(ticks_ms(), start_time) < CLAW_OPERATION_DURATION:
             #Moves the claw from its current position to 160 degrees.
             global current_claw_angle
-            current_claw_angle = set_angle_slow(current_claw_angle, 170, 0.01)
+            current_claw_angle = set_angle_slow(current_claw_angle, 180, 0.01)
 
 #Original 
 """ def grab():
@@ -346,7 +348,7 @@ def start_turn(robot, turn_dir):
     robot["turn_state"] = Turn_State.start
     robot["timed_turn_started"] = False
     robot["turn_complete"] = False
-    print(f"START TURN: {turn_dir} at node {robot['gnd_loc_idx']} | motion={robot['motion']}")
+    #print(f"START TURN: {turn_dir} at node {robot['gnd_loc_idx']} | motion={robot['motion']}")
 
 def finish_turn(robot):
     robot["motion"] = Motion.follow
@@ -356,7 +358,7 @@ def finish_turn(robot):
     robot["just_turned"] = True
     motor_l.Forward(speed = 0)
     motor_r.Forward(speed = 0)
-    print(f"TURN COMPLETE: now following, node={robot['gnd_loc_idx']}")
+    #print(f"TURN COMPLETE: now following, node={robot['gnd_loc_idx']}")
     
 # --- TIMED FORWARD/BACKWARD MOTION ---
 #robot["move_complete"] = timed_forward_step(robot, time_ms)
@@ -365,8 +367,7 @@ def timed_forward_step(robot, time_ms):
         robot["timed_move_started"] = True
         robot["timed_move_start"] = ticks_ms()
     
-    motor_l.Forward(speed = 82)
-    motor_r.Forward(speed = 82)
+    line_follow_step(sensors["S1"], sensors["S2"], 82, 20)
 
     if ticks_diff(ticks_ms(), robot["timed_move_start"]) > time_ms:   # modify according to needs.
         motor_l.Forward(speed=0)
@@ -487,10 +488,10 @@ def start_rack_scan(robot, delivery):
     robot["motion"] = Motion.stopped_for_scan
     robot["scan_start"] = ticks_ms()
 
-    print(
+    """ print(
         f"RACK_SCAN_START | slot={delivery['search_slot_counter']} "
         f"| target={target_racks[robot['target_rack_idx']]}"
-    )
+    ) """
     Yellow.value(1)
 
 def update_rack_scan(robot, delivery):
@@ -504,11 +505,11 @@ def update_rack_scan(robot, delivery):
 
     laser_distance = read_rack_laser(robot)
 
-    print(
+    """ print(
         f"RACK_SCAN_READ | slot={delivery['search_slot_counter']} "
         f"| dist={laser_distance}"
     )
-    print(f"slot_status={delivery['slot_status']}")
+    print(f"slot_status={delivery['slot_status']}") """
 
     if laser_distance < 250: #The actual threshold should be 2000~3000
         handle_rack_load_detected(robot, delivery, laser_distance)
@@ -524,15 +525,15 @@ def read_rack_laser(robot):
     if target_rack in [Racks.rack_purple_U, Racks.rack_orange_L]:
         return rec_dist_laserR()
 
-    print("WARNING: unknown target rack in read_rack_laser()")
+    #print("WARNING: unknown target rack in read_rack_laser()")
     return 9999
 
 def handle_rack_load_detected(robot, delivery, laser_distance):
-    print(
+    """ print(
         f"LOAD_DETECTED | slot={delivery['search_slot_counter']} "
         f"| dist={laser_distance} | node={robot['gnd_loc_idx']} "
         f"| motion_before={robot['motion']}"
-    )
+    ) """
     Red.value(1)
 
     delivery["delivery_state"] = Delivery_States.pickup
@@ -545,7 +546,7 @@ def start_rack_pickup_turn(robot):
 def handle_rack_empty_slot(robot, delivery, laser_distance):
     slot = delivery["search_slot_counter"]
 
-    print(f"EMPTY_SLOT | slot={slot} | dist={laser_distance}")
+    #print(f"EMPTY_SLOT | slot={slot} | dist={laser_distance}")
     Green.value(1)
 
     delivery["slot_status"][slot] = 1
@@ -553,12 +554,12 @@ def handle_rack_empty_slot(robot, delivery, laser_distance):
 
     if slot < 5:
         delivery["search_slot_counter"] += 1
-        print(f"ADVANCE_TO_NEXT_SLOT | next_slot={delivery['search_slot_counter']}")
+        #print(f"ADVANCE_TO_NEXT_SLOT | next_slot={delivery['search_slot_counter']}")
     else:
         finish_rack_search(robot, delivery)
 
 def finish_rack_search(robot, delivery):
-    print("RACK_CLEARED")
+    #print("RACK_CLEARED")
 
     delivery["search_slot_counter"] = 0
     delivery["slot_status"] = [0, 0, 0, 0, 0, 0]
@@ -566,19 +567,19 @@ def finish_rack_search(robot, delivery):
     robot["target_rack_idx"] = (robot["target_rack_idx"] + 1) % 4
     robot["motion"] = Motion.follow
 
-    print(f"NEXT_TARGET_RACK_IDX = {robot['target_rack_idx']}")
+    #print(f"NEXT_TARGET_RACK_IDX = {robot['target_rack_idx']}")
 
 def update_rack_search_turn(robot):
-    robot["turn_complete"] = timed_turn_step(robot, 1490)
+    robot["turn_complete"] = timed_turn_step(robot, 900)
 
     if not robot["turn_complete"]:
         return
 
     print("RACK_PICKUP_TURN_DONE -> Mode.delivery")
     Red.value(0)
+    robot["mode"] = Mode.delivery
 
     finish_turn(robot)
-    robot["mode"] = Mode.delivery
 
     # temporary re-sync hack
     robot["gnd_loc_idx"] = 0
@@ -602,7 +603,7 @@ def rack_search(sensors, events, robot, delivery):
         done = timed_reverse_step(robot, 520)
         if not done:
             return  
-        print("REVERSE DONE | direction =", robot["direction"], "| turn_dir =", get_turn_dir(robot))
+        #print("REVERSE DONE | direction =", robot["direction"], "| turn_dir =", get_turn_dir(robot))
         start_turn(robot, get_turn_dir(robot))
         return
         
@@ -652,12 +653,12 @@ def update_orange_L_pickup(sensors, events, robot, delivery):
         finish_orange_L_pickup(robot, delivery)
         return
 
-    print("WARNING: unknown rack_state in update_orange_L_pickup()")
+    #print("WARNING: unknown rack_state in update_orange_L_pickup()")
 
 # SAME FOR ALL RACKS -- NO NEED DUPLICATE
 def update_rack_approach(robot, delivery):
     if not robot["timed_move_started"]:
-        print("ORANGE_L_APPROACH_START")
+        #print("APPROACH_START")
         Red.value(1)
 
     done = timed_forward_step(robot, 380)
@@ -666,7 +667,7 @@ def update_rack_approach(robot, delivery):
         return
 
     delivery["rack_state"] = Delivery_Rack_States.reached
-    print("ORANGE_L_APPROACH_DONE -> REACHED")
+    print("APPROACH_DONE -> REACHED")
     Red.value(0)
 
 # UPDATED WITH GRABBER AND TILT
@@ -676,7 +677,7 @@ def update_orange_L_reached(robot, delivery):
     #turn_claw_up()
     grab()
     R_measure(delivery)
-    print(f"RESISTOR_COLOR = {delivery['resistor_color']}")
+    #print(f"RESISTOR_COLOR = {delivery['resistor_color']}")
 
     delivery["rack_state"] = Delivery_Rack_States.reorienting
     delivery["getout_state"] = Get_Out_of_branch.Rev_Branch
@@ -818,6 +819,8 @@ def update_purple_L_reached(robot, delivery):
     R_measure(delivery)
     print(f"RESISTOR_COLOR = {delivery['resistor_color']}")
 
+    #motor_l.Forward(speed = 0)
+    #motor_r.Forward(speed = 0)
     delivery["rack_state"] = Delivery_Rack_States.reorienting
     delivery["getout_state"] = Get_Out_of_branch.Rev_Branch
     robot["turn_dir"] = Turn_Direction.left
@@ -847,7 +850,7 @@ def update_purple_L_reverse_branch(robot, delivery):
     if not robot["timed_rev_started"]:
         print("REV_BRANCH_START")
 
-    done = timed_reverse_step(robot, 1200)
+    done = timed_reverse_step(robot, 1000)
 
     if not done:
         return
@@ -1092,7 +1095,7 @@ def update_bay_recover_wait_for_junction(events, robot, delivery):
         return
 
     # Reorienting itself on node based map.
-    robot["gnd_loc_idx"] = cfg["node"]
+    #robot["gnd_loc_idx"] = cfg["node"]
 
     # Sets motion into turning 
     start_turn(robot, cfg["turn_dir"])
@@ -1119,12 +1122,15 @@ def finish_bay_recover(robot, delivery, cfg):
     robot["mode"] = Mode.search
     robot["direction"] = cfg["new_direction"]
 
+    robot["pending_resync"] = True
+    robot["pending_resync_node"] = cfg["node"]
+
     # Reinitialise for next time recovery is called.
     delivery["main_spine_detected"] = False
     delivery["delivery_state"] = Delivery_States.pickup
-    robot["turn_complete"] = False
+    #robot["turn_complete"] = False
 
-    # Start pickup all over again/
+    # Start pickup all over again
     delivery["search_slot_counter"] = 0
     delivery["slot_status"] = [0, 0, 0, 0, 0, 0]
     
@@ -1139,7 +1145,18 @@ def finish_bay_recover(robot, delivery, cfg):
         f"| dir={robot['direction']}"
     )
 
+def try_apply_pending_resync(sensors, robot, events):
+    if not robot["pending_resync"]:
+        return
 
+    centered = (sensors["S1"] == 1 and sensors["S2"] == 1)
+
+
+    if centered and not events["on_junction"]:
+        robot["gnd_loc_idx"] = robot["pending_resync_node"]
+        robot["pending_resync"] = False
+        robot["just_turned"] = True   # suppress next junction count
+        print(f"RESYNC_APPLIED | node={robot['gnd_loc_idx']}")
 
 # FUNCTION FOR TURNING THE PLATFORM THAT HOLDS THE CLAW, 4 wire servo
 # Initialize the servo with 4 wires
@@ -1161,7 +1178,7 @@ def turn_claw_down():
         servo_tilt.duty_u16(duty) """
 
 def turn_claw_up():
-    pulse_width = 500 + (160 / 270) * 2000
+    pulse_width = 500 + (170 / 270) * 2000
     duty = int((pulse_width / 20000) * 65535)
     servo_tilt.duty_u16(duty)
 
@@ -1203,6 +1220,9 @@ def R_measure(delivery):
     elif 0.2 < voltage <= 1:
         Yellow.value(1)
         delivery["resistor_color"] = Resistor_Color.yellow # Yellow
+    else: # if R measure doesnt work just make this the ONLY path so it delivers to green EACH TIME.
+        Green.value(1)
+        delivery["resistor_color"] = Resistor_Color.green # Deliver EVERYTHING to green because it is tried and tested. 
     
     print("res color:", delivery["resistor_color"])
 
@@ -1232,9 +1252,9 @@ def handle_start_mode(robot, sensors):
             motor_l.Forward(speed = 0)
             motor_r.Forward(speed = 0)
             robot["motion"] = Motion.turning
-            robot["turn_dir"] = Turn_Direction.right
+            robot["turn_dir"] = Turn_Direction.left
     elif robot["motion"] == Motion.turning:
-        robot["turn_complete"] = timed_turn_step(robot, 700)
+        robot["turn_complete"] = timed_turn_step(robot, 1650)
         if robot["turn_complete"]:
             robot["motion"] = Motion.follow
             motor_l.Forward(speed = 0)
@@ -1263,6 +1283,8 @@ def handle_search_init_mode(sensors, events, robot, delivery):
     print("SEARCH_INIT -> SEARCH")
 
 def handle_search_mode(sensors, events, robot, delivery):
+    try_apply_pending_resync(sensors, robot, events)
+
     if robot["motion"] == Motion.turning:
         update_search_turn(sensors, robot)
         return
@@ -1279,7 +1301,7 @@ def handle_search_mode(sensors, events, robot, delivery):
     line_follow_step(sensors["S1"], sensors["S2"], 82, 20)
 
 def update_search_turn(sensors, robot):
-    robot["turn_complete"] = timed_turn_step(robot, 700)
+    robot["turn_complete"] = timed_turn_step(robot, 1650)
 
     if not robot["turn_complete"]:
         return
@@ -1336,9 +1358,9 @@ def handle_delivery_mode(sensors, events, robot, delivery):
 
 
 #Resistor detection TEST (Now with line following)
-""" robot["mode"] = Mode.search
+robot["mode"] = Mode.start
 robot["direction"] = Direction.cw
-robot["gnd_loc_idx"] = 20
+robot["gnd_loc_idx"] = 0
 #delivery["resistor_color"] = Resistor_Color.green
 target_racks[robot["target_rack_idx"]] = Racks.rack_orange_L
 
@@ -1355,21 +1377,41 @@ while True:
         latch_events(events)
         continue
 
-    update_location(robot, events)
+    if robot["mode"] not in [Mode.start, Mode.search_init]:
+        update_location(robot, events)
 
-    if robot["mode"] == Mode.search:
-        rack_search(sensors, events, robot, delivery)     
+    if robot["mode"] == Mode.start:
+        handle_start_mode(robot, sensors)
+
+    elif robot["mode"] == Mode.search_init:
+        handle_search_init_mode(sensors, events, robot, delivery)
+
+    elif robot["mode"] == Mode.search:
+        if robot["motion"] == Motion.follow:
+            if events["new_junction"] and robot["gnd_loc_idx"] in [10, 12, 20, 2]:
+                start_turn(robot, get_turn_dir(robot))
+            elif events["new_junction"] and robot["gnd_loc_idx"] in [0]:
+                start_turn(robot, get_turn_dir(robot))
+            line_follow_step(sensors["S1"], sensors["S2"], 82, 20)
+        elif robot["motion"] == Motion.turning:
+            robot["turn_complete"] = timed_turn_step(robot, 700)
+            if robot["turn_complete"]:
+                finish_turn(robot)     
+
+        rack_search(sensors, events, robot, delivery)   
+
     elif robot["mode"] == Mode.delivery:
         handle_delivery_from_orange_L(sensors, events, robot, delivery)
 
+
     latch_events(events)
 
-    sleep_ms(10)   """
+    sleep_ms(10)   
         
 
 # --- FINAL MODEL ---
 
-while True:
+""" while True:
     update_sensors_and_events(sensors, events)
 
     button_now = button.value()
@@ -1380,8 +1422,13 @@ while True:
         motor_r.Forward(speed = 0)
         latch_events(events)
         continue
+    
+    if robot["target_rack_idx"] == 2:
+        motor_l.Forward(0)
+        motor_r.Forward(0)
 
-    update_location(robot, events)
+    if robot["mode"] not in [Mode.start, Mode.search_init]:
+        update_location(robot, events)
 
     if robot["mode"] == Mode.start:
         handle_start_mode(robot, sensors)
@@ -1398,7 +1445,7 @@ while True:
     else:
         print("WARNING: unknown mode")
 
-    latch_events(events)
+    latch_events(events) """
 
 #grabber test (super simple)
 
