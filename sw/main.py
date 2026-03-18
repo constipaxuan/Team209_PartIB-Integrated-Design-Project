@@ -536,7 +536,6 @@ def handle_rack_load_detected(robot, delivery, laser_distance):
     ) """
     Red.value(1)
 
-    robot["mode"] = Mode.delivery
     delivery["delivery_state"] = Delivery_States.pickup
     delivery["rack_state"] = Delivery_Rack_States.approaching
     robot["motion"] = Motion.reversing
@@ -578,6 +577,7 @@ def update_rack_search_turn(robot):
 
     print("RACK_PICKUP_TURN_DONE -> Mode.delivery")
     Red.value(0)
+    robot["mode"] = Mode.delivery
 
     finish_turn(robot)
 
