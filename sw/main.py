@@ -1397,7 +1397,7 @@ while True:
                 start_turn(robot, get_turn_dir(robot))
             line_follow_step(sensors["S1"], sensors["S2"], 82, 20)
         elif robot["motion"] == Motion.turning:
-            robot["turn_complete"] = timed_turn_step(robot, 1550)
+            robot["turn_complete"] = timed_turn_step(robot, 1450)
             if robot["turn_complete"]:
                 finish_turn(robot)     
 
