@@ -536,6 +536,7 @@ def handle_rack_load_detected(robot, delivery, laser_distance):
     )
     Red.value(1)
 
+    robot["mode"] = Mode.delivery
     delivery["delivery_state"] = Delivery_States.pickup
     delivery["rack_state"] = Delivery_Rack_States.approaching
     robot["motion"] = Motion.reversing
@@ -579,7 +580,6 @@ def update_rack_search_turn(robot):
     Red.value(0)
 
     finish_turn(robot)
-    robot["mode"] = Mode.delivery
 
     # temporary re-sync hack
     robot["gnd_loc_idx"] = 0
@@ -658,7 +658,7 @@ def update_orange_L_pickup(sensors, events, robot, delivery):
 # SAME FOR ALL RACKS -- NO NEED DUPLICATE
 def update_rack_approach(robot, delivery):
     if not robot["timed_move_started"]:
-        print("ORANGE_L_APPROACH_START")
+        print("APPROACH_START")
         Red.value(1)
 
     done = timed_forward_step(robot, 380)
@@ -667,7 +667,7 @@ def update_rack_approach(robot, delivery):
         return
 
     delivery["rack_state"] = Delivery_Rack_States.reached
-    print("ORANGE_L_APPROACH_DONE -> REACHED")
+    print("APPROACH_DONE -> REACHED")
     Red.value(0)
 
 # UPDATED WITH GRABBER AND TILT
