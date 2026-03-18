@@ -1395,6 +1395,7 @@ while True:
                 start_turn(robot, get_turn_dir(robot))
             elif events["new_junction"] and robot["gnd_loc_idx"] in [0]:
                 start_turn(robot, get_turn_dir(robot))
+            
             line_follow_step(sensors["S1"], sensors["S2"], 82, 20)
         elif robot["motion"] == Motion.turning:
             robot["turn_complete"] = timed_turn_step(robot, 1450)
@@ -1460,7 +1461,7 @@ resistor_color=R_measure(delivery)
 #release() """
 
 #Resistor identification test
-grab()
+""" grab()
 
 color_names = {
     Resistor_Color.red: "red",
@@ -1470,7 +1471,7 @@ color_names = {
     Resistor_Color.none: "none"
 }
 
-print(f"Resistor Color: {color_names.get(R_measure(), 'unknown')}")
+print(f"Resistor Color: {color_names.get(R_measure(), 'unknown')}") """
 
 # Broken reverse -- testing recovery only
 # Start at node 19, so it turns at 20, get it to turn at 21, stop at bay, TURN 180 -- timed turn for like 2000ms? on new_junction node = 21 then left? see if doublecounting occurs. 
