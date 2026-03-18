@@ -570,7 +570,7 @@ def finish_rack_search(robot, delivery):
     #print(f"NEXT_TARGET_RACK_IDX = {robot['target_rack_idx']}")
 
 def update_rack_search_turn(robot):
-    robot["turn_complete"] = timed_turn_step(robot, 900)
+    robot["turn_complete"] = timed_turn_step(robot, 1300)
 
     if not robot["turn_complete"]:
         return
@@ -677,7 +677,7 @@ def update_orange_L_reached(robot, delivery):
     #turn_claw_up()
     grab()
     R_measure(delivery)
-    #print(f"RESISTOR_COLOR = {delivery['resistor_color']}")
+    print(f"RESISTOR_COLOR = {delivery['resistor_color']}")
 
     delivery["rack_state"] = Delivery_Rack_States.reorienting
     delivery["getout_state"] = Get_Out_of_branch.Rev_Branch
@@ -741,7 +741,7 @@ def update_rack_exit_branch(robot, delivery):
     Blue.value(1)
     print("EXIT_BRANCH_TURN_START")
 
-    robot["turn_complete"] = timed_turn_step(robot, 1900)
+    robot["turn_complete"] = timed_turn_step(robot, 2000)
 
     if not robot["turn_complete"]:
         return
@@ -1003,7 +1003,7 @@ def update_dropoff_at_bay(sensors, events, robot, delivery):
         motor_r.Forward(speed = 0)
         #turn_claw_down()
         release()   # uncomment when grabber is ready
-        delivery["unloading_state"] = Unloading_States.done
+        #delivery["unloading_state"] = Unloading_States.done # ive given up the bot can park at the bay forever after it deposits the load.
         print("BAY_REACHED -> UNLOADING_DONE")
         return
 
@@ -1378,40 +1378,43 @@ while True:
         motor_r.Forward(speed = 0)
         latch_events(events)
         continue
+    
+    if robot["target_rack_idx"] != 0:
+        continue
+    else:
+        if robot["mode"] not in [Mode.start, Mode.search_init]:
+            update_location(robot, events)
 
-    if robot["mode"] not in [Mode.start, Mode.search_init]:
-        update_location(robot, events)
+        if robot["mode"] == Mode.start:
+            handle_start_mode(robot, sensors)
 
-    if robot["mode"] == Mode.start:
-        handle_start_mode(robot, sensors)
+        elif robot["mode"] == Mode.search_init:
+            robot["direction"] = Direction.cw
+            handle_search_init_mode(sensors, events, robot, delivery)
 
-    elif robot["mode"] == Mode.search_init:
-        robot["direction"] = Direction.cw
-        handle_search_init_mode(sensors, events, robot, delivery)
+        elif robot["mode"] == Mode.search:
+            if robot["motion"] == Motion.follow:
+                if events["new_junction"] and robot["gnd_loc_idx"] in [10, 12, 20, 2]:
+                    start_turn(robot, get_turn_dir(robot))
+                elif events["new_junction"] and robot["gnd_loc_idx"] in [0]:
+                    start_turn(robot, get_turn_dir(robot))
+                
+                line_follow_step(sensors["S1"], sensors["S2"], 82, 20)
+            elif robot["motion"] == Motion.turning:
+                robot["turn_complete"] = timed_turn_step(robot, 1450)
+                if robot["turn_complete"]:
+                    finish_turn(robot)     
 
-    elif robot["mode"] == Mode.search:
-        if robot["motion"] == Motion.follow:
-            if events["new_junction"] and robot["gnd_loc_idx"] in [10, 12, 20, 2]:
-                start_turn(robot, get_turn_dir(robot))
-            elif events["new_junction"] and robot["gnd_loc_idx"] in [0]:
-                start_turn(robot, get_turn_dir(robot))
-            
-            line_follow_step(sensors["S1"], sensors["S2"], 82, 20)
-        elif robot["motion"] == Motion.turning:
-            robot["turn_complete"] = timed_turn_step(robot, 1450)
-            if robot["turn_complete"]:
-                finish_turn(robot)     
+            if at_target_rack_zone(robot):
+                rack_search(sensors, events, robot, delivery)  
 
-        if at_target_rack_zone(robot):
-            rack_search(sensors, events, robot, delivery)  
-
-    elif robot["mode"] == Mode.delivery:
-        handle_delivery_from_orange_L(sensors, events, robot, delivery)
+        elif robot["mode"] == Mode.delivery:
+            handle_delivery_from_orange_L(sensors, events, robot, delivery)
 
 
-    latch_events(events)
+        latch_events(events)
 
-    sleep_ms(10)   
+        sleep_ms(10)   
         
 
 # --- FINAL MODEL ---
