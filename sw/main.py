@@ -1277,8 +1277,8 @@ def handle_search_init_mode(sensors, events, robot, delivery):
     events["prev_on_T"] = False
 
     robot["mode"] = Mode.search
-    robot["direction"] = Direction.acw
-    target_racks[robot["target_rack_idx"]] = Racks.rack_purple_L
+    robot["direction"] = Direction.cw
+    target_racks[robot["target_rack_idx"]] = Racks.rack_orange_L
 
     print("SEARCH_INIT -> SEARCH")
 
