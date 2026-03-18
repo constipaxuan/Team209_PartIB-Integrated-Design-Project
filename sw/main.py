@@ -234,7 +234,7 @@ def release():
     while ticks_diff(ticks_ms(), start_time) < CLAW_OPERATION_DURATION:
             #Moves the claw from its current position to 160 degrees.
             global current_claw_angle
-            current_claw_angle = set_angle_slow(current_claw_angle, 170, 0.01)
+            current_claw_angle = set_angle_slow(current_claw_angle, 180, 0.01)
 
 #Original 
 """ def grab():
