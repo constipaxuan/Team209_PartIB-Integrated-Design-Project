@@ -1455,6 +1455,19 @@ resistor_color=R_measure(delivery)
 #turn_claw_up() """
 #release() """
 
+#Resistor identification test
+grab()
+
+color_names = {
+    Resistor_Color.red: "red",
+    Resistor_Color.yellow: "yellow",
+    Resistor_Color.green: "green",
+    Resistor_Color.blue: "blue",
+    Resistor_Color.none: "none"
+}
+
+print(f"Resistor Color: {color_names.get(R_measure(), 'unknown')}")
+
 # Broken reverse -- testing recovery only
 # Start at node 19, so it turns at 20, get it to turn at 21, stop at bay, TURN 180 -- timed turn for like 2000ms? on new_junction node = 21 then left? see if doublecounting occurs. 
 
