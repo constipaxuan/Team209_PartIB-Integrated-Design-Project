@@ -13,7 +13,7 @@ color_names = {
     Resistor_Color.none: "none"
 }
 
-print(f"Resistor Color: {color_names.get(resistor_color, 'unknown')}")
-
+print(f"Resistor Color: {color_names.get(R_measure(), 'unknown')}")
+# If R measure returns none, then we get unknown as the output, otherwise we getr "red" or "blue" etc
 
 
