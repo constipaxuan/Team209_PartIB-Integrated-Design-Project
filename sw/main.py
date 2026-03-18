@@ -1360,7 +1360,7 @@ def handle_delivery_mode(sensors, events, robot, delivery):
 #Resistor detection TEST (Now with line following)
 robot["mode"] = Mode.start
 robot["direction"] = Direction.cw
-robot["gnd_loc_idx"] = 20
+robot["gnd_loc_idx"] = 0
 #delivery["resistor_color"] = Resistor_Color.green
 target_racks[robot["target_rack_idx"]] = Racks.rack_orange_L
 
@@ -1399,7 +1399,7 @@ while True:
                 finish_turn(robot)     
 
         rack_search(sensors, events, robot, delivery)   
-          
+
     elif robot["mode"] == Mode.delivery:
         handle_delivery_from_orange_L(sensors, events, robot, delivery)
 
