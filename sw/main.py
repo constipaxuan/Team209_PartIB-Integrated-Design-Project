@@ -536,6 +536,9 @@ def handle_rack_load_detected(robot, delivery, laser_distance):
     ) 
     Red.value(1)
 
+    #motor_l.Forward(0)
+    #motor_r.Forward(0)
+
     delivery["delivery_state"] = Delivery_States.pickup
     delivery["rack_state"] = Delivery_Rack_States.approaching
     robot["motion"] = Motion.reversing
@@ -661,7 +664,7 @@ def update_rack_approach(robot, delivery):
         #print("APPROACH_START")
         Red.value(1)
 
-    done = timed_forward_step(robot, 380)
+    done = timed_forward_step(robot, 340)
 
     if not done:
         return
