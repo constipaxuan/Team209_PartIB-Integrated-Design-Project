@@ -570,8 +570,9 @@ def finish_rack_search(robot, delivery):
     #print(f"NEXT_TARGET_RACK_IDX = {robot['target_rack_idx']}")
 
 def update_rack_search_turn(robot):
-    robot["turn_complete"] = timed_turn_step(robot, 1460)
-
+    robot["turn_complete"] = timed_turn_step(robot, 1200)
+    robot["mode"] = Mode.delivery
+    
     if not robot["turn_complete"]:
         return
 
@@ -1178,7 +1179,7 @@ def turn_claw_down():
         servo_tilt.duty_u16(duty) """
 
 def turn_claw_up():
-    pulse_width = 500 + (160 / 270) * 2000
+    pulse_width = 500 + (170 / 270) * 2000
     duty = int((pulse_width / 20000) * 65535)
     servo_tilt.duty_u16(duty)
 
