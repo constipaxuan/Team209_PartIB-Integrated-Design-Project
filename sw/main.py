@@ -147,7 +147,7 @@ robot = {
     "turn_state": Turn_State.start,
     "turn_dir": Turn_Direction.nil,
     "turn_complete": False,
-    "direction": Direction.acw,
+    "direction": Direction.cw,
     "location": Location.start,
     "gnd_loc_idx": 0,
     "mode": Mode.start,
