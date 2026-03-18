@@ -571,7 +571,6 @@ def finish_rack_search(robot, delivery):
 
 def update_rack_search_turn(robot):
     robot["turn_complete"] = timed_turn_step(robot, 900)
-    robot["mode"] = Mode.delivery
 
     if not robot["turn_complete"]:
         return
