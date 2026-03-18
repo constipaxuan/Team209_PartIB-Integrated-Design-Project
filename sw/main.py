@@ -819,12 +819,12 @@ def update_purple_L_reached(robot, delivery):
     R_measure(delivery)
     print(f"RESISTOR_COLOR = {delivery['resistor_color']}")
 
-    motor_l.Forward(speed = 0)
-    motor_r.Forward(speed = 0)
-    """ delivery["rack_state"] = Delivery_Rack_States.reorienting
+    #motor_l.Forward(speed = 0)
+    #motor_r.Forward(speed = 0)
+    delivery["rack_state"] = Delivery_Rack_States.reorienting
     delivery["getout_state"] = Get_Out_of_branch.Rev_Branch
     robot["turn_dir"] = Turn_Direction.left
-    robot["timed_turn_started"] = False """
+    robot["timed_turn_started"] = False
 
     print("REACHED -> REORIENTING")
 
