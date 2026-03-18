@@ -1252,7 +1252,7 @@ def handle_start_mode(robot, sensors):
             robot["motion"] = Motion.turning
             robot["turn_dir"] = Turn_Direction.right
     elif robot["motion"] == Motion.turning:
-        robot["turn_complete"] = timed_turn_step(robot, 1600)
+        robot["turn_complete"] = timed_turn_step(robot, 1650)
         if robot["turn_complete"]:
             robot["motion"] = Motion.follow
             motor_l.Forward(speed = 0)
@@ -1299,7 +1299,7 @@ def handle_search_mode(sensors, events, robot, delivery):
     line_follow_step(sensors["S1"], sensors["S2"], 82, 20)
 
 def update_search_turn(sensors, robot):
-    robot["turn_complete"] = timed_turn_step(robot, 1600)
+    robot["turn_complete"] = timed_turn_step(robot, 1650)
 
     if not robot["turn_complete"]:
         return
