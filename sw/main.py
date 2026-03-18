@@ -529,11 +529,11 @@ def read_rack_laser(robot):
     return 9999
 
 def handle_rack_load_detected(robot, delivery, laser_distance):
-    """ print(
+    print(
         f"LOAD_DETECTED | slot={delivery['search_slot_counter']} "
         f"| dist={laser_distance} | node={robot['gnd_loc_idx']} "
         f"| motion_before={robot['motion']}"
-    ) """
+    ) 
     Red.value(1)
 
     delivery["delivery_state"] = Delivery_States.pickup
