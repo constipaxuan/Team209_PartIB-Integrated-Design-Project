@@ -1401,7 +1401,8 @@ while True:
             if robot["turn_complete"]:
                 finish_turn(robot)     
 
-        rack_search(sensors, events, robot, delivery)   
+        if at_target_rack_zone(robot):
+            rack_search(sensors, events, robot, delivery)  
 
     elif robot["mode"] == Mode.delivery:
         handle_delivery_from_orange_L(sensors, events, robot, delivery)
