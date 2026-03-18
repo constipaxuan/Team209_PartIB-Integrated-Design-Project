@@ -570,9 +570,9 @@ def finish_rack_search(robot, delivery):
     #print(f"NEXT_TARGET_RACK_IDX = {robot['target_rack_idx']}")
 
 def update_rack_search_turn(robot):
-    robot["turn_complete"] = timed_turn_step(robot, 1200)
+    robot["turn_complete"] = timed_turn_step(robot, 900)
     robot["mode"] = Mode.delivery
-    
+
     if not robot["turn_complete"]:
         return
 
@@ -1359,7 +1359,7 @@ def handle_delivery_mode(sensors, events, robot, delivery):
 
 
 #Resistor detection TEST (Now with line following)
-""" robot["mode"] = Mode.search
+robot["mode"] = Mode.start
 robot["direction"] = Direction.cw
 robot["gnd_loc_idx"] = 20
 #delivery["resistor_color"] = Resistor_Color.green
@@ -1378,21 +1378,28 @@ while True:
         latch_events(events)
         continue
 
-    update_location(robot, events)
+    if robot["mode"] not in [Mode.start, Mode.search_init]:
+        update_location(robot, events)
 
-    if robot["mode"] == Mode.search:
+    if robot["mode"] == Mode.start:
+        handle_start_mode(robot, sensors)
+
+    elif robot["mode"] == Mode.search_init:
+        handle_search_init_mode(sensors, events, robot, delivery)
+
+    elif robot["mode"] == Mode.search:
         rack_search(sensors, events, robot, delivery)     
     elif robot["mode"] == Mode.delivery:
         handle_delivery_from_orange_L(sensors, events, robot, delivery)
 
     latch_events(events)
 
-    sleep_ms(10)   """
+    sleep_ms(10)   
         
 
 # --- FINAL MODEL ---
 
-while True:
+""" while True:
     update_sensors_and_events(sensors, events)
 
     button_now = button.value()
@@ -1426,7 +1433,7 @@ while True:
     else:
         print("WARNING: unknown mode")
 
-    latch_events(events)
+    latch_events(events) """
 
 #grabber test (super simple)
 
