@@ -659,3 +659,33 @@ def get_out_of_box(sensors, events, robot, delivery):
         line_follow_step(sensors["S1"], sensors["S2"], 80, 20)
         robot["mode"] = Mode.search_init
         #print("turn 2 done")
+
+# returns True when turn complete, False otherwise. Call in discrete time steps while in turning mode.
+# change speed of wheel to match position of ideal pivot (lies on 45 degree line from the corner)
+# Prevents original line from being misidentified as the new line by forcing bot to lose the first line before finding the new one.
+def turn_v4(robot, sensors):
+    if robot["turn_state"] == Turn_State.start:
+        if (sensors["S1"] == 0 and sensors["S2"] == 0): # Lost the original line
+            robot["turn_state"] = Turn_State.line_lost
+
+    
+    elif robot["turn_state"] == Turn_State.line_lost:
+        if (sensors["S1"] == 1 and sensors["S2"] == 1): # Found the new line. 
+            motor_l.Forward(speed = 0)
+            motor_r.Forward(speed = 0)
+            robot["turn_state"] = Turn_State.start
+            return True
+        
+    if robot["turn_dir"] == Turn_Direction.left:
+        motor_l.Forward(speed = 60)
+        motor_r.Forward(speed = 20)
+
+    elif robot["turn_dir"] == Turn_Direction.right:
+        motor_l.Forward(speed = 20)
+        motor_r.Forward(speed = 60)
+    
+    return False
+    
+# robot["turn_complete"] = turn_v4(robot, sensors)
+
+# robot["turn_complete"] = timed_turn_step(robot, time_ms)
