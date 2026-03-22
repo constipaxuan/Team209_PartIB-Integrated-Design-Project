@@ -1359,7 +1359,7 @@ def handle_delivery_mode(sensors, events, robot, delivery):
         latch_events(events) """
 
 
-#Resistor detection TEST (Now with line following)
+""" #Resistor detection TEST (Now with line following)
 robot["mode"] = Mode.start
 robot["direction"] = Direction.cw
 robot["gnd_loc_idx"] = 0
@@ -1412,7 +1412,7 @@ while True:
     latch_events(events)
 
     sleep_ms(10)   
-        
+         """
 
 # --- FINAL MODEL ---
 
@@ -1461,7 +1461,7 @@ resistor_color=R_measure(delivery)
 #release() """
 
 #Resistor identification test
-""" grab()
+grab()
 
 color_names = {
     Resistor_Color.red: "red",
@@ -1471,7 +1471,7 @@ color_names = {
     Resistor_Color.none: "none"
 }
 
-print(f"Resistor Color: {color_names.get(R_measure(), 'unknown')}") """
+print(f"Resistor Color: {color_names.get(R_measure(), 'unknown')}")
 
 # Broken reverse -- testing recovery only
 # Start at node 19, so it turns at 20, get it to turn at 21, stop at bay, TURN 180 -- timed turn for like 2000ms? on new_junction node = 21 then left? see if doublecounting occurs. 
